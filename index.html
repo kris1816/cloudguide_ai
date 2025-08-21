@@ -569,10 +569,10 @@
                 updateLoadingText('Finalizing audioguide document...');
                 
                 // Create and download document
-                const document = createAudioguideDocument(location, scripts, tourType, language);
+                const tourDocument = createAudioguideDocument(location, scripts, tourType, language);
                 const filename = `Audioguide_${location.replace(/[^a-zA-Z0-9]/g, '_')}_${language}.txt`;
                 
-                downloadScript(document, filename);
+                downloadScript(tourDocument, filename);
                 
                 updateProgress(100);
                 showSuccess();
