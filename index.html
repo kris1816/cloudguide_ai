@@ -721,112 +721,172 @@
             
             switch(stopType) {
                 case 'introduction':
-                    basePrompt = 'Create a professional audioguide INTRODUCTION script for ' + location + '.\n\n' +
-                        'IMPORTANT: Do NOT start with "Welcome to Introduction to..." Start with a natural, warm greeting.\n\n' +
-                        'REQUIREMENTS:\n' +
-                        '- 600-800 words\n' +
-                        '- Language: ' + language + '\n' +
-                        '- Tour type: ' + tourType + '\n';
+                    basePrompt = 'You are a world-class audioguide scriptwriter. Create a captivating INTRODUCTION for ' + location + '.\n\n' +
+                        'CRITICAL REQUIREMENTS:\n' +
+                        '- MINIMUM 900 words (aim for 1000-1200)\n' +
+                        '- Write in ' + language + '\n' +
+                        '- Style: ' + (tourType === 'family' ? 'Engaging and accessible for all ages' : 
+                                      tourType === 'historical' ? 'Rich in historical detail and context' :
+                                      tourType === 'cultural' ? 'Focused on cultural significance and traditions' :
+                                      tourType === 'artistic' ? 'Emphasizing artistic and architectural elements' :
+                                      'Comprehensive and informative') + '\n\n' +
+                        'FORBIDDEN:\n' +
+                        '- Do NOT use phrases like "Welcome to Introduction to..."\n' +
+                        '- NEVER repeat the same adjectives or descriptive phrases\n' +
+                        '- Avoid generic phrases like "must-see", "don\'t miss", "iconic", "nestled"\n' +
+                        '- No clichés or tourist brochure language\n\n' +
+                        'WRITE A FLOWING NARRATIVE THAT INCLUDES:\n\n' +
+                        '1. OPENING (150-200 words):\n' +
+                        'Start with an engaging hook - perhaps a surprising fact, a sensory description, or an intriguing question. Draw visitors in immediately.\n\n' +
+                        '2. THE ESSENCE OF THIS PLACE (200-250 words):\n' +
+                        'Paint a vivid picture of what makes ' + location + ' extraordinary. Use specific details, not generalizations. What would a painter notice? What would a poet describe?\n\n' +
+                        '3. LAYERS OF SIGNIFICANCE (250-300 words):\n' +
+                        'Explore the multiple dimensions - architectural marvels, cultural treasures, human stories. Connect past and present. Why does this place matter to humanity?\n\n' +
+                        '4. WHAT AWAITS YOU (200-250 words):\n' +
+                        'Build anticipation for specific experiences without using tired phrases. Describe actual sights, sounds, and discoveries visitors will encounter.\n\n' +
+                        '5. PERSONAL CONNECTION (150-200 words):\n' +
+                        'Help visitors understand how they might personally connect with this place. What emotions might they experience? What insights might they gain?\n\n';
                     if (context) {
-                        basePrompt += '- Context: ' + context + '\n';
+                        basePrompt += '\nADDITIONAL CONTEXT TO INCORPORATE:\n' + context + '\n\n';
                     }
-                    basePrompt += '\n' +
-                        'Create a compelling introduction that:\n' +
-                        '1. WARM GREETING (100 words) - Welcome visitors naturally without redundancy\n' +
-                        '2. LOCATION OVERVIEW (150 words) - What makes this place special and unique\n' +
-                        '3. SIGNIFICANCE (200 words) - Why this matters culturally and historically\n' +
-                        '4. PREVIEW OF HIGHLIGHTS (150 words) - Most spectacular features they will see\n' +
-                        '5. VISITOR PREPARATION (100 words) - Set expectations and build excitement\n\n' +
-                        'Write in an engaging, professional tone. Make visitors feel privileged to be here.\n\n' +
-                        'GENERATE THE COMPLETE INTRODUCTION NOW:';
+                    basePrompt += 'Write with sophistication and depth. Every sentence should add value. Create an introduction that visitors will remember.\n\n' +
+                        'BEGIN THE INTRODUCTION NOW:';
                     break;
                     
                 case 'history':
-                    basePrompt = 'Create a professional audioguide HISTORY script for ' + location + '.\n\n' +
-                        'REQUIREMENTS:\n' +
-                        '- 600-800 words\n' +
-                        '- Language: ' + language + '\n' +
-                        '- Tour type: ' + tourType + '\n';
+                    basePrompt = 'You are a master storyteller. Create a compelling HISTORICAL NARRATIVE for ' + location + '.\n\n' +
+                        'CRITICAL REQUIREMENTS:\n' +
+                        '- MINIMUM 900 words (aim for 1000-1200)\n' +
+                        '- Write in ' + language + '\n' +
+                        '- Make history come alive through storytelling, not lists of dates\n\n' +
+                        'FORBIDDEN:\n' +
+                        '- No boring chronological lists\n' +
+                        '- Avoid starting every paragraph with "In [year]..."\n' +
+                        '- Don\'t use repetitive transitions like "then", "next", "after that"\n' +
+                        '- No dry academic language\n\n' +
+                        'CRAFT A RICH HISTORICAL NARRATIVE:\n\n' +
+                        '1. THE BEGINNING (200-250 words):\n' +
+                        'Tell the origin story dramatically. Who were the key figures? What drove them? What challenges did they face? Make it personal and human.\n\n' +
+                        '2. DEFINING MOMENTS (250-300 words):\n' +
+                        'Focus on 2-3 pivotal events that shaped ' + location + '. Describe them vividly - the atmosphere, the stakes, the consequences. Help visitors visualize these moments.\n\n' +
+                        '3. GOLDEN AGE & GLORY (200-250 words):\n' +
+                        'When did this place reach its zenith? What made it magnificent? Include specific examples, notable visitors, cultural flowering.\n\n' +
+                        '4. TRIALS AND TRANSFORMATIONS (200-250 words):\n' +
+                        'Every place faces challenges. Wars, natural disasters, abandonment, or radical changes. How did ' + location + ' endure and adapt?\n\n' +
+                        '5. REBIRTH AND RELEVANCE (150-200 words):\n' +
+                        'How was it rediscovered or restored? What does it mean today? Why does this history still matter?\n\n';
                     if (context) {
-                        basePrompt += '- Context: ' + context + '\n';
+                        basePrompt += '\nADDITIONAL CONTEXT TO INCORPORATE:\n' + context + '\n\n';
                     }
-                    basePrompt += '\n' +
-                        'Create an engaging historical narrative covering:\n' +
-                        '1. ORIGINS (150 words) - When and why this location was established\n' +
-                        '2. EARLY DEVELOPMENT (150 words) - How it grew in its first decades/centuries\n' +
-                        '3. GOLDEN ERA (200 words) - Peak periods of importance and major events\n' +
-                        '4. CHALLENGES & CHANGES (150 words) - How it survived difficulties and evolved\n' +
-                        '5. MODERN ERA (150 words) - Recent history and current significance\n\n' +
-                        'Use specific dates and names. Make history come alive with vivid storytelling.\n\n' +
-                        'GENERATE THE COMPLETE HISTORY NOW:';
+                    basePrompt += 'Tell this story with passion and detail. Use anecdotes, quotes if available, and vivid descriptions. Make visitors feel the weight of history.\n\n' +
+                        'BEGIN THE HISTORICAL NARRATIVE NOW:';
                     break;
                     
                 case 'cuisine':
-                    basePrompt = 'Create a professional audioguide MUST EATS / LOCAL CUISINE script for ' + location + '.\n\n' +
-                        'REQUIREMENTS:\n' +
-                        '- 600-800 words\n' +
-                        '- Language: ' + language + '\n' +
-                        '- Tour type: ' + tourType + '\n';
+                    basePrompt = 'You are a culinary storyteller. Create a mouthwatering FOOD & CUISINE guide for ' + location + '.\n\n' +
+                        'CRITICAL REQUIREMENTS:\n' +
+                        '- MINIMUM 900 words (aim for 1000-1200)\n' +
+                        '- Write in ' + language + '\n' +
+                        '- Make readers hungry through vivid sensory descriptions\n\n' +
+                        'FORBIDDEN:\n' +
+                        '- Generic food descriptions like "delicious", "tasty", "yummy"\n' +
+                        '- Touristy phrases like "food paradise", "culinary journey"\n' +
+                        '- Repetitive sentence structures\n' +
+                        '- Vague recommendations without specific details\n\n' +
+                        'CREATE A RICH CULINARY EXPLORATION:\n\n' +
+                        '1. FOOD AS CULTURE (200-250 words):\n' +
+                        'Explain how cuisine reflects the soul of ' + location + '. Historical influences, geographical factors, cultural traditions. Why do people here eat what they eat?\n\n' +
+                        '2. LEGENDARY DISHES (300-350 words):\n' +
+                        'Detail 3-4 signature dishes with rich descriptions. Include:\n' +
+                        '- The story behind each dish\n' +
+                        '- Specific ingredients and preparation methods\n' +
+                        '- Texture, aroma, and flavor profiles\n' +
+                        '- Where locals prefer to eat them\n' +
+                        '- The experience of eating them\n\n' +
+                        '3. STREET FOOD SYMPHONY (200-250 words):\n' +
+                        'Paint a picture of the street food scene. Morning vendors, lunch crowds, evening specialties. Describe actual stalls, the sounds, the rituals of ordering and eating.\n\n' +
+                        '4. DRINKS AND SOCIAL RITUALS (150-200 words):\n' +
+                        'Local beverages and how they\'re consumed. Coffee culture? Tea ceremonies? Local spirits? The social aspects of drinking.\n\n' +
+                        '5. SWEET ENDINGS & FOOD MEMORIES (150-200 words):\n' +
+                        'Traditional desserts and their occasions. Festival foods. What food memories will visitors take home?\n\n';
                     if (context) {
-                        basePrompt += '- Context: ' + context + '\n';
+                        basePrompt += '\nADDITIONAL CONTEXT TO INCORPORATE:\n' + context + '\n\n';
                     }
-                    basePrompt += '\n' +
-                        'Create a delicious guide to local food covering:\n' +
-                        '1. CULINARY HERITAGE (150 words) - Food traditions and cultural significance\n' +
-                        '2. SIGNATURE DISHES (200 words) - 3-4 must-try local specialties with descriptions\n' +
-                        '3. STREET FOOD & MARKETS (150 words) - Where locals eat, popular snacks\n' +
-                        '4. BEVERAGES (100 words) - Traditional drinks, coffee/tea culture\n' +
-                        '5. SWEET TREATS (100 words) - Local desserts and pastries\n' +
-                        '6. DINING TIPS (100 words) - Etiquette, meal times, where to eat\n\n' +
-                        'Focus on authentic local experiences. Help visitors eat like locals.\n\n' +
-                        'GENERATE THE COMPLETE CUISINE GUIDE NOW:';
+                    basePrompt += 'Write with sensory richness. Help visitors taste, smell, and feel the food culture. Be specific about places, dishes, and experiences.\n\n' +
+                        'BEGIN THE CULINARY GUIDE NOW:';
                     break;
                     
                 case 'tips':
-                    basePrompt = 'Create a professional audioguide PRACTICAL TIPS script for ' + location + '.\n\n' +
-                        'REQUIREMENTS:\n' +
-                        '- 600-800 words\n' +
-                        '- Language: ' + language + '\n' +
-                        '- Tour type: ' + tourType + '\n';
+                    basePrompt = 'You are a seasoned travel expert. Create an invaluable PRACTICAL GUIDE for ' + location + '.\n\n' +
+                        'CRITICAL REQUIREMENTS:\n' +
+                        '- MINIMUM 900 words (aim for 1000-1200)\n' +
+                        '- Write in ' + language + '\n' +
+                        '- Provide specific, actionable, insider information\n\n' +
+                        'FORBIDDEN:\n' +
+                        '- Obvious advice like "wear comfortable shoes", "bring water"\n' +
+                        '- Vague suggestions without specifics\n' +
+                        '- Generic travel tips that apply anywhere\n' +
+                        '- Repetitive phrasing or structure\n\n' +
+                        'DELIVER EXPERT LOCAL KNOWLEDGE:\n\n' +
+                        '1. TIMING IS EVERYTHING (200-250 words):\n' +
+                        'Beyond just "morning is less crowded" - explain specific timing strategies. Which areas to visit when. Seasonal considerations most tourists miss. Special moments (sunset locations, morning rituals, etc.).\n\n' +
+                        '2. NAVIGATION MASTERY (200-250 words):\n' +
+                        'Exact routes, shortcuts locals use, specific entrance strategies. Which ticket lines move fastest? Alternative entrances? How to navigate efficiently?\n\n' +
+                        '3. HIDDEN TREASURES (250-300 words):\n' +
+                        'Overlooked spots that even many guides miss. Specific viewpoints, quiet corners, architectural details. Include exact locations and what makes them special.\n\n' +
+                        '4. LOCAL INTERACTIONS (150-200 words):\n' +
+                        'Cultural nuances, appropriate behavior, photography etiquette. How to respectfully engage with locals or staff. Language tips that actually help.\n\n' +
+                        '5. BEYOND THE BASICS (150-200 words):\n' +
+                        'Insights that transform a visit - best light for photography, where locals go afterward, combining tickets strategically, avoiding common mistakes.\n\n';
                     if (context) {
-                        basePrompt += '- Context: ' + context + '\n';
+                        basePrompt += '\nADDITIONAL CONTEXT TO INCORPORATE:\n' + context + '\n\n';
                     }
-                    basePrompt += '\n' +
-                        'Provide comprehensive practical guidance:\n' +
-                        '1. BEST TIMES TO VISIT (150 words) - Seasons, weather, crowd levels, special times\n' +
-                        '2. GETTING THERE & AROUND (150 words) - Transportation, parking, navigation\n' +
-                        '3. TICKETS & ENTRY (100 words) - Prices, booking tips, opening hours\n' +
-                        '4. WHAT TO BRING (100 words) - Essential items, dress code, preparation\n' +
-                        '5. HIDDEN GEMS (150 words) - Lesser-known spots, photo opportunities, insider tips\n' +
-                        '6. NEARBY ATTRACTIONS (100 words) - What else to see in the area\n\n' +
-                        'Give specific, actionable advice that enhances the visitor experience.\n\n' +
-                        'GENERATE THE COMPLETE TIPS GUIDE NOW:';
+                    basePrompt += 'Share knowledge that visitors won\'t find in guidebooks. Be specific with times, prices, locations. Make their visit exceptional.\n\n' +
+                        'BEGIN THE PRACTICAL GUIDE NOW:';
                     break;
                     
                 case 'attraction':
                 default:
-                    basePrompt = 'Create a professional audioguide script for a MAIN ATTRACTION at ' + location + '.\n\n' +
-                        'REQUIREMENTS:\n' +
-                        '- 500-600 words\n' +
-                        '- Language: ' + language + '\n' +
-                        '- Tour type: ' + tourType + '\n' +
-                        '- Theme: ' + (tourType === 'historical' ? 'Historical significance' : 
-                                      tourType === 'cultural' ? 'Cultural importance' :
-                                      tourType === 'artistic' ? 'Art and architecture' :
-                                      tourType === 'family' ? 'Family-friendly discovery' :
-                                      'Comprehensive overview') + '\n';
+                    var attractionNumber = Math.floor(Math.random() * 10) + 1;
+                    var attractionFocus = [
+                        'a magnificent architectural feature',
+                        'an important historical area',
+                        'a significant cultural space',
+                        'a remarkable artistic collection',
+                        'a breathtaking viewpoint',
+                        'a sacred or ceremonial space',
+                        'a fascinating archaeological discovery',
+                        'an innovative exhibition space',
+                        'a restored historical quarter',
+                        'a unique architectural element'
+                    ];
+                    
+                    basePrompt = 'You are an expert guide. Create an immersive script about ' + attractionFocus[attractionNumber % 10] + ' at ' + location + '.\n\n' +
+                        'CRITICAL REQUIREMENTS:\n' +
+                        '- MINIMUM 900 words (aim for 1000-1200)\n' +
+                        '- Write in ' + language + '\n' +
+                        '- Focus on one specific area/feature in rich detail\n\n' +
+                        'FORBIDDEN:\n' +
+                        '- Generic descriptions that could apply anywhere\n' +
+                        '- Overused adjectives like "stunning", "amazing", "incredible"\n' +
+                        '- Repetitive sentence patterns\n' +
+                        '- Surface-level observations\n\n' +
+                        'CREATE AN IMMERSIVE EXPERIENCE:\n\n' +
+                        '1. SETTING THE SCENE (200-250 words):\n' +
+                        'Help visitors understand exactly where they are. Describe the approach, the first impression, the atmosphere. Use all senses - what do they see, hear, smell, feel?\n\n' +
+                        '2. READING THE DETAILS (250-300 words):\n' +
+                        'Guide their eyes to specific features. Architectural elements, artistic details, inscriptions, materials. Explain techniques, symbolism, craftsmanship. Make them see what they might miss.\n\n' +
+                        '3. STORIES WITHIN STORIES (250-300 words):\n' +
+                        'Share the human stories connected to this place. Who created it? Who used it? What dramas unfolded here? Include at least one detailed anecdote or historical moment.\n\n' +
+                        '4. CULTURAL RESONANCE (150-200 words):\n' +
+                        'Why does this particular spot matter? How does it connect to broader themes of ' + location + '? What does it reveal about the culture and values?\n\n' +
+                        '5. PERSONAL DISCOVERY (100-150 words):\n' +
+                        'Suggest ways visitors can engage more deeply. Where to stand for the best perspective. Details to search for. Questions to ponder.\n\n';
                     if (context) {
-                        basePrompt += '- Context: ' + context + '\n';
+                        basePrompt += '\nADDITIONAL CONTEXT TO INCORPORATE:\n' + context + '\n\n';
                     }
-                    basePrompt += '\n' +
-                        'Structure your script to include:\n' +
-                        '1. ARRIVAL & FIRST IMPRESSIONS (100 words) - What visitors see and feel\n' +
-                        '2. DETAILED EXPLORATION (200 words) - Key features, architecture, or exhibits\n' +
-                        '3. HISTORICAL/CULTURAL CONTEXT (150 words) - Background and significance\n' +
-                        '4. INTERACTIVE ELEMENTS (100 words) - What to look for, photo spots, activities\n' +
-                        '5. CONNECTION (50 words) - How this relates to the overall visit\n\n' +
-                        'Create vivid descriptions that transport visitors. Use sensory details.\n\n' +
-                        'GENERATE THE COMPLETE ATTRACTION SCRIPT NOW:';
+                    basePrompt += 'Create a rich, detailed exploration that makes this specific location unforgettable. Use varied vocabulary and sentence structures.\n\n' +
+                        'BEGIN THE DETAILED SCRIPT NOW:';
                     break;
             }
             
