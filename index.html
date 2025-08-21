@@ -639,11 +639,11 @@
             <div class="ai-grid">
                 <div class="ai-option selected" id="deepseek-option" onclick="selectAI('deepseek')">
                     <div class="ai-name">DeepSeek</div>
-                    <div class="ai-status">Professional Quality</div>
+                    <div class="ai-status">Professional Quality (Recommended)</div>
                 </div>
-                <div class="ai-option" id="huggingface-option" onclick="selectAI('huggingface')">
-                    <div class="ai-name">Hugging Face</div>
-                    <div class="ai-status">Open Source (Free)</div>
+                <div class="ai-option" id="openai-option" onclick="selectAI('openai')">
+                    <div class="ai-name">ChatGPT (OpenAI)</div>
+                    <div class="ai-status">Industry Standard (Most Reliable)</div>
                 </div>
             </div>
         </div>
@@ -1071,14 +1071,16 @@ Write the complete script:`;
                             prompt: prompt
                         })
                     });
-                } else {
-                    response = await fetch('/api/huggingface', {
+                } else if (selectedAI === 'openai') {
+                    response = await fetch('/api/openai', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({
-                            prompt: prompt
+                            prompt: prompt,
+                            max_tokens: 1500,
+                            temperature: 0.8
                         })
                     });
                 }
@@ -1088,7 +1090,16 @@ Write the complete script:`;
                 }
                 
                 const data = await response.json();
-                return data.content || data.generated_text || generateFallbackScript(location, stop, language);
+                
+                // Handle different response formats
+                let generatedText = '';
+                if (selectedAI === 'openai') {
+                    generatedText = data.choices?.[0]?.message?.content || data.choices?.[0]?.text || '';
+                } else {
+                    generatedText = data.content || data.generated_text || '';
+                }
+                
+                return generatedText || generateFallbackScript(location, stop, language);
                 
             } catch (error) {
                 console.error('Script generation error:', error);
@@ -1537,14 +1548,16 @@ GENERATE THE COMPLETE SCRIPT NOW:`;
                             prompt: prompt
                         })
                     });
-                } else {
-                    response = await fetch('/api/huggingface', {
+                } else if (selectedAI === 'openai') {
+                    response = await fetch('/api/openai', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({
-                            prompt: prompt
+                            prompt: prompt,
+                            max_tokens: 1500,
+                            temperature: 0.8
                         })
                     });
                 }
@@ -1564,20 +1577,50 @@ GENERATE THE COMPLETE SCRIPT NOW:`;
                 console.log('API Response:', {
                     ai: selectedAI,
                     status: response.status,
-                    hasContent: !!(data.content || data.generated_text),
-                    contentLength: (data.content || data.generated_text || '').length
+                    hasContent: !!(data.content || data.generated_text || data.choices),
+                    contentLength: (data.content || data.generated_text || data.choices?.[0]?.message?.content || '').length
                 });
                 
-                return data.content || data.generated_text || 'Script generation completed.';
+                // Handle different response formats
+                let generatedText = '';
+                if (selectedAI === 'openai') {
+                    generatedText = data.choices?.[0]?.message?.content || data.choices?.[0]?.text || '';
+                } else {
+                    generatedText = data.content || data.generated_text || '';
+                }
+                
+                return generatedText || generateFallbackScript(location, stop, language);
                 
             } catch (error) {
                 console.error('Script generation error:', error);
                 
-                // If DeepSeek fails, try Hugging Face as fallback
+                // If primary AI fails, try the other one as fallback
                 if (selectedAI === 'deepseek') {
-                    console.log('DeepSeek failed, trying Hugging Face fallback...');
+                    console.log('DeepSeek failed, trying OpenAI as fallback...');
                     try {
-                        const fallbackResponse = await fetch('/api/huggingface', {
+                        const fallbackResponse = await fetch('/api/openai', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                prompt: prompt,
+                                max_tokens: 1500,
+                                temperature: 0.8
+                            })
+                        });
+                        
+                        if (fallbackResponse.ok) {
+                            const fallbackData = await fallbackResponse.json();
+                            return fallbackData.choices?.[0]?.message?.content || fallbackData.choices?.[0]?.text || generateFallbackScript(location, stop, language);
+                        }
+                    } catch (fallbackError) {
+                        console.error('OpenAI fallback also failed:', fallbackError);
+                    }
+                } else if (selectedAI === 'openai') {
+                    console.log('OpenAI failed, trying DeepSeek as fallback...');
+                    try {
+                        const fallbackResponse = await fetch('/api/deepseek', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json'
@@ -1592,7 +1635,7 @@ GENERATE THE COMPLETE SCRIPT NOW:`;
                             return fallbackData.content || fallbackData.generated_text || generateFallbackScript(location, stop, language);
                         }
                     } catch (fallbackError) {
-                        console.error('Fallback also failed:', fallbackError);
+                        console.error('DeepSeek fallback also failed:', fallbackError);
                     }
                 }
                 
@@ -1600,11 +1643,7 @@ GENERATE THE COMPLETE SCRIPT NOW:`;
             }
         }
 
-        // Fallback script generation
-        function generateFallbackScript(location, stop, language) {
-            return `Welcome to ${stop.name} at ${location}.
-
-You're standing at one of the most significant locations in ${location}, where history, culture, and human achievement converge in remarkable ways. This space tells the story of ${location}'s evolution through the centuries.
+, culture, and human achievement converge in remarkable ways. This space tells the story of ${location}'s evolution through the centuries.
 
 The architecture surrounding you represents the pinnacle of craftsmanship from its era. Notice the careful attention to proportion, the quality of materials, and the way natural light has been incorporated into the design. These elements work together to create an environment that enhances the visitor experience.
 
