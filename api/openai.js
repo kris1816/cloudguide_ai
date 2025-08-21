@@ -13,6 +13,8 @@ export default async function handler(req, res) {
     }
 
     try {
+        console.log('OpenAI API called with prompt length:', req.body.prompt?.length);
+        
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
             headers: {
@@ -24,27 +26,28 @@ export default async function handler(req, res) {
                 messages: [
                     {
                         role: 'system',
-                        content: 'You are a professional audioguide script writer. Create engaging, detailed, and immersive content for tourist locations. Follow the user instructions precisely.'
+                        content: 'You are a professional audioguide script writer. Create engaging, detailed, and immersive content for tourist locations.'
                     },
                     {
                         role: 'user',
                         content: req.body.prompt
                     }
                 ],
-                max_tokens: req.body.max_tokens || 1500,
+                max_tokens: req.body.max_tokens || 2000,
                 temperature: req.body.temperature || 0.8
             })
         });
 
         if (!response.ok) {
             const error = await response.text();
-            throw new Error(`OpenAI API error: ${response.status} - ${error}`);
+            console.error('OpenAI API error:', error);
+            throw new Error(`OpenAI API error: ${response.status}`);
         }
 
         const data = await response.json();
         res.status(200).json(data);
     } catch (error) {
-        console.error('OpenAI API Error:', error);
+        console.error('OpenAI Error:', error);
         res.status(500).json({ error: error.message });
     }
 }
