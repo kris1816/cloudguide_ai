@@ -697,14 +697,52 @@ Write the complete script:`;
                 }
                 
                 if (!response.ok) {
-                    throw new Error(`API request failed: ${response.status}`);
+                    const errorData = await response.json();
+                    console.error('API Error:', {
+                        ai: selectedAI,
+                        status: response.status,
+                        error: errorData
+                    });
+                    throw new Error(`${selectedAI} API failed: ${errorData.error || response.status}`);
                 }
                 
                 const data = await response.json();
+                
+                console.log('API Response:', {
+                    ai: selectedAI,
+                    status: response.status,
+                    hasContent: !!(data.content || data.generated_text),
+                    contentLength: (data.content || data.generated_text || '').length
+                });
+                
                 return data.content || data.generated_text || 'Script generation completed.';
                 
             } catch (error) {
                 console.error('Script generation error:', error);
+                
+                // If DeepSeek fails, try Hugging Face as fallback
+                if (selectedAI === 'deepseek') {
+                    console.log('DeepSeek failed, trying Hugging Face fallback...');
+                    try {
+                        const fallbackResponse = await fetch('/api/huggingface', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                prompt: prompt
+                            })
+                        });
+                        
+                        if (fallbackResponse.ok) {
+                            const fallbackData = await fallbackResponse.json();
+                            return fallbackData.content || fallbackData.generated_text || generateFallbackScript(location, stop, language);
+                        }
+                    } catch (fallbackError) {
+                        console.error('Fallback also failed:', fallbackError);
+                    }
+                }
+                
                 return generateFallbackScript(location, stop, language);
             }
         }
