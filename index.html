@@ -389,6 +389,10 @@
                 padding: 30px;
             }
 
+            .option-cards {
+                grid-template-columns: 1fr;
+            }
+
             .example-grid {
                 grid-template-columns: 1fr;
             }
@@ -403,6 +407,17 @@
                      alt="CloudGuide" 
                      crossorigin="anonymous">
             </div>
+
+        <div id="fileInput" class="input-section">
+            <div class="file-upload-box" id="uploadBox">
+                <input type="file" id="fileUpload" accept=".pdf,.doc,.docx,.txt" style="display: none;" onchange="handleFileUpload(event)">
+                <div class="option-icon">📁</div>
+                <h3>Upload Your Document</h3>
+                <p>Drop travel guides, museum brochures, research documents here</p>
+                <p style="font-size: 14px; color: #666; margin-top: 15px;">Supports PDF, Word, TXT files up to 10MB</p>
+            </div>
+            <div id="fileInfo" style="display: none;"></div>
+        </div>
             <h1>CloudGuide Pro</h1>
             <p class="subtitle">Create professional audioguides for ANY location worldwide using AI technology</p>
         </div>
@@ -499,10 +514,25 @@
             <p>Your professional audioguide has been generated and downloaded!</p>
             <p style="font-size: 14px; margin-top: 10px;">Professional-grade content ready for any platform</p>
         </div>
+
+        <div class="funding-section">
+            <p class="funding-text">Financiado por la Unión Europea – Next Generation EU, a través del Ministerio de Industria y Turismo</p>
+            <div class="funding-logos">
+                <img src="https://s.cloudguide.me/m/files/d3e690c8-b10a-49e3-8cda-ac3335896b69.png" 
+                     alt="European Union - Next Generation EU" 
+                     crossorigin="anonymous">
+                <img src="https://s.cloudguide.me/m/files/f1eabdef-d522-457d-90fe-fa00b513ac3c.png" 
+                     alt="Gobierno de España - Ministerio de Industria y Turismo" 
+                     crossorigin="anonymous">
+            </div>
+        </div>
     </div>
 
     <script>
         let selectedAI = 'deepseek';
+        let selectedOption = 'quick';
+        let uploadedFile = null;
+        let fileContent = null;
 
         function selectAI(aiType) {
             selectedAI = aiType;
@@ -518,23 +548,110 @@
             document.getElementById('locationName').value = location;
         }
 
+        function selectOption(option) {
+            selectedOption = option;
+            
+            // Update UI
+            document.querySelectorAll('.option-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            document.getElementById(option + 'Option').classList.add('active');
+            
+            // Show relevant input section
+            document.querySelectorAll('.input-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(option + 'Input').classList.add('active');
+        }
+
+        // File upload handling
+        const uploadBox = document.getElementById('uploadBox');
+        
+        uploadBox.addEventListener('click', () => {
+            document.getElementById('fileUpload').click();
+        });
+
+        uploadBox.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadBox.classList.add('dragover');
+        });
+
+        uploadBox.addEventListener('dragleave', () => {
+            uploadBox.classList.remove('dragover');
+        });
+
+        uploadBox.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadBox.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFileUpload({ target: { files } });
+            }
+        });
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (file.size > 10 * 1024 * 1024) { // 10MB limit
+                alert('File size must be under 10MB');
+                return;
+            }
+
+            uploadedFile = file;
+            
+            // Show file info
+            const fileInfo = document.getElementById('fileInfo');
+            fileInfo.style.display = 'block';
+            fileInfo.innerHTML = `
+                <div class="file-info">
+                    <span class="file-icon">📄</span>
+                    <div>
+                        <strong>${file.name}</strong>
+                        <p style="font-size: 14px; color: #666;">${(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                    </div>
+                    <button class="remove-file" onclick="removeFile()" title="Remove file">×</button>
+                </div>
+            `;
+        }
+
+        function removeFile() {
+            uploadedFile = null;
+            fileContent = null;
+            document.getElementById('fileInfo').style.display = 'none';
+            document.getElementById('fileUpload').value = '';
+        }
+
         // Generate audioguide scripts using API
         async function generateAudioguide() {
-            const location = document.getElementById('locationName').value.trim();
-            const additionalInfo = document.getElementById('additionalInfo').value.trim();
-            const stopCount = parseInt(document.getElementById('stopCount').value);
-            const tourType = document.getElementById('tourType').value;
-            const language = document.getElementById('language').value;
-            
-            if (!location) {
-                alert('Please enter a location name');
-                return;
+            if (selectedOption === 'quick') {
+                const location = document.getElementById('locationName').value.trim();
+                const additionalInfo = document.getElementById('additionalInfo').value.trim();
+                const stopCount = parseInt(document.getElementById('stopCount').value);
+                const tourType = document.getElementById('tourType').value;
+                const language = document.getElementById('language').value;
+                
+                if (!location) {
+                    alert('Please enter a location name');
+                    return;
+                }
+                
+                if (stopCount < 5 || stopCount > 20) {
+                    alert('Please enter between 5 and 20 stops');
+                    return;
+                }
+                
+                await generateFromLocation(location, additionalInfo, stopCount, tourType, language);
+                
+            } else if (selectedOption === 'file' && uploadedFile) {
+                await generateFromFile();
+            } else {
+                alert('Please select an option and provide the required information');
             }
-            
-            if (stopCount < 5 || stopCount > 20) {
-                alert('Please enter between 5 and 20 stops');
-                return;
-            }
+        }
+
+        async function generateFromLocation(location, additionalInfo, stopCount, tourType, language) {
             
             try {
                 // Show loading
@@ -580,6 +697,69 @@
             } catch (error) {
                 console.error('Generation failed:', error);
                 alert('Generation failed. Please try again or check your API key.');
+            } finally {
+                document.getElementById('generateBtn').disabled = false;
+                document.getElementById('loading').classList.remove('active');
+                updateProgress(0);
+            }
+        }
+
+        async function generateFromFile() {
+            try {
+                // Show loading
+                document.getElementById('generateBtn').disabled = true;
+                document.getElementById('loading').classList.add('active');
+                updateProgress(0);
+                updateLoadingText('Processing uploaded document...');
+                
+                const language = document.getElementById('language').value;
+                const tourType = document.getElementById('tourType').value;
+                
+                // Extract location from filename
+                const fileName = uploadedFile.name;
+                let location = 'Document Location';
+                
+                const locationMatches = fileName.match(/([A-Za-z\s]+?)(?:\.|_|-|$)/);
+                if (locationMatches) {
+                    location = locationMatches[1].trim();
+                }
+                
+                // Generate based on document
+                const stops = generateStops(location, 12, tourType);
+                updateProgress(30);
+                
+                updateLoadingText(`${selectedAI === 'deepseek' ? 'DeepSeek' : 'Hugging Face'} processing document content...`);
+                
+                const scripts = [];
+                for (let i = 0; i < stops.length; i++) {
+                    const stop = stops[i];
+                    
+                    updateLoadingText(`Creating script for ${stop.name}...`);
+                    updateProgress(30 + (60 * (i / stops.length)));
+                    
+                    const script = await generateStopScript(location, stop, 'Generated from uploaded document', tourType, language);
+                    
+                    scripts.push({
+                        ...stop,
+                        script: script
+                    });
+                    
+                    await new Promise(resolve => setTimeout(resolve, 600));
+                }
+                
+                updateProgress(95);
+                updateLoadingText('Creating audioguide document...');
+                
+                const tourDocument = createAudioguideDocument(location, scripts, tourType, language);
+                
+                const filename = `Audioguide_${location.replace(/[^a-zA-Z0-9]/g, '_')}_Document_${language}.txt`;
+                downloadScript(tourDocument, filename);
+                
+                showSuccess();
+                
+            } catch (error) {
+                console.error('File generation failed:', error);
+                alert('Failed to process document. Please try again.');
             } finally {
                 document.getElementById('generateBtn').disabled = false;
                 document.getElementById('loading').classList.remove('active');
