@@ -748,7 +748,7 @@
             <label for="stopCount">Number of Stops</label>
             <input type="number" id="stopCount" min="5" max="20" value="10" placeholder="5-20 stops">
             <p style="font-size: 13px; color: #666; margin-top: 8px;">
-                <strong>Note:</strong> All tours include 3 mandatory stops: Introduction, History, and Practical Tips. 
+                <strong>Note:</strong> All tours include 4 mandatory stops: Introduction, History, Must Eats (Local Cuisine), and Practical Tips. 
                 The remaining stops will focus on the main attractions.
             </p>
         </div>
@@ -994,10 +994,10 @@
         function generateStopsFromDocument(content, location, count, tourType) {
             const stops = [];
             
-            // Always include the 3 mandatory stops
+            // Always include the 4 mandatory stops
             stops.push({
                 number: 1,
-                name: `Welcome to ${location}`,
+                name: `Introduction to ${location}`,
                 theme: 'Introduction and Overview',
                 isIntroduction: true
             });
@@ -1010,7 +1010,7 @@
             });
             
             // Generate main content stops based on document
-            const mainStopsCount = count - 3;
+            const mainStopsCount = count - 4;
             for (let i = 0; i < mainStopsCount; i++) {
                 stops.push({
                     number: i + 3,
@@ -1020,10 +1020,18 @@
                 });
             }
             
+            // Add Must Eats stop (second to last)
+            stops.push({
+                number: count - 1,
+                name: `Must Eats in ${location}`,
+                theme: 'Local Cuisine and Food Culture',
+                isMustEats: true
+            });
+            
             // Always end with practical tips
             stops.push({
                 number: count,
-                name: `Visiting ${location} - Practical Tips`,
+                name: `Practical Tips for ${location}`,
                 theme: 'Visitor Information and Tips',
                 isTips: true
             });
@@ -1146,10 +1154,10 @@ Write the complete script:`;
             const stops = [];
             const locationLower = location.toLowerCase();
             
-            // Always include the 3 mandatory stops
+            // Always include the 4 mandatory stops
             stops.push({
                 number: 1,
-                name: `Welcome to ${location}`,
+                name: `Introduction to ${location}`,
                 theme: 'Introduction and Overview',
                 isIntroduction: true
             });
@@ -1194,8 +1202,8 @@ Write the complete script:`;
                 ];
             }
             
-            // Add main content stops (total stops - 3 mandatory)
-            const mainStopsCount = count - 3;
+            // Add main content stops (total stops - 4 mandatory)
+            const mainStopsCount = count - 4;
             for (let i = 0; i < mainStopsCount; i++) {
                 stops.push({
                     number: i + 3,
@@ -1205,10 +1213,18 @@ Write the complete script:`;
                 });
             }
             
+            // Add Must Eats stop (second to last)
+            stops.push({
+                number: count - 1,
+                name: `Must Eats in ${location}`,
+                theme: 'Local Cuisine and Food Culture',
+                isMustEats: true
+            });
+            
             // Always end with practical tips
             stops.push({
                 number: count,
-                name: `Visiting ${location} - Practical Tips`,
+                name: `Practical Tips for ${location}`,
                 theme: 'Visitor Information and Tips',
                 isTips: true
             });
@@ -1236,170 +1252,276 @@ Write the complete script:`;
             if (stop.isIntroduction) {
                 prompt = `Create a professional audioguide INTRODUCTION script for ${location}.
 
+IMPORTANT: Do NOT start with "Welcome to Introduction to..." or any redundant phrasing. Start directly with a warm greeting.
+
 REQUIREMENTS:
 - 800-1000 words
 - Language: ${language}
 - Tour Type: ${tourType}
-- Additional Context: ${additionalInfo}
+- Additional Context: ${additionalInfo || 'None provided'}
 
-This is the INTRODUCTION to the entire ${location} experience. Create a welcoming, comprehensive overview that:
+Create a compelling introduction that:
 
-1. WARM WELCOME (100 words)
-   - Greet visitors warmly to ${location}
-   - Build excitement for what they're about to discover
-   - Set the tone for an exceptional cultural experience
+1. OPENING GREETING (100 words)
+   - Start with a warm, natural greeting (e.g., "Welcome, dear visitors..." or "Greetings, explorers...")
+   - Build excitement for the journey ahead
+   - Set an engaging, professional tone
 
-2. OVERVIEW & ORIENTATION (200 words)
-   - Explain what ${location} is and why it's significant
-   - Help visitors understand the layout and what they'll see
-   - Provide context for the journey ahead
+2. LOCATION OVERVIEW (200 words)
+   - Explain what makes ${location} special and unique
+   - Describe the physical setting and atmosphere
+   - Orient visitors to what they'll experience
 
-3. HISTORICAL SIGNIFICANCE (300 words)
-   - Key historical periods and events that shaped ${location}
-   - Important figures and their contributions
-   - How ${location} became what it is today
+3. SIGNIFICANCE & IMPORTANCE (300 words)
+   - Why ${location} matters culturally and historically
+   - Its place in local and world heritage
+   - Key achievements or recognition
+   - What distinguishes it from similar places
 
-4. CULTURAL IMPORTANCE (200 words)
-   - Why ${location} matters to local culture and world heritage
-   - Its role in art, architecture, religion, or society
-   - What makes it unique among similar destinations
+4. PREVIEW OF HIGHLIGHTS (200 words)
+   - Most spectacular features visitors will encounter
+   - Unique experiences available only here
+   - How the tour is organized
+   - What makes this visit memorable
 
-5. VISITOR EXPERIENCE PREVIEW (150 words)
-   - Highlight the most spectacular things they'll encounter
-   - Build anticipation for specific areas or exhibits
-   - Explain how the tour is structured
+5. CULTURAL CONTEXT (150 words)
+   - Local traditions and customs
+   - The living culture around ${location}
+   - How locals relate to this place
 
-6. PRACTICAL ORIENTATION (50 words)
+6. VISITOR PREPARATION (50 words)
    - Basic etiquette or guidelines
-   - How to make the most of their visit
+   - Mindset for maximum enjoyment
 
-Write in a warm, welcoming tone that builds excitement. Create anticipation for the amazing journey ahead.
+Write in an engaging, professional tone that creates anticipation. Make visitors feel privileged to be here.
 
-Write the complete INTRODUCTION script:`;
+GENERATE THE COMPLETE INTRODUCTION SCRIPT NOW:`;
 
             } else if (stop.isHistory) {
                 prompt = `Create a professional audioguide HISTORY script for ${location}.
 
+IMPORTANT: Write a flowing historical narrative, NOT a list. Do not use "Welcome to History of..." phrasing.
+
 REQUIREMENTS:
 - 800-1000 words
 - Language: ${language}
 - Tour Type: ${tourType}
-- Additional Context: ${additionalInfo}
+- Additional Context: ${additionalInfo || 'None provided'}
 
-This is the HISTORICAL DEEP DIVE section. Create a compelling historical narrative that:
+Create an engaging historical narrative covering:
 
-1. TIMELINE FOUNDATION (150 words)
-   - Establish the chronological framework of ${location}
-   - Key dates and periods that defined its development
-   - Major historical phases and transitions
+1. ORIGINS & FOUNDATION (200 words)
+   - When and why ${location} was established
+   - Who founded or built it
+   - Original purpose and early significance
+   - Archaeological or documentary evidence
 
-2. FOUNDING & EARLY PERIOD (200 words)
-   - Origins and founding story of ${location}
-   - Early inhabitants, builders, or creators
-   - Initial purpose and early developments
+2. EARLY DEVELOPMENT (150 words)
+   - First decades or centuries
+   - How it grew and evolved
+   - Early challenges and triumphs
+   - Key figures from this period
 
-3. GOLDEN AGE & MAJOR DEVELOPMENTS (250 words)
-   - Peak periods of importance and prosperity
-   - Major construction phases or expansions
-   - Key historical figures and their contributions
-   - Political, religious, or cultural events
+3. GOLDEN ERA (250 words)
+   - Peak periods of importance
+   - Major expansions or renovations
+   - Notable events that occurred here
+   - Famous visitors or residents
+   - Cultural/political/religious role
 
-4. CHALLENGES & TRANSFORMATIONS (200 words)
-   - Major challenges, conflicts, or changes
-   - How ${location} adapted and evolved
-   - Periods of decline and renewal
+4. TRANSITIONS & CHALLENGES (200 words)
+   - Periods of change or difficulty
+   - Wars, disasters, or abandonment
+   - How ${location} survived or adapted
+   - Restoration efforts
 
-5. MODERN ERA & PRESERVATION (150 words)
-   - 19th and 20th century developments
-   - Restoration and preservation efforts
-   - How ${location} transitioned to its current role
+5. MODERN HISTORY (150 words)
+   - 19th-20th century developments
+   - Rediscovery or preservation
+   - Transition to current use
+   - Recent archaeological findings
 
-6. HISTORICAL LEGACY (50 words)
-   - Why this history matters today
-   - Connection between past and present
+6. LIVING HISTORY (50 words)
+   - How history shapes the present
+   - Ongoing traditions or practices
 
-Use specific dates, names, and events. Make history come alive with vivid storytelling.
+Weave specific dates, names, and events into an engaging story. Make history come alive.
 
-Write the complete HISTORY script:`;
+GENERATE THE COMPLETE HISTORY SCRIPT NOW:`;
+
+            } else if (stop.isMustEats) {
+                prompt = `Create a professional audioguide MUST EATS script for ${location}.
+
+IMPORTANT: Focus on local cuisine and food culture. Do NOT use generic restaurant recommendations.
+
+REQUIREMENTS:
+- 800-1000 words
+- Language: ${language}
+- Tour Type: ${tourType}
+- Additional Context: ${additionalInfo || 'None provided'}
+
+Create a delicious journey through local cuisine:
+
+1. CULINARY HERITAGE (150 words)
+   - Food traditions specific to ${location}
+   - Historical influences on local cuisine
+   - How geography and climate shape the food
+   - Cultural significance of meals and dining
+
+2. SIGNATURE DISHES (250 words)
+   - 3-4 must-try local specialties
+   - Origins and stories behind each dish
+   - Key ingredients and preparation methods
+   - Where locals traditionally eat these
+   - Best seasons or times to enjoy them
+
+3. STREET FOOD & MARKETS (200 words)
+   - Popular street food items
+   - Local markets and food vendors
+   - Traditional snacks and quick bites
+   - Regional variations and specialties
+   - Market etiquette and tips
+
+4. TRADITIONAL BEVERAGES (150 words)
+   - Local drinks (alcoholic and non-alcoholic)
+   - Coffee/tea culture if relevant
+   - Traditional preparation methods
+   - Social customs around drinking
+
+5. SWEET TRADITIONS (150 words)
+   - Local desserts and pastries
+   - Festival or celebration foods
+   - Traditional bakeries or sweet shops
+   - Seasonal treats
+
+6. DINING CUSTOMS (100 words)
+   - Local eating etiquette
+   - Typical meal times and structure
+   - Tipping and payment customs
+   - Dietary restrictions and alternatives
+
+Focus on authentic local experiences, not tourist restaurants. Help visitors eat like locals.
+
+GENERATE THE COMPLETE MUST EATS SCRIPT NOW:`;
 
             } else if (stop.isTips) {
                 prompt = `Create a professional audioguide PRACTICAL TIPS script for ${location}.
 
+IMPORTANT: Provide actionable, specific advice. Avoid generic travel tips.
+
 REQUIREMENTS:
 - 800-1000 words
 - Language: ${language}
 - Tour Type: ${tourType}
-- Additional Context: ${additionalInfo}
+- Additional Context: ${additionalInfo || 'None provided'}
 
-This is the PRACTICAL INFORMATION section. Provide comprehensive visitor guidance:
+Provide comprehensive practical guidance:
 
-1. BEST TIMES TO VISIT (150 words)
-   - Optimal seasons and weather considerations
-   - Peak vs. off-season advantages
-   - Best times of day to avoid crowds
+1. TIMING YOUR VISIT (150 words)
+   - Best months and seasons to visit
+   - Ideal times of day for different experiences
+   - How to avoid crowds
    - Special lighting or atmospheric conditions
+   - Weather considerations
 
-2. HOW TO GET THERE & AROUND (150 words)
-   - Transportation options (public transport, car, walking)
-   - Parking information and alternatives
-   - Accessibility considerations
-   - Navigation tips within ${location}
+2. GETTING THERE & AROUND (150 words)
+   - Specific transportation options
+   - Exact costs and journey times
+   - Parking locations and fees
+   - Walking routes and shortcuts
+   - Accessibility information
 
-3. TICKETS & PLANNING (100 words)
-   - Booking recommendations and advance planning
-   - Different ticket types and options
-   - Estimated visit duration
-   - What to bring or prepare
+3. TICKETS & ENTRY (100 words)
+   - Current pricing and discounts
+   - Online vs. on-site booking
+   - Combination tickets or passes
+   - Skip-the-line options
+   - Opening hours and last entry
 
-4. SAFETY & ETIQUETTE (100 words)
-   - Safety considerations and guidelines
-   - Photography rules and restrictions
-   - Respectful behavior guidelines
-   - What to avoid or be cautious about
+4. ESSENTIAL PREPARATION (100 words)
+   - What to wear and bring
+   - Photography rules and best spots
+   - Audio guide or app recommendations
+   - Storage facilities
+   - Prohibited items
 
-5. SPECIAL EVENTS & FESTIVALS (150 words)
-   - Annual festivals or special events at ${location}
-   - Seasonal celebrations and cultural activities
-   - Religious observances or ceremonies
-   - Special exhibitions or temporary events
+5. HIDDEN GEMS & INSIDER TIPS (200 words)
+   - Lesser-known areas worth exploring
+   - Best photo opportunities
+   - Quiet spots for reflection
+   - Local secrets
+   - Nearby attractions to combine
 
-6. DINING & SERVICES (100 words)
-   - Nearby restaurants and cafes
-   - Facilities available (restrooms, shops, storage)
-   - Services for families or special needs
+6. FACILITIES & SERVICES (100 words)
+   - Restroom locations
+   - Dining options on-site
+   - Gift shop highlights
+   - Family services
+   - Emergency information
 
-7. INSIDER RECOMMENDATIONS (150 words)
-   - Hidden gems or lesser-known spots
-   - Local secrets and best photo opportunities
-   - Nearby attractions worth combining
-   - How to experience ${location} like a local
+7. MAKING THE MOST OF YOUR VISIT (100 words)
+   - Suggested route through ${location}
+   - How long to spend at each area
+   - Best order to see things
+   - What to prioritize if short on time
 
-Provide practical, actionable advice that enhances the visitor experience.
+Provide specific, actionable advice that enhances the visitor experience.
 
-Write the complete PRACTICAL TIPS script:`;
+GENERATE THE COMPLETE PRACTICAL TIPS SCRIPT NOW:`;
 
             } else {
                 // Regular stop script
-                prompt = `Create a professional audioguide script for "${stop.name}" in ${location}.
+                prompt = `Create a professional audioguide script for "${stop.name}" at ${location}.
+
+IMPORTANT: Write naturally without redundant introductions. Focus on immersive storytelling.
 
 REQUIREMENTS:
 - 600-800 words
 - Theme: ${stop.theme}
 - Tour Type: ${tourType}
 - Language: ${language}
-- Additional Context: ${additionalInfo}
+- Additional Context: ${additionalInfo || 'None provided'}
 
-Structure:
-1. Opening Hook (engaging introduction)
-2. Scene Setting (what visitors see)
-3. Historical Context (background and significance)
-4. Architectural/Visual Details (specific features)
-5. Cultural Significance (why it matters today)
-6. Interactive Element (something for visitors to notice or do)
+Structure your script as follows:
 
-Write in a conversational yet authoritative tone. Create immersive descriptions that transport visitors. Use specific details over generalizations.
+1. ARRIVAL & ORIENTATION (100 words)
+   - What visitors see as they arrive
+   - Spatial orientation and layout
+   - Initial impressions and atmosphere
 
-Write the complete script:`;
+2. VISUAL EXPLORATION (150 words)
+   - Detailed description of key features
+   - Architectural or artistic elements
+   - Materials, colors, and textures
+   - Light and shadow effects
+
+3. HISTORICAL SIGNIFICANCE (150 words)
+   - When this was created/built
+   - Original purpose and evolution
+   - Important events that happened here
+   - Key figures associated with this spot
+
+4. CULTURAL MEANING (150 words)
+   - Symbolism and interpretation
+   - Role in local culture
+   - Traditions or ceremonies
+   - Contemporary relevance
+
+5. HIDDEN DETAILS (100 words)
+   - Often-missed features to notice
+   - Interesting architectural quirks
+   - Symbols or inscriptions
+   - Views or perspectives to appreciate
+
+6. VISITOR ENGAGEMENT (150 words)
+   - Interactive elements or activities
+   - Best photo angles
+   - Quiet contemplation spots
+   - Connection to other tour stops
+
+Write in an engaging, conversational tone. Paint vivid pictures with words. Make visitors feel the significance of this place.
+
+GENERATE THE COMPLETE SCRIPT NOW:`;
             }
 
             try {
