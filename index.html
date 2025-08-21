@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CloudGuide Universal Audioguide Generator</title>
+    <title>CloudGuide - AI Audioguide Generator</title>
     <style>
         * {
             margin: 0;
@@ -19,389 +19,49 @@
             align-items: center;
             justify-content: center;
             padding: 20px;
-            color: #2d2d2d;
         }
 
-        .main-container {
+        .container {
             background: white;
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
-            max-width: 1000px;
+            max-width: 900px;
             width: 100%;
-            padding: 50px;
-            animation: fadeIn 0.8s ease-out;
-            position: relative;
-            overflow: hidden;
+            padding: 40px;
         }
 
-        .main-container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 5px;
-            background: linear-gradient(90deg, #10b981, #3b82f6, #8b5cf6, #ef4444);
-            animation: gradient-shift 3s ease-in-out infinite;
-        }
-
-        @keyframes gradient-shift {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .header-section {
+        .header {
             text-align: center;
             margin-bottom: 40px;
             padding-bottom: 30px;
             border-bottom: 2px solid #f0f0f0;
-            position: relative;
         }
 
-        .logo-section {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 30px;
-            padding: 20px 0;
-        }
-
-        .cloudguide-logo {
-            height: 80px;
-            width: auto;
-            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
+        .logo {
+            height: 70px;
+            margin-bottom: 20px;
         }
 
         h1 {
             color: #2d2d2d;
-            margin-bottom: 20px;
-            font-size: 3.2em;
-            text-align: center;
-            font-weight: 800;
-            background: linear-gradient(135deg, #2d2d2d, #4a5568, #667eea);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            letter-spacing: -0.02em;
+            font-size: 2.5em;
+            margin-bottom: 10px;
         }
 
         .subtitle {
-            text-align: center;
-            color: #64748b;
-            margin-bottom: 0;
-            font-size: 1.3em;
-            line-height: 1.6;
-            font-weight: 500;
-            max-width: 700px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .funding-section {
-            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
-            border: 2px solid #cbd5e0;
-            border-radius: 20px;
-            padding: 30px;
-            margin-top: 50px;
-            text-align: center;
-        }
-
-        .funding-text {
-            font-size: 15px;
-            color: #475569;
-            margin-bottom: 25px;
-            font-weight: 600;
-            line-height: 1.5;
-        }
-
-        .funding-logos {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 40px;
-            flex-wrap: wrap;
-        }
-
-        .funding-logo {
-            height: 70px;
-            width: auto;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
-            transition: all 0.3s ease;
-        }
-
-        .funding-logo:hover {
-            transform: translateY(-2px);
-            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));
-        }
-
-        .eu-logo {
-            height: 65px;
-        }
-
-        .spain-logo {
-            height: 75px;
-        }
-
-        .ai-selection {
-            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
-            border: 2px solid #cbd5e0;
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 30px;
-        }
-
-        .ai-selection h3 {
-            color: #2d2d2d;
-            margin-bottom: 15px;
-            font-size: 18px;
-            text-align: center;
-        }
-
-        .ai-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .ai-option {
-            background: white;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 15px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-        }
-
-        .ai-option:hover {
-            border-color: #10b981;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
-        }
-
-        .ai-option.selected {
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
-            border-color: #10b981;
-        }
-
-        .ai-option.selected .ai-status {
-            color: rgba(255, 255, 255, 0.9);
-        }
-
-        .ai-name {
-            font-weight: 700;
-            font-size: 16px;
-            margin-bottom: 5px;
-        }
-
-        .ai-status {
-            font-size: 12px;
             color: #666;
+            font-size: 1.1em;
         }
 
-        .input-method-selection {
-            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
-            border: 2px solid #7dd3fc;
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 30px;
-        }
-
-        .input-method-selection h3 {
-            color: #2d2d2d;
-            margin-bottom: 15px;
-            font-size: 18px;
-            text-align: center;
-        }
-
-        .method-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-        }
-
-        .method-option {
-            background: white;
-            border: 2px solid #e0f2fe;
-            border-radius: 12px;
-            padding: 20px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-align: center;
-        }
-
-        .method-option:hover {
-            border-color: #0ea5e9;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(14, 165, 233, 0.2);
-        }
-
-        .method-option.selected {
-            background: linear-gradient(135deg, #0ea5e9, #0284c7);
-            color: white;
-            border-color: #0ea5e9;
-        }
-
-        .method-option.selected .method-description {
-            color: rgba(255, 255, 255, 0.9);
-        }
-
-        .method-icon {
-            font-size: 36px;
-            margin-bottom: 10px;
-        }
-
-        .method-title {
-            font-weight: 700;
-            font-size: 18px;
-            margin-bottom: 8px;
-        }
-
-        .method-description {
-            font-size: 14px;
-            color: #666;
-            line-height: 1.4;
-        }
-
-        .input-section {
-            display: none;
-        }
-
-        .input-section.active {
-            display: block;
-        }
-
-        .file-upload-area {
-            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
-            border: 3px dashed #cbd5e0;
-            border-radius: 15px;
-            padding: 40px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-bottom: 20px;
-        }
-
-        .file-upload-area:hover {
-            border-color: #10b981;
-            background: linear-gradient(135deg, #f0fdf4, #dcfce7);
-        }
-
-        .file-upload-area.dragover {
-            border-color: #10b981;
-            background: linear-gradient(135deg, #dcfce7, #bbf7d0);
-        }
-
-        .file-icon {
-            font-size: 48px;
-            margin-bottom: 15px;
-        }
-
-        .file-upload-text {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 10px;
-            color: #2d2d2d;
-        }
-
-        .file-upload-subtext {
-            font-size: 14px;
-            color: #666;
-        }
-
-        .file-info {
-            background: #f0fdf4;
-            border: 2px solid #10b981;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            display: none;
-        }
-
-        .file-info.active {
-            display: block;
-        }
-
-        .file-info-content {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .file-details {
-            flex: 1;
-        }
-
-        .file-name {
-            font-weight: 600;
-            color: #065f46;
-            margin-bottom: 5px;
-        }
-
-        .file-size {
-            font-size: 14px;
-            color: #047857;
-        }
-
-        .remove-file-btn {
-            background: #ef4444;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-        .remove-file-btn:hover {
-            background: #dc2626;
-        }
-
-        .config-section {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .config-group {
-            background: #f8fafc;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 20px;
-        }
-
-        .config-group h4 {
-            color: #2d2d2d;
-            margin-bottom: 15px;
-            font-size: 16px;
-        }
-
-        .input-group {
+        .form-group {
             margin-bottom: 25px;
         }
 
         label {
             display: block;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             color: #2d2d2d;
             font-weight: 600;
-            font-size: 16px;
         }
 
         input[type="text"],
@@ -409,12 +69,10 @@
         select,
         textarea {
             width: 100%;
-            padding: 15px 20px;
+            padding: 12px;
             border: 2px solid #e2e8f0;
-            border-radius: 12px;
+            border-radius: 10px;
             font-size: 16px;
-            transition: all 0.3s ease;
-            background: #f8fafc;
             font-family: inherit;
         }
 
@@ -422,88 +80,77 @@
         select:focus,
         textarea:focus {
             outline: none;
-            border-color: #10b981;
-            background: white;
-            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+            border-color: #667eea;
         }
 
         textarea {
-            min-height: 120px;
+            min-height: 100px;
             resize: vertical;
         }
 
-        .location-examples {
-            background: #f0fdf4;
-            border: 2px solid #10b981;
-            border-radius: 12px;
-            padding: 20px;
-            margin-top: 15px;
-        }
-
-        .location-examples h4 {
-            color: #065f46;
-            margin-bottom: 12px;
-            font-size: 16px;
-        }
-
-        .location-examples p {
-            color: #047857;
-            font-size: 14px;
-            line-height: 1.6;
-            margin-bottom: 10px;
-        }
-
-        .example-grid {
+        .config-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 10px;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .location-examples {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 15px;
             margin-top: 10px;
         }
 
-        .example-item {
+        .location-examples h4 {
+            color: #2d2d2d;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .example-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .example-btn {
             background: white;
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-size: 13px;
-            color: #059669;
+            border: 1px solid #667eea;
+            color: #667eea;
+            padding: 6px 12px;
+            border-radius: 6px;
             cursor: pointer;
-            transition: all 0.2s;
-            border: 1px solid #10b981;
+            font-size: 13px;
+            transition: all 0.3s;
         }
 
-        .example-item:hover {
-            background: #10b981;
+        .example-btn:hover {
+            background: #667eea;
             color: white;
-            transform: translateY(-2px);
         }
 
-        .generate-button {
+        .generate-btn {
             width: 100%;
-            padding: 20px 40px;
-            background: linear-gradient(135deg, #10b981, #059669);
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
             border: none;
-            border-radius: 15px;
-            font-size: 20px;
+            border-radius: 12px;
+            font-size: 18px;
             font-weight: 700;
             cursor: pointer;
-            transition: all 0.4s ease;
-            margin-top: 35px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            position: relative;
-            overflow: hidden;
+            margin-top: 30px;
+            transition: all 0.3s;
         }
 
-        .generate-button:hover {
-            background: linear-gradient(135deg, #059669, #047857);
-            transform: translateY(-3px);
-            box-shadow: 0 15px 35px rgba(16, 185, 129, 0.4);
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
         }
 
-        .generate-button:disabled {
+        .generate-btn:disabled {
             background: #94a3b8;
             cursor: not-allowed;
             transform: none;
@@ -512,7 +159,7 @@
         .loading {
             display: none;
             text-align: center;
-            padding: 50px;
+            padding: 40px;
         }
 
         .loading.active {
@@ -523,11 +170,11 @@
             display: inline-block;
             width: 50px;
             height: 50px;
-            border: 5px solid #e2e8f0;
-            border-top: 5px solid #10b981;
+            border: 4px solid #e2e8f0;
+            border-top: 4px solid #667eea;
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
         }
 
         @keyframes spin {
@@ -536,300 +183,303 @@
         }
 
         .loading-text {
-            font-size: 18px;
-            color: #4a5568;
-            margin-bottom: 10px;
-        }
-
-        .loading-subtext {
-            font-size: 14px;
-            color: #718096;
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: #e2e8f0;
-            border-radius: 4px;
-            margin-top: 15px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #10b981, #059669);
-            border-radius: 4px;
-            transition: width 0.3s ease;
-            width: 0%;
+            color: #666;
+            font-size: 16px;
         }
 
         .success-message {
             display: none;
-            background: linear-gradient(135deg, #d1fae5, #a7f3d0);
-            border: 2px solid #10b981;
-            color: #065f46;
-            padding: 25px;
-            border-radius: 15px;
-            margin-top: 25px;
+            background: #10b981;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
             text-align: center;
+            margin-top: 20px;
         }
 
         .success-message.active {
             display: block;
-            animation: successPulse 0.6s ease-out;
         }
 
-        @keyframes successPulse {
-            0% { transform: scale(0.9); opacity: 0; }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); opacity: 1; }
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            color: #666;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            color: #667eea;
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .file-upload-area {
+            border: 2px dashed #e2e8f0;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #f8fafc;
+        }
+
+        .file-upload-area:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .file-upload-area.dragover {
+            border-color: #667eea;
+            background: #e8edff;
+        }
+
+        .file-info {
+            display: none;
+            background: #f0f4ff;
+            border: 1px solid #667eea;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .file-info.active {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .remove-file-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .remove-file-btn:hover {
+            background: #dc2626;
+        }
+
+        .funding-text {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .funding-logos {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .funding-logo {
+            height: 60px;
         }
 
         @media (max-width: 768px) {
-            .config-section {
-                grid-template-columns: 1fr;
-            }
-
-            .ai-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .method-grid {
+            .config-grid {
                 grid-template-columns: 1fr;
             }
             
-            .main-container {
-                padding: 30px;
-            }
-
             .funding-logos {
                 flex-direction: column;
-                gap: 20px;
-            }
-
-            .funding-logo {
-                height: 60px;
-            }
-
-            .eu-logo {
-                height: 55px;
-            }
-
-            .spain-logo {
-                height: 65px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="main-container">
-        <div class="header-section">
-            <div class="logo-section">
-                <img src="https://s.cloudguide.me/m/files/f9111279-27c8-4c3f-b586-dc705899f1ee.png" 
-                     alt="CloudGuide" 
-                     class="cloudguide-logo"
-                     crossorigin="anonymous">
-            </div>
+    <div class="container">
+        <div class="header">
+            <img src="https://s.cloudguide.me/m/files/f9111279-27c8-4c3f-b586-dc705899f1ee.png" 
+                 alt="CloudGuide" class="logo">
             <h1>CloudGuide AI</h1>
-            <p class="subtitle">Create professional audioguides for ANY location worldwide using advanced AI technology</p>
+            <p class="subtitle">Generate Professional Audioguides for Any Location</p>
         </div>
 
-        <div class="ai-selection">
-            <h3>🤖 Select AI Engine</h3>
-            <div class="ai-grid">
-                <div class="ai-option selected" id="deepseek-option" onclick="selectAI('deepseek')">
-                    <div class="ai-name">DeepSeek</div>
-                    <div class="ai-status">Professional Quality (Recommended)</div>
-                </div>
-                <div class="ai-option" id="openai-option" onclick="selectAI('openai')">
-                    <div class="ai-name">ChatGPT (OpenAI)</div>
-                    <div class="ai-status">Industry Standard (Most Reliable)</div>
-                </div>
-            </div>
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('location')">📍 Location Input</button>
+            <button class="tab-btn" onclick="switchTab('file')">📄 File Upload</button>
         </div>
 
-        <div class="input-method-selection">
-            <h3>📍 Choose Input Method</h3>
-            <div class="method-grid">
-                <div class="method-option selected" id="location-method" onclick="selectInputMethod('location')">
-                    <div class="method-icon">🏛️</div>
-                    <div class="method-title">Location Input</div>
-                    <div class="method-description">Enter any location worldwide - cities, museums, landmarks, cultural sites</div>
-                </div>
-                <div class="method-option" id="file-method" onclick="selectInputMethod('file')">
-                    <div class="method-icon">📄</div>
-                    <div class="method-title">Document Upload</div>
-                    <div class="method-description">Upload travel guides, brochures, or research documents</div>
-                </div>
-            </div>
+        <div class="form-group">
+            <label for="aiModel">AI Model</label>
+            <select id="aiModel">
+                <option value="deepseek">DeepSeek (Default)</option>
+                <option value="openai">ChatGPT (OpenAI)</option>
+            </select>
         </div>
 
-        <div class="config-section">
-            <div class="config-group">
-                <h4>🌍 Output Language</h4>
-                <select id="language">
-                    <option value="english">English</option>
-                    <option value="spanish">Español</option>
-                    <option value="french">Français</option>
-                    <option value="german">Deutsch</option>
-                    <option value="italian">Italiano</option>
-                    <option value="portuguese">Português</option>
-                    <option value="dutch">Nederlands</option>
-                    <option value="russian">Русский</option>
-                    <option value="chinese">中文</option>
-                    <option value="japanese">日本語</option>
-                </select>
-            </div>
-            <div class="config-group">
-                <h4>🎯 Tour Type</h4>
-                <select id="tourType">
-                    <option value="comprehensive">Comprehensive Overview</option>
-                    <option value="historical">Historical Deep Dive</option>
-                    <option value="cultural">Cultural Heritage</option>
-                    <option value="artistic">Art & Architecture</option>
-                    <option value="family">Family Friendly</option>
-                </select>
-            </div>
-        </div>
-
-        <!-- Location Input Section -->
-        <div id="locationInput" class="input-section active">
-            <div class="input-group">
-                <label for="locationName">Location / Destination Name</label>
-                <input type="text" id="locationName" placeholder="Enter any location: museums, cities, landmarks, cultural sites...">
+        <!-- Location Input Tab -->
+        <div id="locationTab" class="tab-content active">
+            <div class="form-group">
+                <label for="location">Location Name *</label>
+                <input type="text" id="location" placeholder="Enter any museum, landmark, city, or cultural site...">
                 <div class="location-examples">
-                    <h4>🌍 Works for ANY location worldwide:</h4>
-                    <p><strong>Cities:</strong> Prague, Kyoto, Marrakech, Salzburg, Cusco</p>
-                    <p><strong>Museums:</strong> Louvre Paris, Rijksmuseum Amsterdam, Egyptian Museum Cairo</p>
-                    <p><strong>Landmarks:</strong> Angkor Wat, Petra Jordan, Neuschwanstein Castle, Taj Mahal</p>
-                    <div class="example-grid">
-                        <div class="example-item" onclick="setLocation('Alhambra Granada')">Alhambra Granada</div>
-                        <div class="example-item" onclick="setLocation('Sagrada Familia Barcelona')">Sagrada Familia</div>
-                        <div class="example-item" onclick="setLocation('Versailles Palace')">Versailles Palace</div>
-                        <div class="example-item" onclick="setLocation('Acropolis Athens')">Acropolis Athens</div>
-                        <div class="example-item" onclick="setLocation('Vatican Museums')">Vatican Museums</div>
-                        <div class="example-item" onclick="setLocation('Machu Picchu Peru')">Machu Picchu</div>
+                    <h4>Quick Examples:</h4>
+                    <div class="example-buttons">
+                        <button class="example-btn" onclick="setExample('Louvre Museum Paris')">Louvre Museum</button>
+                        <button class="example-btn" onclick="setExample('Sagrada Familia Barcelona')">Sagrada Familia</button>
+                        <button class="example-btn" onclick="setExample('Vatican Museums')">Vatican Museums</button>
+                        <button class="example-btn" onclick="setExample('Alhambra Granada')">Alhambra Granada</button>
+                        <button class="example-btn" onclick="setExample('Acropolis Athens')">Acropolis Athens</button>
                     </div>
                 </div>
             </div>
-
-            <div class="input-group">
-                <label for="additionalInfo">Additional Context (Optional)</label>
-                <textarea id="additionalInfo" placeholder="Provide any specific information: tour focus, special exhibitions, historical periods of interest, target audience, etc."></textarea>
-            </div>
         </div>
 
-        <!-- File Upload Section -->
-        <div id="fileInput" class="input-section">
-            <div class="file-upload-area" id="uploadArea" onclick="document.getElementById('fileUpload').click()">
-                <input type="file" id="fileUpload" accept=".pdf,.doc,.docx,.txt" style="display: none;" onchange="handleFileUpload(event)">
-                <div class="file-icon">📁</div>
-                <div class="file-upload-text">Click to upload or drag and drop</div>
-                <div class="file-upload-subtext">Supports PDF, Word, TXT files up to 10MB</div>
-            </div>
-
-            <div class="file-info" id="fileInfo">
-                <div class="file-info-content">
-                    <div class="file-details">
-                        <div class="file-name" id="fileName">No file selected</div>
-                        <div class="file-size" id="fileSize">0 KB</div>
+        <!-- File Upload Tab -->
+        <div id="fileTab" class="tab-content">
+            <div class="form-group">
+                <div class="file-upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+                    <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.txt" style="display: none;" onchange="handleFileUpload(event)">
+                    <div style="font-size: 48px; margin-bottom: 10px;">📁</div>
+                    <p style="font-weight: 600; margin-bottom: 5px;">Click to upload or drag and drop</p>
+                    <p style="color: #666; font-size: 14px;">PDF, Word, or TXT files (max 10MB)</p>
+                </div>
+                <div class="file-info" id="fileInfo">
+                    <div>
+                        <div style="font-weight: 600;" id="fileName">No file</div>
+                        <div style="color: #666; font-size: 14px;" id="fileSize">0 KB</div>
                     </div>
                     <button class="remove-file-btn" onclick="removeFile()">Remove</button>
                 </div>
             </div>
-
-            <div class="input-group">
-                <label for="fileDescription">Document Description</label>
-                <textarea id="fileDescription" placeholder="Briefly describe what this document contains and what kind of audioguide you want to create from it..."></textarea>
+            <div class="form-group">
+                <label for="fileLocation">Location Name (from document) *</label>
+                <input type="text" id="fileLocation" placeholder="Enter the location this document is about...">
             </div>
         </div>
 
-        <div class="input-group">
-            <label for="stopCount">Number of Stops</label>
-            <input type="number" id="stopCount" min="5" max="20" value="10" placeholder="5-20 stops">
-            <p style="font-size: 13px; color: #666; margin-top: 8px;">
-                <strong>Note:</strong> All tours include 4 mandatory stops: Introduction, History, Must Eats (Local Cuisine), and Practical Tips. 
-                The remaining stops will focus on the main attractions.
-            </p>
+        <div class="config-grid">
+            <div class="form-group">
+                <label for="language">Output Language</label>
+                <select id="language">
+                    <option value="English">English</option>
+                    <option value="Spanish">Español</option>
+                    <option value="French">Français</option>
+                    <option value="German">Deutsch</option>
+                    <option value="Italian">Italiano</option>
+                    <option value="Portuguese">Português</option>
+                    <option value="Chinese">中文</option>
+                    <option value="Japanese">日本語</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="tourType">Tour Type</label>
+                <select id="tourType">
+                    <option value="comprehensive">Comprehensive Overview</option>
+                    <option value="historical">Historical Focus</option>
+                    <option value="cultural">Cultural Heritage</option>
+                    <option value="family">Family Friendly</option>
+                    <option value="artistic">Art & Architecture</option>
+                </select>
+            </div>
         </div>
 
-        <button class="generate-button" id="generateBtn" onclick="generateAudioguide()">
-            <span>🚀</span>
-            <span>Generate Professional Audioguide</span>
+        <div class="form-group">
+            <label for="stops">Number of Stops</label>
+            <input type="number" id="stops" min="5" max="15" value="8">
+            <small style="color: #666; display: block; margin-top: 5px;">
+                Each tour includes: Introduction, History, Local Cuisine, and Practical Tips as mandatory stops
+            </small>
+        </div>
+
+        <div class="form-group">
+            <label for="context">Additional Context (Optional)</label>
+            <textarea id="context" placeholder="Any specific focus, target audience, or special requirements..."></textarea>
+        </div>
+
+        <button class="generate-btn" id="generateBtn" onclick="generateGuide()">
+            🎙️ Generate Audioguide
         </button>
 
         <div class="loading" id="loading">
             <div class="spinner"></div>
-            <div class="loading-text">Creating professional audioguide content...</div>
-            <div class="loading-subtext">Analyzing location and crafting immersive narratives</div>
-            <div class="progress-bar">
-                <div class="progress-fill" id="progressFill"></div>
-            </div>
+            <div class="loading-text">Creating your audioguide...</div>
         </div>
 
-        <div class="success-message" id="successMessage">
-            <h3>🎉 Success!</h3>
-            <p>Your professional audioguide has been generated and downloaded!</p>
-            <p style="font-size: 14px; margin-top: 10px;">Professional-grade content ready for any platform</p>
+        <div class="success-message" id="success">
+            ✅ Audioguide generated successfully! Check your downloads.
         </div>
 
         <div class="funding-section">
-            <p class="funding-text">Financiado por la Unión Europea – Next Generation EU, a través del Ministerio de Industria y Turismo</p>
+            <p class="funding-text">
+                Financiado por la Unión Europea – Next Generation EU<br>
+                a través del Ministerio de Industria y Turismo
+            </p>
             <div class="funding-logos">
                 <img src="https://s.cloudguide.me/m/files/d3e690c8-b10a-49e3-8cda-ac3335896b69.png" 
-                     alt="European Union - Next Generation EU" 
-                     class="funding-logo eu-logo"
-                     crossorigin="anonymous">
+                     alt="EU" class="funding-logo">
                 <img src="https://s.cloudguide.me/m/files/f1eabdef-d522-457d-90fe-fa00b513ac3c.png" 
-                     alt="Gobierno de España - Ministerio de Industria y Turismo" 
-                     class="funding-logo spain-logo"
-                     crossorigin="anonymous">
+                     alt="Spain" class="funding-logo">
             </div>
         </div>
     </div>
 
     <script>
-        let selectedAI = 'deepseek';
-        let selectedInputMethod = 'location';
-        let uploadedFile = null;
-        let uploadedFileContent = null;
+        var currentTab = 'location';
+        var uploadedFile = null;
+        var uploadedFileContent = null;
 
-        function selectAI(aiType) {
-            selectedAI = aiType;
+        function switchTab(tab) {
+            currentTab = tab;
             
-            // Update UI
-            document.querySelectorAll('.ai-option').forEach(option => {
-                option.classList.remove('selected');
-            });
-            document.getElementById(aiType + '-option').classList.add('selected');
-        }
-
-        function selectInputMethod(method) {
-            selectedInputMethod = method;
+            // Update tab buttons
+            var tabButtons = document.querySelectorAll('.tab-btn');
+            for (var i = 0; i < tabButtons.length; i++) {
+                tabButtons[i].classList.remove('active');
+            }
+            event.target.classList.add('active');
             
-            // Update UI
-            document.querySelectorAll('.method-option').forEach(option => {
-                option.classList.remove('selected');
-            });
-            document.getElementById(method + '-method').classList.add('selected');
-            
-            // Show/hide sections
-            if (method === 'location') {
-                document.getElementById('locationInput').classList.add('active');
-                document.getElementById('fileInput').classList.remove('active');
+            // Update tab content
+            if (tab === 'location') {
+                document.getElementById('locationTab').classList.add('active');
+                document.getElementById('fileTab').classList.remove('active');
             } else {
-                document.getElementById('locationInput').classList.remove('active');
-                document.getElementById('fileInput').classList.add('active');
+                document.getElementById('locationTab').classList.remove('active');
+                document.getElementById('fileTab').classList.add('active');
             }
         }
 
-        function setLocation(location) {
-            document.getElementById('locationName').value = location;
+        function setExample(location) {
+            document.getElementById('location').value = location;
         }
 
-        // File upload handling
         function handleFileUpload(event) {
-            const file = event.target.files[0];
+            var file = event.target.files[0];
             if (!file) return;
             
             // Check file size (10MB limit)
@@ -847,9 +497,11 @@
             document.getElementById('fileInfo').classList.add('active');
             
             // Read file content
-            const reader = new FileReader();
+            var reader = new FileReader();
             reader.onload = function(e) {
                 uploadedFileContent = e.target.result;
+                // Try to extract location from content
+                suggestLocationFromContent(e.target.result);
             };
             reader.readAsText(file);
         }
@@ -857,876 +509,360 @@
         function removeFile() {
             uploadedFile = null;
             uploadedFileContent = null;
-            document.getElementById('fileUpload').value = '';
+            document.getElementById('fileInput').value = '';
             document.getElementById('fileInfo').classList.remove('active');
         }
 
         function formatFileSize(bytes) {
             if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            var k = 1024;
+            var sizes = ['Bytes', 'KB', 'MB'];
+            var i = Math.floor(Math.log(bytes) / Math.log(k));
             return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
         }
 
-        // Drag and drop handling
-        const uploadArea = document.getElementById('uploadArea');
-        
-        if (uploadArea) {
-            uploadArea.addEventListener('dragover', (e) => {
+        function suggestLocationFromContent(content) {
+            // Try to extract location from first line or title
+            var lines = content.split('\n');
+            if (lines[0] && lines[0].length < 100) {
+                document.getElementById('fileLocation').value = lines[0].trim();
+            }
+        }
+
+        // Add drag and drop support
+        window.addEventListener('DOMContentLoaded', function() {
+            var uploadArea = document.getElementById('uploadArea');
+            
+            uploadArea.addEventListener('dragover', function(e) {
                 e.preventDefault();
                 uploadArea.classList.add('dragover');
             });
             
-            uploadArea.addEventListener('dragleave', () => {
+            uploadArea.addEventListener('dragleave', function() {
                 uploadArea.classList.remove('dragover');
             });
             
-            uploadArea.addEventListener('drop', (e) => {
+            uploadArea.addEventListener('drop', function(e) {
                 e.preventDefault();
                 uploadArea.classList.remove('dragover');
                 
-                const files = e.dataTransfer.files;
+                var files = e.dataTransfer.files;
                 if (files.length > 0) {
-                    document.getElementById('fileUpload').files = files;
+                    document.getElementById('fileInput').files = files;
                     handleFileUpload({ target: { files: files } });
                 }
             });
-        }
+        });
 
-        // Generate audioguide scripts using API
-        async function generateAudioguide() {
-            const stopCount = parseInt(document.getElementById('stopCount').value);
-            const tourType = document.getElementById('tourType').value;
-            const language = document.getElementById('language').value;
-            
-            if (stopCount < 5 || stopCount > 20) {
-                alert('Please enter between 5 and 20 stops');
-                return;
-            }
-            
-            if (selectedInputMethod === 'location') {
-                const location = document.getElementById('locationName').value.trim();
-                const additionalInfo = document.getElementById('additionalInfo').value.trim();
-                
+        async function generateGuide() {
+            var aiModel = document.getElementById('aiModel').value;
+            var language = document.getElementById('language').value;
+            var tourType = document.getElementById('tourType').value;
+            var stops = parseInt(document.getElementById('stops').value);
+            var context = document.getElementById('context').value.trim();
+            var location = '';
+            var useFile = false;
+
+            // Check which tab is active
+            if (currentTab === 'location') {
+                location = document.getElementById('location').value.trim();
                 if (!location) {
-                    alert('Please enter a location name');
+                    alert('Please enter a location');
                     return;
                 }
-                
-                await generateFromLocation(location, additionalInfo, stopCount, tourType, language);
             } else {
+                location = document.getElementById('fileLocation').value.trim();
+                if (!location) {
+                    alert('Please enter the location name from your document');
+                    return;
+                }
                 if (!uploadedFile || !uploadedFileContent) {
                     alert('Please upload a document first');
                     return;
                 }
-                
-                const fileDescription = document.getElementById('fileDescription').value.trim();
-                await generateFromFile(uploadedFileContent, fileDescription, stopCount, tourType, language);
+                useFile = true;
+                // Add file content to context
+                context = 'Document content: ' + uploadedFileContent.substring(0, 3000) + '\n\n' + context;
             }
-        }
 
-        async function generateFromFile(fileContent, description, stopCount, tourType, language) {
+            if (stops < 5 || stops > 15) {
+                alert('Please select between 5 and 15 stops');
+                return;
+            }
+
+            // Show loading
+            document.getElementById('generateBtn').disabled = true;
+            document.getElementById('loading').classList.add('active');
+            document.getElementById('success').classList.remove('active');
+
             try {
-                // Show loading
-                document.getElementById('generateBtn').disabled = true;
-                document.getElementById('loading').classList.add('active');
-                updateProgress(10);
+                // Generate the audioguide content
+                var audioguideContent = await generateAudioguideContent(location, language, tourType, stops, context, aiModel, useFile);
                 
-                // Extract location from document
-                const location = extractLocationFromDocument(fileContent, description);
+                // Download the file
+                downloadAudioguide(audioguideContent, location);
                 
-                // Generate stops based on document content
-                const stops = generateStopsFromDocument(fileContent, location, stopCount, tourType);
-                const scripts = [];
-                
-                updateProgress(25);
-                
-                for (let i = 0; i < stops.length; i++) {
-                    const stop = stops[i];
-                    
-                    updateLoadingText(`Creating script ${i + 1} of ${stops.length}: ${stop.name}`);
-                    updateProgress(25 + (60 * (i / stops.length)));
-                    
-                    const script = await generateStopScriptFromDocument(fileContent, location, stop, tourType, language);
-                    
-                    scripts.push({
-                        ...stop,
-                        script: script
-                    });
-                    
-                    // Brief pause between generations
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                }
-                
-                updateProgress(90);
-                updateLoadingText('Finalizing audioguide document...');
-                
-                // Create and download document
-                const tourDocument = createAudioguideDocument(location, scripts, tourType, language);
-                const filename = `Audioguide_${location.replace(/[^a-zA-Z0-9]/g, '_')}_${language}_from_document.txt`;
-                
-                downloadScript(tourDocument, filename);
-                
-                updateProgress(100);
-                showSuccess();
+                // Show success
+                document.getElementById('success').classList.add('active');
                 
             } catch (error) {
-                console.error('Generation failed:', error);
-                alert('Generation failed. Please try again.');
+                console.error('Error:', error);
+                alert('Failed to generate audioguide. Please try again.');
             } finally {
                 document.getElementById('generateBtn').disabled = false;
                 document.getElementById('loading').classList.remove('active');
-                updateProgress(0);
             }
         }
 
-        function extractLocationFromDocument(content, description) {
-            // Try to extract location from description or content
-            if (description) {
-                return description.split(' ').slice(0, 3).join(' ');
+        async function generateAudioguideContent(location, language, tourType, totalStops, context, aiModel, useFile) {
+            var content = 'AUDIOGUIDE: ' + location.toUpperCase() + '\n';
+            content += '=' + '='.repeat(50) + '\n\n';
+            content += 'Language: ' + language + '\n';
+            content += 'Tour Type: ' + tourType + '\n';
+            content += 'Total Stops: ' + totalStops + '\n';
+            content += 'AI Model: ' + (aiModel === 'openai' ? 'ChatGPT' : 'DeepSeek') + '\n';
+            content += 'Source: ' + (useFile ? 'Uploaded Document' : 'Direct Input') + '\n\n';
+            content += '=' + '='.repeat(50) + '\n\n';
+
+            // Stop 1: Introduction
+            content += 'STOP 1: INTRODUCTION\n';
+            content += '-'.repeat(30) + '\n\n';
+            content += await generateStopContent(location, 'introduction', language, tourType, context, aiModel);
+            content += '\n\n';
+
+            // Stop 2: History
+            content += 'STOP 2: HISTORY\n';
+            content += '-'.repeat(30) + '\n\n';
+            content += await generateStopContent(location, 'history', language, tourType, context, aiModel);
+            content += '\n\n';
+
+            // Main stops (totalStops - 4 mandatory ones)
+            var mainStops = totalStops - 4;
+            for (var i = 0; i < mainStops; i++) {
+                content += 'STOP ' + (i + 3) + ': MAIN ATTRACTION ' + (i + 1) + '\n';
+                content += '-'.repeat(30) + '\n\n';
+                content += await generateStopContent(location, 'attraction', language, tourType, context, aiModel);
+                content += '\n\n';
             }
-            // Extract from first line or title
-            const firstLine = content.split('\n')[0];
-            return firstLine.slice(0, 50) || 'Document Location';
+
+            // Second to last: Local Cuisine
+            content += 'STOP ' + (totalStops - 1) + ': LOCAL CUISINE\n';
+            content += '-'.repeat(30) + '\n\n';
+            content += await generateStopContent(location, 'cuisine', language, tourType, context, aiModel);
+            content += '\n\n';
+
+            // Last: Practical Tips
+            content += 'STOP ' + totalStops + ': PRACTICAL TIPS\n';
+            content += '-'.repeat(30) + '\n\n';
+            content += await generateStopContent(location, 'tips', language, tourType, context, aiModel);
+            content += '\n\n';
+
+            content += '=' + '='.repeat(50) + '\n';
+            content += 'Generated by CloudGuide AI\n';
+            
+            return content;
         }
 
-        function generateStopsFromDocument(content, location, count, tourType) {
-            const stops = [];
+        async function generateStopContent(location, stopType, language, tourType, context, aiModel) {
+            var prompt = createPrompt(location, stopType, language, tourType, context);
             
-            // Always include the 4 mandatory stops
-            stops.push({
-                number: 1,
-                name: `Introduction to ${location}`,
-                theme: 'Introduction and Overview',
-                isIntroduction: true
-            });
-            
-            stops.push({
-                number: 2,
-                name: `History of ${location}`,
-                theme: 'Historical Journey',
-                isHistory: true
-            });
-            
-            // Generate main content stops based on document
-            const mainStopsCount = count - 4;
-            for (let i = 0; i < mainStopsCount; i++) {
-                stops.push({
-                    number: i + 3,
-                    name: `Key Point ${i + 1}`,
-                    theme: getThemeForStop(tourType, i),
-                    isMain: true
-                });
-            }
-            
-            // Add Must Eats stop (second to last)
-            stops.push({
-                number: count - 1,
-                name: `Must Eats in ${location}`,
-                theme: 'Local Cuisine and Food Culture',
-                isMustEats: true
-            });
-            
-            // Always end with practical tips
-            stops.push({
-                number: count,
-                name: `Practical Tips for ${location}`,
-                theme: 'Visitor Information and Tips',
-                isTips: true
-            });
-            
-            return stops;
-        }
-
-        async function generateStopScriptFromDocument(fileContent, location, stop, tourType, language) {
-            const documentContext = fileContent.substring(0, 2000); // Use first 2000 chars as context
-            
-            let prompt = `Based on this document content about ${location}:
-
-"${documentContext}"
-
-Create a professional audioguide script for "${stop.name}".
-
-REQUIREMENTS:
-- 600-800 words
-- Theme: ${stop.theme}
-- Tour Type: ${tourType}
-- Language: ${language}
-
-Write in a conversational yet authoritative tone. Create immersive descriptions that transport visitors.
-
-Write the complete script:`;
-
             try {
-                let response;
+                var apiUrl = aiModel === 'openai' ? '/api/openai' : '/api/deepseek';
+                var requestBody = {
+                    prompt: prompt
+                };
                 
-                if (selectedAI === 'deepseek') {
-                    response = await fetch('/api/deepseek', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            prompt: prompt
-                        })
-                    });
-                } else if (selectedAI === 'openai') {
-                    response = await fetch('/api/openai', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            prompt: prompt,
-                            max_tokens: 1500,
-                            temperature: 0.8
-                        })
-                    });
+                // Add OpenAI specific parameters
+                if (aiModel === 'openai') {
+                    requestBody.max_tokens = 800;
+                    requestBody.temperature = 0.8;
                 }
                 
-                if (!response.ok) {
-                    throw new Error(`API failed: ${response.status}`);
-                }
-                
-                const data = await response.json();
-                
-                // Handle different response formats
-                let generatedText = '';
-                if (selectedAI === 'openai') {
-                    generatedText = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || 
-                                   (data.choices && data.choices[0] && data.choices[0].text) || '';
+                var response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                if (response.ok) {
+                    var data = await response.json();
+                    
+                    // Handle different response formats
+                    var generatedText = '';
+                    if (aiModel === 'openai') {
+                        // OpenAI response format
+                        if (data.choices && data.choices[0]) {
+                            if (data.choices[0].message) {
+                                generatedText = data.choices[0].message.content;
+                            } else if (data.choices[0].text) {
+                                generatedText = data.choices[0].text;
+                            }
+                        }
+                    } else {
+                        // DeepSeek response format
+                        generatedText = data.content || data.generated_text || '';
+                    }
+                    
+                    return generatedText || getFallbackContent(location, stopType);
                 } else {
-                    generatedText = data.content || data.generated_text || '';
+                    console.error('API response not ok:', response.status);
+                    return getFallbackContent(location, stopType);
                 }
-                
-                return generatedText || generateFallbackScript(location, stop, language);
-                
             } catch (error) {
-                console.error('Script generation error:', error);
-                return generateFallbackScript(location, stop, language);
+                console.error('API Error:', error);
+                return getFallbackContent(location, stopType);
             }
         }
 
-        async function generateFromLocation(location, additionalInfo, stopCount, tourType, language) {
+        function createPrompt(location, stopType, language, tourType, context) {
+            var basePrompt = '';
             
-            try {
-                // Show loading
-                document.getElementById('generateBtn').disabled = true;
-                document.getElementById('loading').classList.add('active');
-                updateProgress(10);
-                
-                // Generate stops and scripts
-                const stops = generateStops(location, stopCount, tourType);
-                const scripts = [];
-                
-                updateProgress(25);
-                
-                for (let i = 0; i < stops.length; i++) {
-                    const stop = stops[i];
-                    
-                    updateLoadingText(`Creating script ${i + 1} of ${stops.length}: ${stop.name}`);
-                    updateProgress(25 + (60 * (i / stops.length)));
-                    
-                    const script = await generateStopScript(location, stop, additionalInfo, tourType, language);
-                    
-                    scripts.push({
-                        ...stop,
-                        script: script
-                    });
-                    
-                    // Brief pause between generations
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                }
-                
-                updateProgress(90);
-                updateLoadingText('Finalizing audioguide document...');
-                
-                // Create and download document
-                const tourDocument = createAudioguideDocument(location, scripts, tourType, language);
-                const filename = `Audioguide_${location.replace(/[^a-zA-Z0-9]/g, '_')}_${language}.txt`;
-                
-                downloadScript(tourDocument, filename);
-                
-                updateProgress(100);
-                showSuccess();
-                
-            } catch (error) {
-                console.error('Generation failed:', error);
-                alert('Generation failed. Please try again or check your API key.');
-            } finally {
-                document.getElementById('generateBtn').disabled = false;
-                document.getElementById('loading').classList.remove('active');
-                updateProgress(0);
-            }
-        }
-
-        // Generate stop list based on location
-        function generateStops(location, count, tourType) {
-            const stops = [];
-            const locationLower = location.toLowerCase();
-            
-            // Always include the 4 mandatory stops
-            stops.push({
-                number: 1,
-                name: `Introduction to ${location}`,
-                theme: 'Introduction and Overview',
-                isIntroduction: true
-            });
-            
-            stops.push({
-                number: 2,
-                name: `History of ${location}`,
-                theme: 'Historical Journey',
-                isHistory: true
-            });
-            
-            // Generate main content stops
-            let baseStops = [];
-            
-            if (locationLower.includes('museum')) {
-                baseStops = [
-                    'Permanent Collection Highlights', 'Featured Exhibition Space',
-                    'Ancient Artifacts Gallery', 'Cultural Heritage Wing', 'Interactive Discovery Center',
-                    'Sculpture Garden', 'Temporary Exhibition Hall', 'Educational Workshop',
-                    'Research Library', 'Museum Shop Area', 'Rooftop Terrace View'
-                ];
-            } else if (locationLower.includes('palace') || locationLower.includes('castle')) {
-                baseStops = [
-                    'Grand Entrance Hall', 'Throne Room', 'Royal Private Quarters',
-                    'Great Hall', 'Palace Gardens', 'Royal Chapel',
-                    'State Dining Room', 'Portrait Gallery', 'Royal Library',
-                    'Kitchen Quarters', 'Treasury Room', 'Palace Balcony'
-                ];
-            } else if (locationLower.includes('cathedral') || locationLower.includes('church')) {
-                baseStops = [
-                    'Main Sanctuary', 'Sacred Altar Area', 'Historical Nave',
-                    'Religious Art Gallery', 'Bell Tower', 'Crypt Chambers',
-                    'Chapel of Devotion', 'Ceremonial Entrance', 'Sacred Garden',
-                    'Memorial Spaces', 'Treasury Collection', 'City Views'
-                ];
-            } else {
-                baseStops = [
-                    'Historic Center', 'Main Cultural Plaza', 'Heritage District',
-                    'Traditional Architecture', 'Local Market Area', 'Monument Zone',
-                    'Scenic Viewpoint', 'Cultural Museum', 'Religious Complex',
-                    'Traditional Neighborhood', 'Arts District', 'Community Spaces'
-                ];
-            }
-            
-            // Add main content stops (total stops - 4 mandatory)
-            const mainStopsCount = count - 4;
-            for (let i = 0; i < mainStopsCount; i++) {
-                stops.push({
-                    number: i + 3,
-                    name: baseStops[i % baseStops.length],
-                    theme: getThemeForStop(tourType, i),
-                    isMain: true
-                });
-            }
-            
-            // Add Must Eats stop (second to last)
-            stops.push({
-                number: count - 1,
-                name: `Must Eats in ${location}`,
-                theme: 'Local Cuisine and Food Culture',
-                isMustEats: true
-            });
-            
-            // Always end with practical tips
-            stops.push({
-                number: count,
-                name: `Practical Tips for ${location}`,
-                theme: 'Visitor Information and Tips',
-                isTips: true
-            });
-            
-            return stops;
-        }
-
-        function getThemeForStop(tourType, index) {
-            const themes = {
-                comprehensive: ['Historical significance', 'Architectural features', 'Cultural importance', 'Artistic elements', 'Social context'],
-                historical: ['Ancient origins', 'Medieval period', 'Renaissance era', 'Modern developments', 'Historical events'],
-                cultural: ['Traditional practices', 'Local customs', 'Cultural evolution', 'Community life', 'Heritage preservation'],
-                artistic: ['Artistic movements', 'Creative techniques', 'Visual elements', 'Cultural expression', 'Aesthetic principles'],
-                family: ['Interactive discovery', 'Educational fun', 'Family stories', 'Learning activities', 'Engaging experiences']
-            };
-            
-            const themeList = themes[tourType] || themes.comprehensive;
-            return themeList[index % themeList.length];
-        }
-
-        // Generate script for individual stop
-        async function generateStopScript(location, stop, additionalInfo, tourType, language) {
-            let prompt;
-            
-            if (stop.isIntroduction) {
-                prompt = `Create a professional audioguide INTRODUCTION script for ${location}.
-
-IMPORTANT: Do NOT start with "Welcome to Introduction to..." or any redundant phrasing. Start directly with a warm greeting.
-
-REQUIREMENTS:
-- 800-1000 words
-- Language: ${language}
-- Tour Type: ${tourType}
-- Additional Context: ${additionalInfo || 'None provided'}
-
-Create a compelling introduction that:
-
-1. OPENING GREETING (100 words)
-   - Start with a warm, natural greeting (e.g., "Welcome, dear visitors..." or "Greetings, explorers...")
-   - Build excitement for the journey ahead
-   - Set an engaging, professional tone
-
-2. LOCATION OVERVIEW (200 words)
-   - Explain what makes ${location} special and unique
-   - Describe the physical setting and atmosphere
-   - Orient visitors to what they'll experience
-
-3. SIGNIFICANCE & IMPORTANCE (300 words)
-   - Why ${location} matters culturally and historically
-   - Its place in local and world heritage
-   - Key achievements or recognition
-   - What distinguishes it from similar places
-
-4. PREVIEW OF HIGHLIGHTS (200 words)
-   - Most spectacular features visitors will encounter
-   - Unique experiences available only here
-   - How the tour is organized
-   - What makes this visit memorable
-
-5. CULTURAL CONTEXT (150 words)
-   - Local traditions and customs
-   - The living culture around ${location}
-   - How locals relate to this place
-
-6. VISITOR PREPARATION (50 words)
-   - Basic etiquette or guidelines
-   - Mindset for maximum enjoyment
-
-Write in an engaging, professional tone that creates anticipation. Make visitors feel privileged to be here.
-
-GENERATE THE COMPLETE INTRODUCTION SCRIPT NOW:`;
-
-            } else if (stop.isHistory) {
-                prompt = `Create a professional audioguide HISTORY script for ${location}.
-
-IMPORTANT: Write a flowing historical narrative, NOT a list. Do not use "Welcome to History of..." phrasing.
-
-REQUIREMENTS:
-- 800-1000 words
-- Language: ${language}
-- Tour Type: ${tourType}
-- Additional Context: ${additionalInfo || 'None provided'}
-
-Create an engaging historical narrative covering:
-
-1. ORIGINS & FOUNDATION (200 words)
-   - When and why ${location} was established
-   - Who founded or built it
-   - Original purpose and early significance
-   - Archaeological or documentary evidence
-
-2. EARLY DEVELOPMENT (150 words)
-   - First decades or centuries
-   - How it grew and evolved
-   - Early challenges and triumphs
-   - Key figures from this period
-
-3. GOLDEN ERA (250 words)
-   - Peak periods of importance
-   - Major expansions or renovations
-   - Notable events that occurred here
-   - Famous visitors or residents
-   - Cultural/political/religious role
-
-4. TRANSITIONS & CHALLENGES (200 words)
-   - Periods of change or difficulty
-   - Wars, disasters, or abandonment
-   - How ${location} survived or adapted
-   - Restoration efforts
-
-5. MODERN HISTORY (150 words)
-   - 19th-20th century developments
-   - Rediscovery or preservation
-   - Transition to current use
-   - Recent archaeological findings
-
-6. LIVING HISTORY (50 words)
-   - How history shapes the present
-   - Ongoing traditions or practices
-
-Weave specific dates, names, and events into an engaging story. Make history come alive.
-
-GENERATE THE COMPLETE HISTORY SCRIPT NOW:`;
-
-            } else if (stop.isMustEats) {
-                prompt = `Create a professional audioguide MUST EATS script for ${location}.
-
-IMPORTANT: Focus on local cuisine and food culture. Do NOT use generic restaurant recommendations.
-
-REQUIREMENTS:
-- 800-1000 words
-- Language: ${language}
-- Tour Type: ${tourType}
-- Additional Context: ${additionalInfo || 'None provided'}
-
-Create a delicious journey through local cuisine:
-
-1. CULINARY HERITAGE (150 words)
-   - Food traditions specific to ${location}
-   - Historical influences on local cuisine
-   - How geography and climate shape the food
-   - Cultural significance of meals and dining
-
-2. SIGNATURE DISHES (250 words)
-   - 3-4 must-try local specialties
-   - Origins and stories behind each dish
-   - Key ingredients and preparation methods
-   - Where locals traditionally eat these
-   - Best seasons or times to enjoy them
-
-3. STREET FOOD & MARKETS (200 words)
-   - Popular street food items
-   - Local markets and food vendors
-   - Traditional snacks and quick bites
-   - Regional variations and specialties
-   - Market etiquette and tips
-
-4. TRADITIONAL BEVERAGES (150 words)
-   - Local drinks (alcoholic and non-alcoholic)
-   - Coffee/tea culture if relevant
-   - Traditional preparation methods
-   - Social customs around drinking
-
-5. SWEET TRADITIONS (150 words)
-   - Local desserts and pastries
-   - Festival or celebration foods
-   - Traditional bakeries or sweet shops
-   - Seasonal treats
-
-6. DINING CUSTOMS (100 words)
-   - Local eating etiquette
-   - Typical meal times and structure
-   - Tipping and payment customs
-   - Dietary restrictions and alternatives
-
-Focus on authentic local experiences, not tourist restaurants. Help visitors eat like locals.
-
-GENERATE THE COMPLETE MUST EATS SCRIPT NOW:`;
-
-            } else if (stop.isTips) {
-                prompt = `Create a professional audioguide PRACTICAL TIPS script for ${location}.
-
-IMPORTANT: Provide actionable, specific advice. Avoid generic travel tips.
-
-REQUIREMENTS:
-- 800-1000 words
-- Language: ${language}
-- Tour Type: ${tourType}
-- Additional Context: ${additionalInfo || 'None provided'}
-
-Provide comprehensive practical guidance:
-
-1. TIMING YOUR VISIT (150 words)
-   - Best months and seasons to visit
-   - Ideal times of day for different experiences
-   - How to avoid crowds
-   - Special lighting or atmospheric conditions
-   - Weather considerations
-
-2. GETTING THERE & AROUND (150 words)
-   - Specific transportation options
-   - Exact costs and journey times
-   - Parking locations and fees
-   - Walking routes and shortcuts
-   - Accessibility information
-
-3. TICKETS & ENTRY (100 words)
-   - Current pricing and discounts
-   - Online vs. on-site booking
-   - Combination tickets or passes
-   - Skip-the-line options
-   - Opening hours and last entry
-
-4. ESSENTIAL PREPARATION (100 words)
-   - What to wear and bring
-   - Photography rules and best spots
-   - Audio guide or app recommendations
-   - Storage facilities
-   - Prohibited items
-
-5. HIDDEN GEMS & INSIDER TIPS (200 words)
-   - Lesser-known areas worth exploring
-   - Best photo opportunities
-   - Quiet spots for reflection
-   - Local secrets
-   - Nearby attractions to combine
-
-6. FACILITIES & SERVICES (100 words)
-   - Restroom locations
-   - Dining options on-site
-   - Gift shop highlights
-   - Family services
-   - Emergency information
-
-7. MAKING THE MOST OF YOUR VISIT (100 words)
-   - Suggested route through ${location}
-   - How long to spend at each area
-   - Best order to see things
-   - What to prioritize if short on time
-
-Provide specific, actionable advice that enhances the visitor experience.
-
-GENERATE THE COMPLETE PRACTICAL TIPS SCRIPT NOW:`;
-
-            } else {
-                // Regular stop script
-                prompt = `Create a professional audioguide script for "${stop.name}" at ${location}.
-
-IMPORTANT: Write naturally without redundant introductions. Focus on immersive storytelling.
-
-REQUIREMENTS:
-- 600-800 words
-- Theme: ${stop.theme}
-- Tour Type: ${tourType}
-- Language: ${language}
-- Additional Context: ${additionalInfo || 'None provided'}
-
-Structure your script as follows:
-
-1. ARRIVAL & ORIENTATION (100 words)
-   - What visitors see as they arrive
-   - Spatial orientation and layout
-   - Initial impressions and atmosphere
-
-2. VISUAL EXPLORATION (150 words)
-   - Detailed description of key features
-   - Architectural or artistic elements
-   - Materials, colors, and textures
-   - Light and shadow effects
-
-3. HISTORICAL SIGNIFICANCE (150 words)
-   - When this was created/built
-   - Original purpose and evolution
-   - Important events that happened here
-   - Key figures associated with this spot
-
-4. CULTURAL MEANING (150 words)
-   - Symbolism and interpretation
-   - Role in local culture
-   - Traditions or ceremonies
-   - Contemporary relevance
-
-5. HIDDEN DETAILS (100 words)
-   - Often-missed features to notice
-   - Interesting architectural quirks
-   - Symbols or inscriptions
-   - Views or perspectives to appreciate
-
-6. VISITOR ENGAGEMENT (150 words)
-   - Interactive elements or activities
-   - Best photo angles
-   - Quiet contemplation spots
-   - Connection to other tour stops
-
-Write in an engaging, conversational tone. Paint vivid pictures with words. Make visitors feel the significance of this place.
-
-GENERATE THE COMPLETE SCRIPT NOW:`;
-            }
-
-            try {
-                let response;
-                
-                if (selectedAI === 'deepseek') {
-                    response = await fetch('/api/deepseek', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            prompt: prompt
-                        })
-                    });
-                } else if (selectedAI === 'openai') {
-                    response = await fetch('/api/openai', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            prompt: prompt,
-                            max_tokens: 1500,
-                            temperature: 0.8
-                        })
-                    });
-                }
-                
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    console.error('API Error:', {
-                        ai: selectedAI,
-                        status: response.status,
-                        error: errorData
-                    });
-                    throw new Error(`${selectedAI} API failed: ${errorData.error || response.status}`);
-                }
-                
-                const data = await response.json();
-                
-                console.log('API Response:', {
-                    ai: selectedAI,
-                    status: response.status,
-                    hasContent: !!(data.content || data.generated_text || data.choices),
-                    contentLength: (data.content || data.generated_text || (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '').length
-                });
-                
-                // Handle different response formats
-                let generatedText = '';
-                if (selectedAI === 'openai') {
-                    if (data.choices && data.choices[0]) {
-                        if (data.choices[0].message && data.choices[0].message.content) {
-                            generatedText = data.choices[0].message.content;
-                        } else if (data.choices[0].text) {
-                            generatedText = data.choices[0].text;
-                        }
+            switch(stopType) {
+                case 'introduction':
+                    basePrompt = 'Create a professional audioguide INTRODUCTION script for ' + location + '.\n\n' +
+                        'IMPORTANT: Do NOT start with "Welcome to Introduction to..." Start with a natural, warm greeting.\n\n' +
+                        'REQUIREMENTS:\n' +
+                        '- 600-800 words\n' +
+                        '- Language: ' + language + '\n' +
+                        '- Tour type: ' + tourType + '\n';
+                    if (context) {
+                        basePrompt += '- Context: ' + context + '\n';
                     }
-                } else {
-                    generatedText = data.content || data.generated_text || '';
-                }
-                
-                return generatedText || generateFallbackScript(location, stop, language);
-                
-            } catch (error) {
-                console.error('Script generation error:', error);
-                
-                // If primary AI fails, try the other one as fallback
-                if (selectedAI === 'deepseek') {
-                    console.log('DeepSeek failed, trying OpenAI as fallback...');
-                    try {
-                        const fallbackResponse = await fetch('/api/openai', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                prompt: prompt,
-                                max_tokens: 1500,
-                                temperature: 0.8
-                            })
-                        });
-                        
-                        if (fallbackResponse.ok) {
-                            const fallbackData = await fallbackResponse.json();
-                            const fallbackText = (fallbackData.choices && fallbackData.choices[0] && fallbackData.choices[0].message && fallbackData.choices[0].message.content) || 
-                                               (fallbackData.choices && fallbackData.choices[0] && fallbackData.choices[0].text) || 
-                                               generateFallbackScript(location, stop, language);
-                            return fallbackText;
-                        }
-                    } catch (fallbackError) {
-                        console.error('OpenAI fallback also failed:', fallbackError);
+                    basePrompt += '\n' +
+                        'Create a compelling introduction that:\n' +
+                        '1. WARM GREETING (100 words) - Welcome visitors naturally without redundancy\n' +
+                        '2. LOCATION OVERVIEW (150 words) - What makes this place special and unique\n' +
+                        '3. SIGNIFICANCE (200 words) - Why this matters culturally and historically\n' +
+                        '4. PREVIEW OF HIGHLIGHTS (150 words) - Most spectacular features they will see\n' +
+                        '5. VISITOR PREPARATION (100 words) - Set expectations and build excitement\n\n' +
+                        'Write in an engaging, professional tone. Make visitors feel privileged to be here.\n\n' +
+                        'GENERATE THE COMPLETE INTRODUCTION NOW:';
+                    break;
+                    
+                case 'history':
+                    basePrompt = 'Create a professional audioguide HISTORY script for ' + location + '.\n\n' +
+                        'REQUIREMENTS:\n' +
+                        '- 600-800 words\n' +
+                        '- Language: ' + language + '\n' +
+                        '- Tour type: ' + tourType + '\n';
+                    if (context) {
+                        basePrompt += '- Context: ' + context + '\n';
                     }
-                } else if (selectedAI === 'openai') {
-                    console.log('OpenAI failed, trying DeepSeek as fallback...');
-                    try {
-                        const fallbackResponse = await fetch('/api/deepseek', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                prompt: prompt
-                            })
-                        });
-                        
-                        if (fallbackResponse.ok) {
-                            const fallbackData = await fallbackResponse.json();
-                            return fallbackData.content || fallbackData.generated_text || generateFallbackScript(location, stop, language);
-                        }
-                    } catch (fallbackError) {
-                        console.error('DeepSeek fallback also failed:', fallbackError);
+                    basePrompt += '\n' +
+                        'Create an engaging historical narrative covering:\n' +
+                        '1. ORIGINS (150 words) - When and why this location was established\n' +
+                        '2. EARLY DEVELOPMENT (150 words) - How it grew in its first decades/centuries\n' +
+                        '3. GOLDEN ERA (200 words) - Peak periods of importance and major events\n' +
+                        '4. CHALLENGES & CHANGES (150 words) - How it survived difficulties and evolved\n' +
+                        '5. MODERN ERA (150 words) - Recent history and current significance\n\n' +
+                        'Use specific dates and names. Make history come alive with vivid storytelling.\n\n' +
+                        'GENERATE THE COMPLETE HISTORY NOW:';
+                    break;
+                    
+                case 'cuisine':
+                    basePrompt = 'Create a professional audioguide MUST EATS / LOCAL CUISINE script for ' + location + '.\n\n' +
+                        'REQUIREMENTS:\n' +
+                        '- 600-800 words\n' +
+                        '- Language: ' + language + '\n' +
+                        '- Tour type: ' + tourType + '\n';
+                    if (context) {
+                        basePrompt += '- Context: ' + context + '\n';
                     }
-                }
+                    basePrompt += '\n' +
+                        'Create a delicious guide to local food covering:\n' +
+                        '1. CULINARY HERITAGE (150 words) - Food traditions and cultural significance\n' +
+                        '2. SIGNATURE DISHES (200 words) - 3-4 must-try local specialties with descriptions\n' +
+                        '3. STREET FOOD & MARKETS (150 words) - Where locals eat, popular snacks\n' +
+                        '4. BEVERAGES (100 words) - Traditional drinks, coffee/tea culture\n' +
+                        '5. SWEET TREATS (100 words) - Local desserts and pastries\n' +
+                        '6. DINING TIPS (100 words) - Etiquette, meal times, where to eat\n\n' +
+                        'Focus on authentic local experiences. Help visitors eat like locals.\n\n' +
+                        'GENERATE THE COMPLETE CUISINE GUIDE NOW:';
+                    break;
+                    
+                case 'tips':
+                    basePrompt = 'Create a professional audioguide PRACTICAL TIPS script for ' + location + '.\n\n' +
+                        'REQUIREMENTS:\n' +
+                        '- 600-800 words\n' +
+                        '- Language: ' + language + '\n' +
+                        '- Tour type: ' + tourType + '\n';
+                    if (context) {
+                        basePrompt += '- Context: ' + context + '\n';
+                    }
+                    basePrompt += '\n' +
+                        'Provide comprehensive practical guidance:\n' +
+                        '1. BEST TIMES TO VISIT (150 words) - Seasons, weather, crowd levels, special times\n' +
+                        '2. GETTING THERE & AROUND (150 words) - Transportation, parking, navigation\n' +
+                        '3. TICKETS & ENTRY (100 words) - Prices, booking tips, opening hours\n' +
+                        '4. WHAT TO BRING (100 words) - Essential items, dress code, preparation\n' +
+                        '5. HIDDEN GEMS (150 words) - Lesser-known spots, photo opportunities, insider tips\n' +
+                        '6. NEARBY ATTRACTIONS (100 words) - What else to see in the area\n\n' +
+                        'Give specific, actionable advice that enhances the visitor experience.\n\n' +
+                        'GENERATE THE COMPLETE TIPS GUIDE NOW:';
+                    break;
+                    
+                case 'attraction':
+                default:
+                    basePrompt = 'Create a professional audioguide script for a MAIN ATTRACTION at ' + location + '.\n\n' +
+                        'REQUIREMENTS:\n' +
+                        '- 500-600 words\n' +
+                        '- Language: ' + language + '\n' +
+                        '- Tour type: ' + tourType + '\n' +
+                        '- Theme: ' + (tourType === 'historical' ? 'Historical significance' : 
+                                      tourType === 'cultural' ? 'Cultural importance' :
+                                      tourType === 'artistic' ? 'Art and architecture' :
+                                      tourType === 'family' ? 'Family-friendly discovery' :
+                                      'Comprehensive overview') + '\n';
+                    if (context) {
+                        basePrompt += '- Context: ' + context + '\n';
+                    }
+                    basePrompt += '\n' +
+                        'Structure your script to include:\n' +
+                        '1. ARRIVAL & FIRST IMPRESSIONS (100 words) - What visitors see and feel\n' +
+                        '2. DETAILED EXPLORATION (200 words) - Key features, architecture, or exhibits\n' +
+                        '3. HISTORICAL/CULTURAL CONTEXT (150 words) - Background and significance\n' +
+                        '4. INTERACTIVE ELEMENTS (100 words) - What to look for, photo spots, activities\n' +
+                        '5. CONNECTION (50 words) - How this relates to the overall visit\n\n' +
+                        'Create vivid descriptions that transport visitors. Use sensory details.\n\n' +
+                        'GENERATE THE COMPLETE ATTRACTION SCRIPT NOW:';
+                    break;
+            }
+            
+            return basePrompt;
+        }
+
+        function getFallbackContent(location, stopType) {
+            switch(stopType) {
+                case 'introduction':
+                    return 'Welcome to ' + location + '. This remarkable destination offers visitors an unforgettable journey through history, culture, and human achievement. As you explore today, you will discover the many layers of significance that make this place truly special. From its architectural marvels to its cultural treasures, every corner tells a story worth hearing. Prepare yourself for an enriching experience that will deepen your appreciation for this extraordinary location.';
                 
-                return generateFallbackScript(location, stop, language);
+                case 'history':
+                    return 'The history of ' + location + ' spans centuries of human civilization. From its earliest foundations to the present day, this site has witnessed the rise and fall of empires, the creation of masterpieces, and the preservation of cultural heritage. Through various periods of prosperity and challenge, it has evolved while maintaining its essential character. Today, it stands as a testament to the endurance of human creativity and the importance of preserving our shared heritage.';
+                
+                case 'cuisine':
+                    return 'The culinary traditions of ' + location + ' reflect centuries of cultural exchange and local innovation. Visitors should not miss the opportunity to sample authentic local dishes that have been perfected over generations. From street food to fine dining, the food culture here offers insights into daily life and celebration. Traditional recipes passed down through families showcase the unique flavors and ingredients that define this region\'s gastronomic identity.';
+                
+                case 'tips':
+                    return 'To make the most of your visit to ' + location + ', consider arriving early to avoid crowds. Purchase tickets in advance when possible, and allow sufficient time to explore thoroughly. Comfortable walking shoes are essential, and bringing water is recommended. Photography may be restricted in certain areas, so check guidelines beforehand. Local guides can provide valuable insights that enhance your understanding of the site\'s significance.';
+                
+                default:
+                    return 'This location at ' + location + ' represents an important aspect of the site\'s overall significance. Take time to observe the details that make this spot unique, from its architectural features to its cultural importance. Notice how this area connects to the broader narrative of the location and contributes to your understanding of its historical and contemporary relevance.';
             }
         }
 
-, culture, and human achievement converge in remarkable ways. This space tells the story of ${location}'s evolution through the centuries.
-
-The architecture surrounding you represents the pinnacle of craftsmanship from its era. Notice the careful attention to proportion, the quality of materials, and the way natural light has been incorporated into the design. These elements work together to create an environment that enhances the visitor experience.
-
-Historically, ${stop.name} has played a crucial role in the development of ${location}. The events that unfolded here shaped not only the local community but influenced broader cultural and social movements. The preservation of this space allows us to connect with the experiences of those who came before us.
-
-Take a moment to observe the details that might be easily overlooked. The wear patterns on surfaces, the subtle variations in materials, and the way different architectural elements frame your view all tell part of the larger story of this remarkable place.
-
-The significance of ${stop.name} extends beyond its historical importance. Today, it continues to serve as a gathering place, a source of inspiration, and a reminder of the enduring value of cultural heritage. Its preservation ensures that future generations can experience the same sense of wonder and connection that you're experiencing now.
-
-As you continue your exploration of ${location}, carry with you the stories and impressions you've gathered here. Each location you visit adds another layer to your understanding of this extraordinary destination.
-
-[Generated using Advanced Content Engine]`;
-        }
-
-        function createAudioguideDocument(location, scripts, tourType, language) {
-            let doc = `PROFESSIONAL AUDIOGUIDE SCRIPT\n`;
-            doc += `${location.toUpperCase()} - ${tourType.toUpperCase()}\n`;
-            doc += `${'='.repeat(60)}\n\n`;
-            doc += `Generated by CloudGuide AI\n`;
-            doc += `Date: ${new Date().toLocaleDateString()}\n`;
-            doc += `Location: ${location}\n`;
-            doc += `Language: ${language}\n`;
-            doc += `Total Stops: ${scripts.length}\n`;
-            doc += `AI Engine: ${selectedAI}\n`;
-            doc += `Input Method: ${selectedInputMethod}\n`;
-            doc += `${'='.repeat(60)}\n\n`;
-
-            scripts.forEach((stop, index) => {
-                doc += `STOP ${stop.number}: ${stop.name.toUpperCase()}\n`;
-                doc += `Theme: ${stop.theme}\n`;
-                doc += `${'-'.repeat(40)}\n\n`;
-                doc += stop.script + '\n\n';
-                doc += `${'='.repeat(60)}\n\n`;
-            });
-
-            doc += `Generated by CloudGuide AI - Universal Audioguide Generator\n`;
-            doc += `AI-powered content creation for professional audioguides\n`;
-            
-            return doc;
-        }
-
-        function updateProgress(percentage) {
-            document.getElementById('progressFill').style.width = `${percentage}%`;
-        }
-
-        function updateLoadingText(text) {
-            document.querySelector('.loading-text').textContent = text;
-        }
-
-        function downloadScript(content, filename) {
-            const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
+        function downloadAudioguide(content, location) {
+            var blob = new Blob([content], { type: 'text/plain' });
+            var url = window.URL.createObjectURL(blob);
+            var a = document.createElement('a');
             a.href = url;
-            a.download = filename;
+            a.download = 'Audioguide_' + location.replace(/[^a-z0-9]/gi, '_') + '.txt';
             document.body.appendChild(a);
             a.click();
-            window.URL.revokeObjectURL(url);
             document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
         }
-
-        function showSuccess() {
-            document.getElementById('successMessage').classList.add('active');
-            setTimeout(() => {
-                document.getElementById('successMessage').classList.remove('active');
-            }, 5000);
-        }
-
-        // Initialize
-        window.addEventListener('DOMContentLoaded', function() {
-            // App ready
-            console.log('CloudGuide app initialized');
-        });
     </script>
 </body>
 </html>
