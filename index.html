@@ -1094,7 +1094,8 @@ Write the complete script:`;
                 // Handle different response formats
                 let generatedText = '';
                 if (selectedAI === 'openai') {
-                    generatedText = data.choices?.[0]?.message?.content || data.choices?.[0]?.text || '';
+                    generatedText = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || 
+                                   (data.choices && data.choices[0] && data.choices[0].text) || '';
                 } else {
                     generatedText = data.content || data.generated_text || '';
                 }
@@ -1578,13 +1579,19 @@ GENERATE THE COMPLETE SCRIPT NOW:`;
                     ai: selectedAI,
                     status: response.status,
                     hasContent: !!(data.content || data.generated_text || data.choices),
-                    contentLength: (data.content || data.generated_text || data.choices?.[0]?.message?.content || '').length
+                    contentLength: (data.content || data.generated_text || (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '').length
                 });
                 
                 // Handle different response formats
                 let generatedText = '';
                 if (selectedAI === 'openai') {
-                    generatedText = data.choices?.[0]?.message?.content || data.choices?.[0]?.text || '';
+                    if (data.choices && data.choices[0]) {
+                        if (data.choices[0].message && data.choices[0].message.content) {
+                            generatedText = data.choices[0].message.content;
+                        } else if (data.choices[0].text) {
+                            generatedText = data.choices[0].text;
+                        }
+                    }
                 } else {
                     generatedText = data.content || data.generated_text || '';
                 }
@@ -1612,7 +1619,10 @@ GENERATE THE COMPLETE SCRIPT NOW:`;
                         
                         if (fallbackResponse.ok) {
                             const fallbackData = await fallbackResponse.json();
-                            return fallbackData.choices?.[0]?.message?.content || fallbackData.choices?.[0]?.text || generateFallbackScript(location, stop, language);
+                            const fallbackText = (fallbackData.choices && fallbackData.choices[0] && fallbackData.choices[0].message && fallbackData.choices[0].message.content) || 
+                                               (fallbackData.choices && fallbackData.choices[0] && fallbackData.choices[0].text) || 
+                                               generateFallbackScript(location, stop, language);
+                            return fallbackText;
                         }
                     } catch (fallbackError) {
                         console.error('OpenAI fallback also failed:', fallbackError);
