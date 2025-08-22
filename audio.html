@@ -563,19 +563,19 @@ Welcome to this remarkable destination. This audioguide will take you on a journ
                     <div class="form-group">
                         <label>Select Voice</label>
                         <div class="voice-grid">
-                            <div class="voice-card selected" onclick="selectVoice(this, 'sophia', 'en-US')">
+                            <div class="voice-card selected" onclick="selectVoice(this, 'en-US-sophia', 'en-US')">
                                 <div class="voice-icon">👩</div>
                                 <div class="voice-name">Sophia</div>
                                 <div class="voice-desc">English (US)</div>
                             </div>
-                            <div class="voice-card" onclick="selectVoice(this, 'alejandro', 'es-ES')">
+                            <div class="voice-card" onclick="selectVoice(this, 'es-ES-Alejandro', 'es-ES')">
                                 <div class="voice-icon">👨</div>
                                 <div class="voice-name">Alejandro</div>
                                 <div class="voice-desc">Spanish (ES)</div>
                             </div>
                         </div>
                         <p style="font-size: 12px; color: #718096; margin-top: 10px;">
-                            Note: If voices don't work, try checking exact voice IDs in your Lovo dashboard
+                            Note: Using Lovo TTS API for voice generation
                         </p>
                     </div>
 
@@ -659,7 +659,7 @@ Welcome to this remarkable destination. This audioguide will take you on a journ
     </div>
 
     <script>
-        var selectedVoice = 'sophia';  // Changed from 'en-US-sophia'
+        var selectedVoice = 'en-US-sophia';
         var selectedLanguage = 'en-US';
         var isPlaying = false;
         
@@ -784,8 +784,8 @@ Welcome to this remarkable destination. This audioguide will take you on a journ
                 for (var i = 0; i < chunks.length; i++) {
                     var chunk = chunks[i];
                     
-                    // Call your backend API endpoint
-                    const response = await fetch('/api/lovo-tts', {
+                    // Call your backend API endpoint - FIXED TO USE /api/lovotts
+                    const response = await fetch('/api/lovotts', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
