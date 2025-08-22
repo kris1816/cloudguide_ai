@@ -660,9 +660,9 @@ Welcome to this remarkable destination. This audioguide will take you on a journ
         var selectedLanguage = 'en-US';
         var isPlaying = false;
         
-        // In production, this should be in environment variable
-        // For Vercel, set LOVO_API_KEY in your environment variables
-        var LOVO_API_KEY = process.env.LOVO_API_KEY || '794d1665-e8e5-4fd6-bc5a-c667c2a62cd4';
+        // For production, always use the backend API endpoint
+        // Never expose API keys in client-side code
+        var USE_BACKEND_API = true;
 
         // Select voice
         function selectVoice(element, voice, language) {
@@ -743,7 +743,7 @@ Welcome to this remarkable destination. This audioguide will take you on a journ
             }, 100);
         }
 
-        // Generate audio using Lovo API
+        // Generate audio using Lovo API through backend
         async function generateAudio() {
             var text = document.getElementById('textInput').value;
             if (!text.trim()) {
@@ -759,154 +759,111 @@ Welcome to this remarkable destination. This audioguide will take you on a journ
             document.getElementById('loading').classList.add('active');
 
             try {
-                // Split text into stops if it's too long
-                var stops = text.split(/STOP \d+:/);
-                var audioJobs = [];
-                
-                // Process each stop separately
-                for (var i = 0; i < stops.length; i++) {
-                    var stopText = stops[i].trim();
-                    if (stopText.length > 0) {
-                        // Create TTS job with Lovo API
-                        var jobResponse = await fetch('https://api.genny.lovo.ai/api/v1/tts', {
-                            method: 'POST',
-                            headers: {
-                                'Authorization': 'Bearer ' + LOVO_API_KEY,
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                speaker: selectedVoice,
-                                text: stopText,
-                                speed: speed.toString(),
-                                pitch: pitch.toString()
-                            })
-                        });
-
-                        if (jobResponse.ok) {
-                            var jobData = await jobResponse.json();
-                            audioJobs.push({
-                                jobId: jobData.id,
-                                stopNumber: i,
-                                text: stopText.substring(0, 50) + '...'
-                            });
-                        } else {
-                            console.error('Lovo API error:', jobResponse.status);
-                            
-                            // If it's a CORS error or API key issue, try the backend proxy
-                            if (jobResponse.status === 401 || jobResponse.status === 403) {
-                                alert('API authentication error. Please check the API key configuration.');
-                            }
-                        }
-                    }
-                }
-
-                // Wait for all jobs to complete and get download URLs
-                if (audioJobs.length > 0) {
-                    await checkJobsStatus(audioJobs);
-                } else {
-                    // If Lovo API fails, try fallback approach through backend
-                    await generateAudioFallback(text, speed, pitch);
-                }
+                // Always use backend API for security
+                await generateAudioThroughBackend(text, speed, pitch);
                 
             } catch (error) {
                 console.error('Error generating audio:', error);
-                
-                // Try backend proxy as fallback
-                try {
-                    await generateAudioFallback(text, speed, pitch);
-                } catch (fallbackError) {
-                    alert('Failed to generate audio. Please check your API configuration.');
-                }
+                alert('Failed to generate audio. Please check your configuration and try again.');
             } finally {
                 document.getElementById('generateBtn').disabled = false;
                 document.getElementById('loading').classList.remove('active');
             }
         }
 
-        // Fallback: Generate audio through backend proxy (for Vercel deployment)
-        async function generateAudioFallback(text, speed, pitch) {
+        // Generate audio through backend proxy (secure method)
+        async function generateAudioThroughBackend(text, speed, pitch) {
             try {
-                // Call your backend API endpoint that proxies to Lovo
-                var response = await fetch('/api/lovo-tts', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        text: text,
-                        voice: selectedVoice,
-                        language: selectedLanguage,
-                        speed: speed,
-                        pitch: pitch
-                    })
-                });
+                // Split text into smaller chunks if needed
+                var chunks = splitTextIntoChunks(text, 3000); // Lovo has character limits
+                var generatedFiles = [];
+                
+                for (var i = 0; i < chunks.length; i++) {
+                    var chunk = chunks[i];
+                    
+                    // Call your backend API endpoint
+                    var response = await fetch('/api/lovo-tts', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            text: chunk,
+                            voice: selectedVoice,
+                            language: selectedLanguage,
+                            speed: speed,
+                            pitch: pitch
+                        })
+                    });
 
-                if (response.ok) {
-                    var data = await response.json();
-                    showGeneratedFiles([{
-                        name: 'audioguide_complete.mp3',
-                        url: data.audioUrl,
-                        size: 'Processing...',
-                        duration: 'Processing...'
-                    }]);
-                } else {
-                    throw new Error('Backend API error');
-                }
-            } catch (error) {
-                console.error('Fallback generation failed:', error);
-                // Show demo files as last resort
-                showGeneratedFiles();
-            }
-        }
-
-        // Check job status for Lovo API
-        async function checkJobsStatus(jobs) {
-            var completedJobs = [];
-            var maxRetries = 30; // 30 seconds max wait
-            var retryCount = 0;
-            
-            while (completedJobs.length < jobs.length && retryCount < maxRetries) {
-                for (var job of jobs) {
-                    if (!completedJobs.find(j => j.jobId === job.jobId)) {
-                        try {
-                            var statusResponse = await fetch(`https://api.genny.lovo.ai/api/v1/tts/${job.jobId}`, {
-                                method: 'GET',
-                                headers: {
-                                    'Authorization': 'Bearer ' + LOVO_API_KEY
-                                }
+                    if (response.ok) {
+                        var data = await response.json();
+                        if (data.audioUrl) {
+                            generatedFiles.push({
+                                name: chunks.length > 1 ? `audioguide_part_${i + 1}.mp3` : 'audioguide_complete.mp3',
+                                url: data.audioUrl,
+                                size: 'Processing...',
+                                duration: 'Processing...'
                             });
-                            
-                            if (statusResponse.ok) {
-                                var statusData = await statusResponse.json();
-                                if (statusData.status === 'completed' && statusData.download_url) {
-                                    completedJobs.push({
-                                        ...job,
-                                        url: statusData.download_url
-                                    });
-                                }
-                            }
-                        } catch (error) {
-                            console.error('Error checking job status:', error);
+                        }
+                    } else {
+                        var errorData = await response.json();
+                        console.error('Backend API error:', errorData);
+                        
+                        // If backend fails, show demo files
+                        if (generatedFiles.length === 0) {
+                            showGeneratedFiles();
+                            alert('Using demo files. Please check API configuration.');
+                            return;
                         }
                     }
                 }
                 
-                if (completedJobs.length < jobs.length) {
-                    await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
-                    retryCount++;
+                if (generatedFiles.length > 0) {
+                    showGeneratedFiles(generatedFiles);
+                } else {
+                    // Show demo files as fallback
+                    showGeneratedFiles();
+                    alert('Audio generation completed with demo files.');
+                }
+                
+            } catch (error) {
+                console.error('Backend API error:', error);
+                // Show demo files as fallback
+                showGeneratedFiles();
+                alert('Using demo files. Backend API connection failed.');
+            }
+        }
+
+        // Split text into chunks for API limits
+        function splitTextIntoChunks(text, maxLength) {
+            if (text.length <= maxLength) {
+                return [text];
+            }
+            
+            var chunks = [];
+            var stops = text.split(/STOP \d+:/);
+            
+            var currentChunk = '';
+            for (var i = 0; i < stops.length; i++) {
+                var stop = stops[i].trim();
+                if (stop) {
+                    if (currentChunk.length + stop.length > maxLength) {
+                        if (currentChunk) {
+                            chunks.push(currentChunk);
+                        }
+                        currentChunk = stop;
+                    } else {
+                        currentChunk += (currentChunk ? '\n\n' : '') + stop;
+                    }
                 }
             }
             
-            // Show the generated files
-            if (completedJobs.length > 0) {
-                var files = completedJobs.map(job => ({
-                    name: `stop_${job.stopNumber + 1}.mp3`,
-                    url: job.url,
-                    size: 'Download to view',
-                    duration: 'Available'
-                }));
-                showGeneratedFiles(files);
+            if (currentChunk) {
+                chunks.push(currentChunk);
             }
+            
+            return chunks.length > 0 ? chunks : [text.substring(0, maxLength)];
         }
 
         // Show generated files
@@ -917,7 +874,7 @@ Welcome to this remarkable destination. This audioguide will take you on a journ
             fileList.innerHTML = '';
             
             // Use provided files or demo files
-            if (!files) {
+            if (!files || files.length === 0) {
                 files = [
                     { name: 'audioguide_complete.mp3', size: '45.2 MB', duration: '32:15' },
                     { name: 'stop_1_introduction.mp3', size: '5.8 MB', duration: '4:12' },
@@ -947,17 +904,17 @@ Welcome to this remarkable destination. This audioguide will take you on a journ
 
         // Play file
         function playFile(url) {
-            if (url.startsWith('http')) {
+            if (url && url.startsWith('http')) {
                 // Open in new tab for now
                 window.open(url, '_blank');
             } else {
-                alert('Playing: ' + url);
+                alert('Demo: Playing ' + url);
             }
         }
 
         // Download file
         function downloadFile(url, filename) {
-            if (url.startsWith('http')) {
+            if (url && url.startsWith('http')) {
                 var a = document.createElement('a');
                 a.href = url;
                 a.download = filename;
@@ -965,7 +922,7 @@ Welcome to this remarkable destination. This audioguide will take you on a journ
                 a.click();
                 document.body.removeChild(a);
             } else {
-                alert('Downloading: ' + filename);
+                alert('Demo: Downloading ' + filename);
             }
         }
 
