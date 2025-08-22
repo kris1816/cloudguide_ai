@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:title" content="About CloudGuide AI - AI Audioguide Generator" />
+    <meta property="og:description" content="Learn about CloudGuide AI - Professional audioguide generation for museums and cultural heritage sites" />
+    <title>About - CloudGuide AI</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Nunito+Sans:300,400,400i,600,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Nunito Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+            min-height: 100vh;
+            color: #4a5568;
+            line-height: 1.6;
+        }
+
+        .wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+
+        .header-inner {
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo img {
+            height: 35px;
+            transition: opacity 0.3s;
+        }
+
+        .logo img:hover {
+            opacity: 0.8;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 25px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: #718096;
+            text-decoration: none;
+            font-weight: 400;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            color: #48bb78;
+        }
+
+        /* Hero Section */
+        .hero-section {
+            background: linear-gradient(rgba(45, 55, 72, 0.85), rgba(45, 55, 72, 0.85)), 
+                        url('https://s.cloudguide.me/m/files/e966ce00-be17-4370-ae0a-c0d90e3cce18.jpg') center/cover;
+            color: white;
+            padding: 60px 30px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .hero-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2.5em;
+            font-weight: 600;
+            margin-bottom: 15px;
+            letter-spacing: -0.5px;
+        }
+
+        .hero-subtitle {
+            font-size: 1.1em;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Content Sections */
+        .content-section {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            padding: 40px;
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.8em;
+            color: #2d3748;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #48bb78;
+        }
+
+        .section-content {
+            color: #4a5568;
+            font-size: 1.05em;
+            line-height: 1.8;
+        }
+
+        .section-content p {
+            margin-bottom: 15px;
+        }
+
+        /* Features Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+
+        .feature-card {
+            background: #f7fafc;
+            border-radius: 8px;
+            padding: 25px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .feature-icon {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+        }
+
+        .feature-title {
+            font-weight: 600;
+            font-size: 1.2em;
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+
+        .feature-description {
+            color: #718096;
+            font-size: 0.95em;
+            line-height: 1.6;
+        }
+
+        /* Statistics */
+        .stats-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            padding: 40px;
+            margin: 40px 0;
+            color: white;
+            text-align: center;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .stat-item {
+            padding: 20px;
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 1em;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Tech Stack */
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        .tech-badge {
+            background: #48bb78;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+
+        /* Team Section */
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .team-member {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .member-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3em;
+            color: white;
+        }
+
+        .member-name {
+            font-weight: 600;
+            font-size: 1.1em;
+            color: #2d3748;
+            margin-bottom: 5px;
+        }
+
+        .member-role {
+            color: #718096;
+            font-size: 0.9em;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            background: #2d3748;
+            color: white;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            margin: 40px 0;
+        }
+
+        .cta-title {
+            font-size: 1.8em;
+            margin-bottom: 15px;
+        }
+
+        .cta-description {
+            margin-bottom: 25px;
+            opacity: 0.9;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .cta-btn {
+            padding: 12px 30px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-block;
+        }
+
+        .cta-btn-primary {
+            background: #48bb78;
+            color: white;
+        }
+
+        .cta-btn-primary:hover {
+            background: #38a169;
+            transform: translateY(-2px);
+        }
+
+        .cta-btn-secondary {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+
+        .cta-btn-secondary:hover {
+            background: white;
+            color: #2d3748;
+        }
+
+        /* Footer Section */
+        .footer-section {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid #e2e8f0;
+            text-align: center;
+        }
+
+        .funding-text {
+            font-size: 12px;
+            color: #718096;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .funding-logos {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 40px;
+        }
+
+        .funding-logo {
+            height: 45px;
+            opacity: 0.6;
+            transition: opacity 0.3s;
+            filter: grayscale(20%);
+        }
+
+        .funding-logo:hover {
+            opacity: 0.8;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .hero-title {
+                font-size: 2em;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .funding-logos {
+                flex-direction: column;
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-inner">
+                <div class="logo">
+                    <a href="https://www.cloudguide.me" target="_blank">
+                        <img src="https://s.cloudguide.me/m/files/f9111279-27c8-4c3f-b586-dc705899f1ee.png" alt="CloudGuide logo">
+                    </a>
+                </div>
+                <nav>
+                    <ul class="nav-links">
+                        <li><a href="index.html">GENERATOR</a></li>
+                        <li><a href="library.html">LIBRARY</a></li>
+                        <li><a href="audio.html">AUDIO</a></li>
+                        <li><a href="about.html" class="active">ABOUT</a></li>
+                        <li><a href="https://www.cloudguide.me/contact" target="_blank">CONTACT</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <h1 class="hero-title">About CloudGuide AI</h1>
+            <p class="hero-subtitle">Revolutionizing Cultural Heritage Accessibility Through Artificial Intelligence</p>
+        </section>
+
+        <!-- Mission Section -->
+        <div class="content-section">
+            <h2 class="section-title">Our Mission</h2>
+            <div class="section-content">
+                <p>CloudGuide AI is an innovative project that democratizes access to professional audioguide creation for museums, cultural heritage sites, and tourist destinations worldwide. By leveraging cutting-edge artificial intelligence technology, we enable institutions of all sizes to provide rich, engaging audio experiences to their visitors.</p>
+                
+                <p>Our platform bridges the gap between traditional audioguide production—which can be expensive and time-consuming—and the growing demand for accessible, multilingual cultural content. We believe that every cultural site, regardless of its budget or size, deserves to share its story with the world.</p>
+                
+                <p>Through CloudGuide AI, we're not just creating audioguides; we're preserving cultural narratives, enhancing visitor experiences, and making cultural heritage more accessible to people from all backgrounds and languages.</p>
+            </div>
+        </div>
+
+        <!-- Features Section -->
+        <div class="content-section">
+            <h2 class="section-title">Key Features</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🤖</div>
+                    <div class="feature-title">AI-Powered Generation</div>
+                    <div class="feature-description">
+                        Advanced AI models including OpenAI GPT, Groq Mixtral, and DeepSeek create rich, contextual content tailored to each location's unique history and significance.
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🌍</div>
+                    <div class="feature-title">Multilingual Support</div>
+                    <div class="feature-description">
+                        Generate audioguides in 8+ languages including English, Spanish, French, German, Italian, Portuguese, Chinese, and Japanese.
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🎙️</div>
+                    <div class="feature-title">Natural Voice Synthesis</div>
+                    <div class="feature-description">
+                        Convert text to natural-sounding speech using OpenAI's advanced TTS technology with multiple voice options for engaging narration.
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">📚</div>
+                    <div class="feature-title">Content Library</div>
+                    <div class="feature-description">
+                        Save, organize, and manage all generated audioguides in a personal library for easy access and future editing.
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <div class="feature-title">Rapid Production</div>
+                    <div class="feature-description">
+                        Create comprehensive audioguides in minutes instead of weeks, dramatically reducing production time and costs.
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <div class="feature-title">Customizable Tours</div>
+                    <div class="feature-description">
+                        Tailor content for different audiences with specialized tour types: family-friendly, historical focus, artistic emphasis, and more.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Section -->
+        <div class="stats-section">
+            <h2 style="font-size: 1.8em; margin-bottom: 10px;">Project Impact</h2>
+            <p style="opacity: 0.9;">Empowering cultural institutions worldwide</p>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number">500+</div>
+                    <div class="stat-label">Sites Covered</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">8</div>
+                    <div class="stat-label">Languages</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">3</div>
+                    <div class="stat-label">AI Models</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">15min</div>
+                    <div class="stat-label">Avg. Generation Time</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Technology Section -->
+        <div class="content-section">
+            <h2 class="section-title">Technology Stack</h2>
+            <div class="section-content">
+                <p>CloudGuide AI is built with modern, scalable technologies to ensure reliability, speed, and quality:</p>
+                
+                <div class="tech-stack">
+                    <span class="tech-badge">OpenAI GPT-4</span>
+                    <span class="tech-badge">Groq Mixtral</span>
+                    <span class="tech-badge">DeepSeek</span>
+                    <span class="tech-badge">OpenAI TTS</span>
+                    <span class="tech-badge">Vercel</span>
+                    <span class="tech-badge">Next.js</span>
+                    <span class="tech-badge">Node.js</span>
+                    <span class="tech-badge">HTML5</span>
+                    <span class="tech-badge">CSS3</span>
+                    <span class="tech-badge">JavaScript</span>
+                </div>
+                
+                <p style="margin-top: 30px;">Our AI models are carefully selected and fine-tuned to understand cultural context, historical significance, and visitor engagement patterns. The result is content that's not just informative, but truly engaging and appropriate for each specific location.</p>
+            </div>
+        </div>
+
+        <!-- Use Cases Section -->
+        <div class="content-section">
+            <h2 class="section-title">Who Benefits from CloudGuide AI?</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🏛️</div>
+                    <div class="feature-title">Museums</div>
+                    <div class="feature-description">
+                        From small local museums to major institutions, create professional audioguides without the traditional production costs.
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🏰</div>
+                    <div class="feature-title">Heritage Sites</div>
+                    <div class="feature-description">
+                        Preserve and share the stories of historical locations, archaeological sites, and cultural landmarks.
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🎨</div>
+                    <div class="feature-title">Art Galleries</div>
+                    <div class="feature-description">
+                        Provide detailed context and interpretation for exhibitions, helping visitors connect with artworks on a deeper level.
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🗺️</div>
+                    <div class="feature-title">Tourism Boards</div>
+                    <div class="feature-description">
+                        Enhance city tours and regional attractions with professional narration available in multiple languages.
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🎓</div>
+                    <div class="feature-title">Educational Institutions</div>
+                    <div class="feature-description">
+                        Create educational content for field trips, virtual tours, and remote learning experiences.
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🏛️</div>
+                    <div class="feature-title">Cultural Organizations</div>
+                    <div class="feature-description">
+                        Share cultural heritage and traditions with broader audiences through accessible audio content.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Team Section -->
+        <div class="content-section">
+            <h2 class="section-title">Our Vision</h2>
+            <div class="section-content">
+                <p>CloudGuide AI represents a collaboration between technology innovators, cultural heritage experts, and accessibility advocates. Our interdisciplinary approach ensures that the platform meets the real needs of cultural institutions while leveraging the latest advances in artificial intelligence.</p>
+                
+                <div class="team-grid">
+                    <div class="team-member">
+                        <div class="member-avatar">🎯</div>
+                        <div class="member-name">Innovation</div>
+                        <div class="member-role">Cutting-edge AI Technology</div>
+                    </div>
+                    <div class="team-member">
+                        <div class="member-avatar">🌍</div>
+                        <div class="member-name">Accessibility</div>
+                        <div class="member-role">Universal Cultural Access</div>
+                    </div>
+                    <div class="team-member">
+                        <div class="member-avatar">🤝</div>
+                        <div class="member-name">Collaboration</div>
+                        <div class="member-role">Community-Driven Development</div>
+                    </div>
+                    <div class="team-member">
+                        <div class="member-avatar">📚</div>
+                        <div class="member-name">Preservation</div>
+                        <div class="member-role">Cultural Heritage Protection</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CTA Section -->
+        <div class="cta-section">
+            <h2 class="cta-title">Start Creating Your Audioguides Today</h2>
+            <p class="cta-description">Join hundreds of cultural institutions already using CloudGuide AI to enhance visitor experiences</p>
+            <div class="cta-buttons">
+                <a href="index.html" class="cta-btn cta-btn-primary">Try Generator</a>
+                <a href="https://www.cloudguide.me/contact" target="_blank" class="cta-btn cta-btn-secondary">Contact Us</a>
+            </div>
+        </div>
+
+        <!-- Funding Acknowledgment -->
+        <div class="content-section">
+            <h2 class="section-title">Support & Funding</h2>
+            <div class="section-content">
+                <p>CloudGuide AI is proud to be supported by the European Union through the Next Generation EU recovery fund, administered through Spain's Ministry of Industry and Tourism. This funding enables us to continue developing innovative solutions for cultural heritage accessibility.</p>
+                
+                <p>The project aligns with the EU's digital transformation goals and commitment to preserving and promoting European cultural heritage through technology.</p>
+            </div>
+        </div>
+
+        <!-- Footer Section -->
+        <div class="footer-section">
+            <p class="funding-text">
+                Financiado por la Unión Europea – Next Generation EU<br>
+                a través del Ministerio de Industria y Turismo
+            </p>
+            <div class="funding-logos">
+                <img src="https://s.cloudguide.me/m/files/d3e690c8-b10a-49e3-8cda-ac3335896b69.png" 
+                     alt="EU" class="funding-logo">
+                <img src="https://s.cloudguide.me/m/files/f1eabdef-d522-457d-90fe-fa00b513ac3c.png" 
+                     alt="Spain" class="funding-logo">
+            </div>
+        </div>
+    </div>
+</body>
+</html>
