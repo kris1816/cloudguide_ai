@@ -997,7 +997,7 @@
             }
         }
 
-        // New Groq API integration function
+        // Enhanced Groq API integration function
         async function generateWithGroq(destination, language, tourType, stops, context) {
             updateProgress(5, 'Connecting to Groq AI...', 1);
             
@@ -1023,28 +1023,40 @@
                 });
 
                 console.log('Groq response status:', response.status);
-                console.log('Groq response headers:', response.headers.get('content-type'));
 
                 // Get the raw response text first
                 var responseText = await response.text();
-                console.log('Raw response:', responseText.substring(0, 200) + '...');
+                console.log('Raw response preview:', responseText.substring(0, 200) + '...');
 
                 if (!response.ok) {
-                    // If it's HTML error page, show a simpler error
-                    if (responseText.includes('<html') || responseText.includes('<!DOCTYPE')) {
-                        throw new Error(`Server error (${response.status}). Check your Groq API key in Vercel settings.`);
-                    }
-                    
-                    // Try to parse error JSON
+                    // Try to parse error JSON for better error messages
                     try {
                         var errorData = JSON.parse(responseText);
-                        throw new Error(errorData.error || errorData.message || 'Groq API request failed');
+                        var errorMessage = 'Groq API Error: ';
+                        
+                        if (errorData.error === 'Groq API key not configured in environment variables') {
+                            errorMessage += 'API key not set. Please configure GROQ_API_KEY in Vercel settings.';
+                        } else if (errorData.error === 'All Groq models failed') {
+                            errorMessage += 'All Groq models are currently unavailable. Try using OpenAI or DeepSeek instead.';
+                        } else {
+                            errorMessage += errorData.error || errorData.message || 'Unknown error';
+                        }
+                        
+                        if (errorData.suggestion) {
+                            errorMessage += ' Suggestion: ' + errorData.suggestion;
+                        }
+                        
+                        throw new Error(errorMessage);
                     } catch (parseError) {
-                        throw new Error(`API error (${response.status}): ${responseText.substring(0, 100)}`);
+                        // If it's HTML error page
+                        if (responseText.includes('<html') || responseText.includes('<!DOCTYPE')) {
+                            throw new Error(`Server error (${response.status}). Check your Groq API key in Vercel environment variables.`);
+                        }
+                        throw new Error(`Groq API error (${response.status}): ${responseText.substring(0, 150)}`);
                     }
                 }
 
-                updateProgress(50, 'Processing Groq response...', 3);
+                updateProgress(80, 'Processing Groq response...', 4);
                 
                 // Try to parse the successful response
                 var data;
@@ -1052,10 +1064,10 @@
                     data = JSON.parse(responseText);
                 } catch (parseError) {
                     console.error('Failed to parse response as JSON:', parseError);
-                    throw new Error('Invalid response format from server');
+                    throw new Error('Invalid response format from Groq server');
                 }
                 
-                console.log('Groq response data keys:', Object.keys(data));
+                console.log('Groq success! Model used:', data.modelUsed || 'unknown');
                 
                 updateProgress(100, 'Audioguide completed!', 5);
                 
@@ -1064,7 +1076,18 @@
                 
             } catch (error) {
                 console.error('Groq API Error:', error);
-                throw new Error('Groq generation failed: ' + error.message);
+                // Provide helpful error message based on error type
+                var userFriendlyError = error.message;
+                
+                if (error.message.includes('API key')) {
+                    userFriendlyError = 'Groq API key not configured. Please set GROQ_API_KEY in your Vercel environment variables.';
+                } else if (error.message.includes('models failed')) {
+                    userFriendlyError = 'Groq models are currently unavailable. Try selecting OpenAI or DeepSeek instead.';
+                } else if (error.message.includes('500')) {
+                    userFriendlyError = 'Groq server error. Please try again in a few minutes or use OpenAI/DeepSeek.';
+                }
+                
+                throw new Error(userFriendlyError);
             }
         }
 
