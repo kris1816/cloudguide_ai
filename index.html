@@ -1002,7 +1002,14 @@
             updateProgress(5, 'Connecting to Groq AI...', 1);
             
             try {
-                var response = await fetch('/api/groq.js', {
+                console.log('Sending request to Groq with:', {
+                    destination: destination,
+                    stops: stops,
+                    tourType: tourType,
+                    language: language
+                });
+
+                var response = await fetch('/api/groq', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1011,19 +1018,44 @@
                         destination: destination,
                         stops: stops,
                         tourType: tourType,
-                        language: language,
-                        context: context
+                        language: language
                     })
                 });
 
+                console.log('Groq response status:', response.status);
+                console.log('Groq response headers:', response.headers.get('content-type'));
+
+                // Get the raw response text first
+                var responseText = await response.text();
+                console.log('Raw response:', responseText.substring(0, 200) + '...');
+
                 if (!response.ok) {
-                    var errorData = await response.json();
-                    throw new Error(errorData.error || 'Groq API request failed');
+                    // If it's HTML error page, show a simpler error
+                    if (responseText.includes('<html') || responseText.includes('<!DOCTYPE')) {
+                        throw new Error(`Server error (${response.status}). Check your Groq API key in Vercel settings.`);
+                    }
+                    
+                    // Try to parse error JSON
+                    try {
+                        var errorData = JSON.parse(responseText);
+                        throw new Error(errorData.error || errorData.message || 'Groq API request failed');
+                    } catch (parseError) {
+                        throw new Error(`API error (${response.status}): ${responseText.substring(0, 100)}`);
+                    }
                 }
 
-                updateProgress(90, 'Processing Groq response...', 4);
+                updateProgress(50, 'Processing Groq response...', 3);
                 
-                var data = await response.json();
+                // Try to parse the successful response
+                var data;
+                try {
+                    data = JSON.parse(responseText);
+                } catch (parseError) {
+                    console.error('Failed to parse response as JSON:', parseError);
+                    throw new Error('Invalid response format from server');
+                }
+                
+                console.log('Groq response data keys:', Object.keys(data));
                 
                 updateProgress(100, 'Audioguide completed!', 5);
                 
