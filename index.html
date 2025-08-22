@@ -516,9 +516,9 @@
                 </div>
                 <nav>
                     <ul class="nav-links">
-                        <li><a href="https://www.cloudguide.me/login" target="_blank">LOGIN</a></li>
-                        <li><a href="https://www.cloudguide.me/signup" target="_blank">SIGNUP</a></li>
-                        <li><a href="https://www.cloudguide.me/cities" target="_blank">OUR SITES</a></li>
+                        <li><a href="index.html" style="color: #48bb78;">GENERATOR</a></li>
+                        <li><a href="library.html">LIBRARY</a></li>
+                        <li><a href="audio.html">AUDIO</a></li>
                         <li><a href="https://www.cloudguide.me/contact" target="_blank">CONTACT</a></li>
                     </ul>
                 </nav>
@@ -655,6 +655,10 @@
 
             <div class="success-message" id="success">
                 ✓ Audioguide generated successfully. Check your downloads folder.
+                <div style="margin-top: 15px;">
+                    <a href="library.html" style="color: white; text-decoration: underline;">View in Library</a> | 
+                    <a href="audio.html" style="color: white; text-decoration: underline;">Generate Audio</a>
+                </div>
             </div>
 
             <!-- Footer Section -->
@@ -810,13 +814,17 @@
             try {
                 var audioguideContent = await generateAudioguideContent(location, language, tourType, stops, context, aiModel, useFile);
                 
+                // Save to localStorage for Library
+                saveToLibrary(location, language, tourType, stops, audioguideContent);
+                
+                // Download the file
                 downloadAudioguide(audioguideContent, location);
                 
                 document.getElementById('success').classList.add('active');
                 
                 setTimeout(function() {
                     document.getElementById('success').classList.remove('active');
-                }, 5000);
+                }, 8000);
                 
             } catch (error) {
                 console.error('Error:', error);
@@ -825,6 +833,37 @@
                 document.getElementById('generateBtn').disabled = false;
                 document.getElementById('loading').classList.remove('active');
             }
+        }
+
+        function saveToLibrary(location, language, tourType, stops, content) {
+            // Get existing audioguides
+            var audioguides = [];
+            var stored = localStorage.getItem('cloudguide_audioguides');
+            if (stored) {
+                audioguides = JSON.parse(stored);
+            }
+            
+            // Add new audioguide
+            var newGuide = {
+                id: Date.now(),
+                title: location,
+                location: location,
+                language: language,
+                tourType: tourType,
+                stops: stops,
+                date: new Date().toISOString(),
+                content: content
+            };
+            
+            audioguides.unshift(newGuide); // Add to beginning
+            
+            // Keep only last 50 audioguides
+            if (audioguides.length > 50) {
+                audioguides = audioguides.slice(0, 50);
+            }
+            
+            // Save back to localStorage
+            localStorage.setItem('cloudguide_audioguides', JSON.stringify(audioguides));
         }
 
         async function generateAudioguideContent(location, language, tourType, totalStops, context, aiModel, useFile) {
