@@ -599,6 +599,7 @@
                         <li><a href="index.html" style="color: #48bb78;">GENERATOR</a></li>
                         <li><a href="library.html">LIBRARY</a></li>
                         <li><a href="audio.html">AUDIO</a></li>
+                        <li><a href="about.html">ABOUT</a></li>
                         <li><a href="https://www.cloudguide.me/contact" target="_blank">CONTACT</a></li>
                     </ul>
                 </nav>
@@ -712,14 +713,17 @@
             <div class="form-group">
                 <label for="stops">Number of Stops</label>
                 <select id="stops" class="form-element">
-                    <option value="5">Minimum (5 stops)</option>
+                    <option value="3">Quick Tour (3 stops)</option>
+                    <option value="5">Short (5 stops)</option>
                     <option value="8" selected>Standard (8 stops)</option>
                     <option value="10">Extended (10 stops)</option>
                     <option value="12">Comprehensive (12 stops)</option>
-                    <option value="15">Maximum (15 stops)</option>
+                    <option value="15">Detailed (15 stops)</option>
+                    <option value="20">In-Depth (20 stops)</option>
+                    <option value="25">Maximum (25 stops)</option>
                 </select>
                 <small style="color: #a0aec0; display: block; margin-top: 10px; font-size: 12px;">
-                    Each tour includes: Introduction, History, Local Cuisine, and Practical Tips as core content
+                    Each stop contains ~900 words. More stops = longer, more detailed audioguide.
                 </small>
             </div>
 
@@ -951,7 +955,15 @@
             document.getElementById('success').classList.remove('active');
 
             try {
-                var audioguideContent = await generateAudioguideContent(location, language, tourType, stops, context, aiModel, useFile);
+                var audioguideContent;
+
+                if (aiModel === 'groq') {
+                    // Use the new Groq API integration
+                    audioguideContent = await generateWithGroq(location, language, tourType, stops, context);
+                } else {
+                    // Use the existing method for other AI models
+                    audioguideContent = await generateAudioguideContent(location, language, tourType, stops, context, aiModel, useFile);
+                }
                 
                 // Save to localStorage for Library
                 saveToLibrary(location, language, tourType, stops, audioguideContent);
@@ -967,7 +979,7 @@
                 
             } catch (error) {
                 console.error('Error:', error);
-                alert('Failed to generate audioguide. Please try again.');
+                alert('Failed to generate audioguide: ' + error.message);
             } finally {
                 document.getElementById('generateBtn').disabled = false;
                 document.getElementById('loading').classList.remove('active');
@@ -982,6 +994,64 @@
                         step.querySelector('.step-icon').textContent = '⚪';
                     });
                 }, 2000);
+            }
+        }
+
+        // New Groq API integration function
+        async function generateWithGroq(destination, language, tourType, stops, context) {
+            updateProgress(5, 'Connecting to Groq AI...', 1);
+            
+            try {
+                console.log('Sending request to Groq with:', {
+                    destination: destination,
+                    stops: stops,
+                    tourType: tourType,
+                    language: language,
+                    context: context
+                });
+
+                var response = await fetch('/api/groq', {  // Fixed: removed .js extension
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        destination: destination,
+                        stops: stops,
+                        tourType: tourType,
+                        language: language,
+                        context: context
+                    })
+                });
+
+                console.log('Groq response status:', response.status);
+
+                if (!response.ok) {
+                    var errorText = await response.text();
+                    console.error('Groq API Error Response:', errorText);
+                    
+                    // Try to parse as JSON for better error message
+                    try {
+                        var errorData = JSON.parse(errorText);
+                        throw new Error(errorData.error || errorData.message || 'Groq API request failed');
+                    } catch (parseError) {
+                        throw new Error(`Groq API request failed (${response.status}): ${errorText}`);
+                    }
+                }
+
+                updateProgress(90, 'Processing Groq response...', 4);
+                
+                var data = await response.json();
+                console.log('Groq response data:', data);
+                
+                updateProgress(100, 'Audioguide completed!', 5);
+                
+                // Return the formatted content from Groq
+                return data.content || data.message || 'Error: No content generated';
+                
+            } catch (error) {
+                console.error('Groq API Error:', error);
+                throw new Error('Groq generation failed: ' + error.message);
             }
         }
 
