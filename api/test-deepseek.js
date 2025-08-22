@@ -1,5 +1,5 @@
-// api/test-deepseek.js
 export default async function handler(req, res) {
+  // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -9,83 +9,53 @@ export default async function handler(req, res) {
   }
 
   try {
-    const apiKey = process.env.DEEPSEEK_API_KEY;
+    // Test the DeepSeek API directly with a simple prompt
+    const DEEPSEEK_API_KEY = 'sk-02c5e57c70a24590bf83a60f3ea8a226';
     
-    // Check if API key exists
-    if (!apiKey) {
-      return res.status(500).json({ 
-        error: 'DEEPSEEK_API_KEY not found in environment variables',
-        debug: {
-          hasKey: false,
-          keyLength: 0,
-          allEnvKeys: Object.keys(process.env).filter(key => key.includes('DEEPSEEK'))
-        }
-      });
-    }
-
-    // Check API key format
-    if (!apiKey.startsWith('sk-')) {
-      return res.status(500).json({ 
-        error: 'Invalid API key format',
-        debug: {
-          hasKey: true,
-          keyLength: apiKey.length,
-          keyPrefix: apiKey.substring(0, 3),
-          expectedPrefix: 'sk-'
-        }
-      });
-    }
-
-    // Test API call to DeepSeek
+    console.log('Testing DeepSeek API...');
+    
     const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
+        'Authorization': `Bearer ${DEEPSEEK_API_KEY}`,
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         model: 'deepseek-chat',
         messages: [
           {
             role: 'user',
-            content: 'Test message. Reply with "API working".'
+            content: 'Write a one paragraph description of the Eiffel Tower.'
           }
         ],
-        max_tokens: 10
+        max_tokens: 200,
+        temperature: 0.7
       })
     });
 
+    const responseText = await response.text();
+    console.log('Response status:', response.status);
+    console.log('Response:', responseText);
+
     if (!response.ok) {
-      const errorData = await response.json();
-      return res.status(response.status).json({ 
-        error: 'DeepSeek API rejected the request',
+      return res.status(200).json({ 
+        error: true,
         status: response.status,
-        details: errorData,
-        debug: {
-          hasKey: true,
-          keyLength: apiKey.length,
-          keyPrefix: apiKey.substring(0, 10) + '...'
-        }
+        message: responseText
       });
     }
 
-    const data = await response.json();
+    const data = JSON.parse(responseText);
     
     return res.status(200).json({
       success: true,
-      message: 'DeepSeek API is working correctly!',
-      response: data.choices[0].message.content,
-      debug: {
-        hasKey: true,
-        keyLength: apiKey.length,
-        model: data.model,
-        usage: data.usage
-      }
+      response: data,
+      content: data.choices?.[0]?.message?.content || 'No content'
     });
 
   } catch (error) {
-    return res.status(500).json({ 
-      error: 'Test failed',
+    return res.status(200).json({ 
+      error: true,
       message: error.message,
       stack: error.stack
     });
