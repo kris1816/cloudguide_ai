@@ -114,8 +114,6 @@
             padding: 35px;
         }
 
-        /* Stats Section - REMOVED */
-
         /* Form Elements */
         .form-group {
             margin-bottom: 25px;
@@ -363,6 +361,88 @@
             background: #4a5568;
         }
 
+        /* Progress Bar */
+        .progress-container {
+            display: none;
+            margin-top: 20px;
+            background: #f7fafc;
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .progress-container.active {
+            display: block;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .progress-title {
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 14px;
+        }
+
+        .progress-percentage {
+            color: #48bb78;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #48bb78 0%, #38a169 100%);
+            width: 0%;
+            transition: width 0.5s ease;
+            border-radius: 4px;
+        }
+
+        .progress-status {
+            margin-top: 12px;
+            font-size: 13px;
+            color: #718096;
+            font-style: italic;
+        }
+
+        .progress-steps {
+            margin-top: 15px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+        }
+
+        .progress-step {
+            display: flex;
+            align-items: center;
+            font-size: 12px;
+            color: #a0aec0;
+        }
+
+        .progress-step.active {
+            color: #48bb78;
+            font-weight: 600;
+        }
+
+        .progress-step.completed {
+            color: #4a5568;
+        }
+
+        .step-icon {
+            margin-right: 6px;
+        }
+
         /* Loading State */
         .loading {
             display: none;
@@ -519,6 +599,7 @@
                         <li><a href="index.html" style="color: #48bb78;">GENERATOR</a></li>
                         <li><a href="library.html">LIBRARY</a></li>
                         <li><a href="audio.html">AUDIO</a></li>
+                        <li><a href="about.html">ABOUT</a></li>
                         <li><a href="https://www.cloudguide.me/contact" target="_blank">CONTACT</a></li>
                     </ul>
                 </nav>
@@ -545,9 +626,13 @@
             <div class="form-group">
                 <label for="aiModel">AI Model</label>
                 <select id="aiModel" class="form-element">
-                    <option value="deepseek">DeepSeek</option>
-                    <option value="openai">OpenAI GPT</option>
+                    <option value="openai">OpenAI GPT (Best Quality)</option>
+                    <option value="groq">Groq Mixtral (Fast & Free)</option>
+                    <option value="deepseek">DeepSeek (Budget)</option>
                 </select>
+                <small style="color: #a0aec0; display: block; margin-top: 8px; font-size: 12px;">
+                    💡 Groq is free and fast. OpenAI provides the best quality. DeepSeek is most affordable.
+                </small>
             </div>
 
             <!-- Location Input Tab -->
@@ -648,6 +733,35 @@
                 Generate Audioguide
             </button>
 
+            <!-- Progress Bar -->
+            <div class="progress-container" id="progressContainer">
+                <div class="progress-header">
+                    <div class="progress-title">Generating Audioguide</div>
+                    <div class="progress-percentage" id="progressPercentage">0%</div>
+                </div>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" id="progressBar"></div>
+                </div>
+                <div class="progress-status" id="progressStatus">Initializing...</div>
+                <div class="progress-steps" id="progressSteps">
+                    <div class="progress-step" data-step="1">
+                        <span class="step-icon">⚪</span> Introduction
+                    </div>
+                    <div class="progress-step" data-step="2">
+                        <span class="step-icon">⚪</span> History
+                    </div>
+                    <div class="progress-step" data-step="3">
+                        <span class="step-icon">⚪</span> Attractions
+                    </div>
+                    <div class="progress-step" data-step="4">
+                        <span class="step-icon">⚪</span> Cuisine
+                    </div>
+                    <div class="progress-step" data-step="5">
+                        <span class="step-icon">⚪</span> Tips
+                    </div>
+                </div>
+            </div>
+
             <div class="loading" id="loading">
                 <div class="spinner"></div>
                 <div class="loading-text">Creating your audioguide</div>
@@ -681,6 +795,32 @@
         var currentTab = 'location';
         var uploadedFile = null;
         var uploadedFileContent = null;
+
+        // Progress tracking
+        var currentProgress = 0;
+        var totalSteps = 0;
+        var completedSteps = 0;
+
+        function updateProgress(percentage, status, currentStep) {
+            document.getElementById('progressContainer').classList.add('active');
+            document.getElementById('progressBar').style.width = percentage + '%';
+            document.getElementById('progressPercentage').textContent = Math.round(percentage) + '%';
+            document.getElementById('progressStatus').textContent = status;
+            
+            // Update step indicators
+            if (currentStep) {
+                var steps = document.querySelectorAll('.progress-step');
+                steps.forEach(function(step, index) {
+                    if (index < currentStep - 1) {
+                        step.classList.add('completed');
+                        step.querySelector('.step-icon').textContent = '✅';
+                    } else if (index === currentStep - 1) {
+                        step.classList.add('active');
+                        step.querySelector('.step-icon').textContent = '⏳';
+                    }
+                });
+            }
+        }
 
         function switchTab(tab) {
             currentTab = tab;
@@ -832,6 +972,17 @@
             } finally {
                 document.getElementById('generateBtn').disabled = false;
                 document.getElementById('loading').classList.remove('active');
+                
+                // Hide progress bar after 2 seconds
+                setTimeout(function() {
+                    document.getElementById('progressContainer').classList.remove('active');
+                    // Reset progress
+                    document.getElementById('progressBar').style.width = '0%';
+                    document.querySelectorAll('.progress-step').forEach(function(step) {
+                        step.classList.remove('active', 'completed');
+                        step.querySelector('.step-icon').textContent = '⚪';
+                    });
+                }, 2000);
             }
         }
 
@@ -872,38 +1023,59 @@
             content += 'Language: ' + language + '\n';
             content += 'Tour Type: ' + tourType + '\n';
             content += 'Total Stops: ' + totalStops + '\n';
-            content += 'AI Model: ' + (aiModel === 'openai' ? 'OpenAI GPT' : 'DeepSeek') + '\n';
+            
+            // Update AI Model name display
+            var modelName = aiModel === 'openai' ? 'OpenAI GPT' : 
+                            aiModel === 'groq' ? 'Groq Mixtral' : 'DeepSeek';
+            content += 'AI Model: ' + modelName + '\n';
             content += 'Source: ' + (useFile ? 'Uploaded Document' : 'Direct Input') + '\n\n';
             content += '=' + '='.repeat(50) + '\n\n';
 
+            // Calculate progress increments
+            var progressIncrement = 100 / totalStops;
+            var currentProgress = 0;
+
             // Stop 1: Introduction
+            updateProgress(5, 'Creating introduction...', 1);
             content += 'STOP 1: INTRODUCTION\n';
             content += '-'.repeat(30) + '\n\n';
             content += await generateStopContent(location, 'introduction', language, tourType, context, aiModel);
             content += '\n\n';
+            currentProgress += progressIncrement;
+            updateProgress(currentProgress, 'Introduction completed', 1);
 
             // Stop 2: History
+            updateProgress(currentProgress + 5, 'Researching history...', 2);
             content += 'STOP 2: HISTORY\n';
             content += '-'.repeat(30) + '\n\n';
             content += await generateStopContent(location, 'history', language, tourType, context, aiModel);
             content += '\n\n';
+            currentProgress += progressIncrement;
+            updateProgress(currentProgress, 'History completed', 2);
 
             // Main stops (totalStops - 4 mandatory ones)
             var mainStops = totalStops - 4;
             for (var i = 0; i < mainStops; i++) {
+                updateProgress(currentProgress + 5, 'Creating attraction ' + (i + 1) + ' of ' + mainStops + '...', 3);
                 content += 'STOP ' + (i + 3) + ': MAIN ATTRACTION ' + (i + 1) + '\n';
                 content += '-'.repeat(30) + '\n\n';
                 content += await generateStopContent(location, 'attraction', language, tourType, context, aiModel);
                 content += '\n\n';
+                currentProgress += progressIncrement;
+                updateProgress(currentProgress, 'Attraction ' + (i + 1) + ' completed', 3);
             }
 
             // Second to last: Local Cuisine
+            updateProgress(currentProgress + 5, 'Exploring local cuisine...', 4);
             content += 'STOP ' + (totalStops - 1) + ': LOCAL CUISINE\n';
             content += '-'.repeat(30) + '\n\n';
             content += await generateStopContent(location, 'cuisine', language, tourType, context, aiModel);
             content += '\n\n';
+            currentProgress += progressIncrement;
+            updateProgress(currentProgress, 'Cuisine section completed', 4);
 
             // Last: Practical Tips
+            updateProgress(95, 'Adding practical tips...', 5);
             content += 'STOP ' + totalStops + ': PRACTICAL TIPS\n';
             content += '-'.repeat(30) + '\n\n';
             content += await generateStopContent(location, 'tips', language, tourType, context, aiModel);
@@ -912,6 +1084,8 @@
             content += '=' + '='.repeat(50) + '\n';
             content += '© CloudGuide - www.cloudguide.me\n';
             
+            updateProgress(100, 'Audioguide completed!', 5);
+            
             return content;
         }
 
@@ -919,7 +1093,10 @@
             var prompt = createPrompt(location, stopType, language, tourType, context);
             
             try {
-                var apiUrl = aiModel === 'openai' ? '/api/openai' : '/api/deepseek';
+                // Set API URL based on model
+                var apiUrl = aiModel === 'openai' ? '/api/openai' : 
+                             aiModel === 'groq' ? '/api/groq' : '/api/deepseek';
+                
                 var requestBody = {
                     prompt: prompt
                 };
@@ -943,18 +1120,17 @@
                     
                     // Handle different response formats
                     var generatedText = '';
-                    if (aiModel === 'openai') {
-                        // OpenAI response format
-                        if (data.choices && data.choices[0]) {
-                            if (data.choices[0].message) {
-                                generatedText = data.choices[0].message.content;
-                            } else if (data.choices[0].text) {
-                                generatedText = data.choices[0].text;
-                            }
+                    
+                    // Check for content in various formats
+                    generatedText = data.content || data.generated_text || '';
+                    
+                    // If still no content, check OpenAI/Groq format
+                    if (!generatedText && data.choices && data.choices[0]) {
+                        if (data.choices[0].message) {
+                            generatedText = data.choices[0].message.content;
+                        } else if (data.choices[0].text) {
+                            generatedText = data.choices[0].text;
                         }
-                    } else {
-                        // DeepSeek response format
-                        generatedText = data.content || data.generated_text || '';
                     }
                     
                     return generatedText || getFallbackContent(location, stopType);
