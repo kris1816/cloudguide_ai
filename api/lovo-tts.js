@@ -1,6 +1,6 @@
-// api/lovo-tts.js
+// api/lovo-tts.js - MUST use export default, not module.exports
 export default async function handler(req, res) {
-  // Enable CORS headers (same as your OpenAI endpoint)
+  // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -10,7 +10,7 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
-  // Only accept POST requests (like your other endpoints)
+  // Only accept POST requests
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -117,6 +117,9 @@ export default async function handler(req, res) {
     return res.status(500).json({ 
       error: 'Internal server error',
       message: error.message 
+    });
+  }
+}
     });
   }
 }
