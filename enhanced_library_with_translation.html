@@ -1,0 +1,1330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:title" content="CloudGuide Library" />
+    <meta property="og:description" content="Manage and translate your audioguide collection" />
+    <title>CloudGuide - Library & Translation</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Nunito+Sans:300,400,400i,600,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Nunito Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+            min-height: 100vh;
+            color: #4a5568;
+            line-height: 1.6;
+        }
+
+        .wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+
+        .header-inner {
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo img {
+            height: 35px;
+            transition: opacity 0.3s;
+        }
+
+        .logo img:hover {
+            opacity: 0.8;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 25px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: #718096;
+            text-decoration: none;
+            font-weight: 400;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #48bb78;
+        }
+
+        /* Hero Section */
+        .hero-section {
+            background: linear-gradient(rgba(45, 55, 72, 0.85), rgba(45, 55, 72, 0.85)), 
+                        url('https://s.cloudguide.me/m/files/e966ce00-be17-4370-ae0a-c0d90e3cce18.jpg') center/cover;
+            color: white;
+            padding: 50px 30px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 25px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2.2em;
+            font-weight: 600;
+            margin-bottom: 12px;
+            letter-spacing: -0.5px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .hero-subtitle {
+            font-size: 0.95em;
+            font-weight: 300;
+            opacity: 0.9;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        /* Main Container */
+        .main-container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 25px;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            padding: 35px;
+        }
+
+        .panel-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.4em;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #2d3748;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .panel-title .icon {
+            font-size: 1.2em;
+        }
+
+        /* Library Section */
+        .library-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: 700;
+            color: #48bb78;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.85em;
+            color: #718096;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Search and Filter */
+        .search-section {
+            margin-bottom: 25px;
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 12px 18px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 14px;
+            background: #f7fafc;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #48bb78;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(72, 187, 120, 0.15);
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 6px 16px;
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .filter-btn:hover, .filter-btn.active {
+            background: #48bb78;
+            color: white;
+            border-color: #48bb78;
+        }
+
+        /* Library Items */
+        .library-grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .library-item {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 25px;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .library-item:hover {
+            background: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+
+        .library-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .library-item-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+
+        .library-item-meta {
+            font-size: 12px;
+            color: #718096;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .library-item-actions {
+            display: flex;
+            gap: 8px;
+            align-items: flex-start;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #38a169;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #718096;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #4a5568;
+        }
+
+        .btn-danger {
+            background: #e53e3e;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c53030;
+        }
+
+        .library-item-preview {
+            font-size: 13px;
+            color: #4a5568;
+            line-height: 1.5;
+            max-height: 80px;
+            overflow: hidden;
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .library-item-preview::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 20px;
+            background: linear-gradient(transparent, #f7fafc);
+        }
+
+        /* Translation Panel */
+        .translation-section {
+            margin-bottom: 25px;
+        }
+
+        .translation-tabs {
+            display: flex;
+            gap: 2px;
+            margin-bottom: 20px;
+            background: #e2e8f0;
+            border-radius: 6px;
+            padding: 4px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px 15px;
+            background: transparent;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s;
+            color: #718096;
+        }
+
+        .tab-btn.active {
+            background: white;
+            color: #48bb78;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #4a5568;
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .form-element {
+            width: 100%;
+            padding: 12px 18px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: 'Nunito Sans', sans-serif;
+            transition: all 0.3s;
+            background: #f7fafc;
+            color: #2d3748;
+        }
+
+        .form-element:focus {
+            outline: none;
+            border-color: #48bb78;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(72, 187, 120, 0.15);
+        }
+
+        select.form-element {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23718096' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            background-size: 18px;
+            padding-right: 45px;
+        }
+
+        textarea.form-element {
+            min-height: 200px;
+            resize: vertical;
+        }
+
+        .translate-btn {
+            width: 100%;
+            padding: 14px;
+            background: #48bb78;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.3s;
+        }
+
+        .translate-btn:hover {
+            background: #38a169;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(72, 187, 120, 0.3);
+        }
+
+        .translate-btn:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            display: none;
+            margin-top: 20px;
+            background: #f7fafc;
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .progress-container.active {
+            display: block;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .progress-title {
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 14px;
+        }
+
+        .progress-percentage {
+            color: #48bb78;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #48bb78 0%, #38a169 100%);
+            width: 0%;
+            transition: width 0.5s ease;
+            border-radius: 4px;
+        }
+
+        .progress-status {
+            margin-top: 12px;
+            font-size: 13px;
+            color: #718096;
+            font-style: italic;
+        }
+
+        /* Success/Error Messages */
+        .success-message, .error-message {
+            display: none;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 20px;
+            font-weight: 500;
+        }
+
+        .success-message {
+            background: #48bb78;
+            color: white;
+        }
+
+        .error-message {
+            background: #e53e3e;
+            color: white;
+        }
+
+        .success-message.active, .error-message.active {
+            display: block;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .modal-title {
+            font-size: 1.5em;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: #718096;
+            padding: 5px;
+        }
+
+        .close-modal:hover {
+            color: #e53e3e;
+        }
+
+        /* Footer Section */
+        .footer-section {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid #e2e8f0;
+            text-align: center;
+            grid-column: 1 / -1;
+        }
+
+        .funding-text {
+            font-size: 12px;
+            color: #718096;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .funding-logos {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 40px;
+        }
+
+        .funding-logo {
+            height: 45px;
+            opacity: 0.6;
+            transition: opacity 0.3s;
+            filter: grayscale(20%);
+        }
+
+        .funding-logo:hover {
+            opacity: 0.8;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .library-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .funding-logos {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .hero-title {
+                font-size: 2em;
+            }
+
+            .panel {
+                padding: 25px;
+            }
+
+            .search-bar {
+                flex-direction: column;
+            }
+
+            .library-item-actions {
+                flex-direction: column;
+                gap: 5px;
+            }
+
+            .btn-small {
+                font-size: 10px;
+                padding: 5px 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-inner">
+                <div class="logo">
+                    <a href="https://www.cloudguide.me" target="_blank">
+                        <img src="https://s.cloudguide.me/m/files/f9111279-27c8-4c3f-b586-dc705899f1ee.png" alt="CloudGuide logo">
+                    </a>
+                </div>
+                <nav>
+                    <ul class="nav-links">
+                        <li><a href="index.html">GENERATOR</a></li>
+                        <li><a href="library.html" style="color: #48bb78;">LIBRARY</a></li>
+                        <li><a href="audio.html">AUDIO</a></li>
+                        <li><a href="about.html">ABOUT</a></li>
+                        <li><a href="https://www.cloudguide.me/contact" target="_blank">CONTACT</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <h1 class="hero-title">Library & Translation</h1>
+            <p class="hero-subtitle">Manage Your Audioguide Collection and Translate to Any Language</p>
+        </section>
+
+        <!-- Main Content -->
+        <div class="main-container">
+            <!-- Library Panel -->
+            <div class="panel">
+                <h2 class="panel-title">
+                    <span class="icon">📚</span>
+                    Your Audioguide Library
+                </h2>
+
+                <!-- Library Stats -->
+                <div class="library-stats">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalAudioguides">0</div>
+                        <div class="stat-label">Total Audioguides</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalLanguages">0</div>
+                        <div class="stat-label">Languages</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalStops">0</div>
+                        <div class="stat-label">Total Stops</div>
+                    </div>
+                </div>
+
+                <!-- Search and Filter -->
+                <div class="search-section">
+                    <div class="search-bar">
+                        <input type="text" class="search-input" id="searchInput" placeholder="Search audioguides by title, location, or content...">
+                    </div>
+                    <div class="filter-buttons">
+                        <button class="filter-btn active" onclick="filterByLanguage('all')">All Languages</button>
+                        <button class="filter-btn" onclick="filterByLanguage('English')">English</button>
+                        <button class="filter-btn" onclick="filterByLanguage('Spanish')">Spanish</button>
+                        <button class="filter-btn" onclick="filterByLanguage('French')">French</button>
+                        <button class="filter-btn" onclick="filterByLanguage('German')">German</button>
+                        <button class="filter-btn" onclick="filterByLanguage('Italian')">Italian</button>
+                    </div>
+                </div>
+
+                <!-- Library Grid -->
+                <div class="library-grid" id="libraryGrid">
+                    <!-- Library items will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Translation Panel -->
+            <div class="panel">
+                <h2 class="panel-title">
+                    <span class="icon">🌍</span>
+                    AI Translation
+                </h2>
+
+                <!-- Translation Tabs -->
+                <div class="translation-tabs">
+                    <button class="tab-btn active" onclick="switchTranslationTab('existing')">Translate Existing</button>
+                    <button class="tab-btn" onclick="switchTranslationTab('new')">Translate New Text</button>
+                </div>
+
+                <!-- Translate Existing Tab -->
+                <div id="existingTab" class="tab-content active">
+                    <div class="form-group">
+                        <label for="selectAudioguide">Select Audioguide</label>
+                        <select id="selectAudioguide" class="form-element">
+                            <option value="">Choose an audioguide to translate...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Translate New Text Tab -->
+                <div id="newTab" class="tab-content">
+                    <div class="form-group">
+                        <label for="newText">Text to Translate</label>
+                        <textarea id="newText" class="form-element" placeholder="Paste your audioguide text here for translation..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Common Translation Settings -->
+                <div class="translation-section">
+                    <div class="form-group">
+                        <label for="fromLanguage">From Language</label>
+                        <select id="fromLanguage" class="form-element">
+                            <option value="English">English</option>
+                            <option value="Spanish">Spanish</option>
+                            <option value="French">French</option>
+                            <option value="German">German</option>
+                            <option value="Italian">Italian</option>
+                            <option value="Portuguese">Portuguese</option>
+                            <option value="Chinese">Chinese</option>
+                            <option value="Japanese">Japanese</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="toLanguage">To Language</label>
+                        <select id="toLanguage" class="form-element">
+                            <option value="Spanish">Spanish</option>
+                            <option value="French">French</option>
+                            <option value="German">German</option>
+                            <option value="Italian">Italian</option>
+                            <option value="Portuguese">Portuguese</option>
+                            <option value="English">English</option>
+                            <option value="Chinese">Chinese</option>
+                            <option value="Japanese">Japanese</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="translationModel">AI Model</label>
+                        <select id="translationModel" class="form-element">
+                            <option value="openai">OpenAI GPT (Best Quality)</option>
+                            <option value="groq">Groq Mixtral (Fast & Free)</option>
+                            <option value="deepseek">DeepSeek (Budget)</option>
+                        </select>
+                    </div>
+
+                    <button class="translate-btn" id="translateBtn" onclick="translateText()">
+                        🌍 Translate with AI
+                    </button>
+
+                    <!-- Progress Bar -->
+                    <div class="progress-container" id="progressContainer">
+                        <div class="progress-header">
+                            <div class="progress-title">Translating Content</div>
+                            <div class="progress-percentage" id="progressPercentage">0%</div>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" id="progressBar"></div>
+                        </div>
+                        <div class="progress-status" id="progressStatus">Initializing...</div>
+                    </div>
+
+                    <!-- Success/Error Messages -->
+                    <div class="success-message" id="successMessage">
+                        ✓ Translation completed successfully!
+                    </div>
+
+                    <div class="error-message" id="errorMessage">
+                        ✗ Translation failed. Please try again.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Section -->
+        <div class="footer-section">
+            <p class="funding-text">
+                Financiado por la Unión Europea – Next Generation EU<br>
+                a través del Ministerio de Industria y Turismo
+            </p>
+            <div class="funding-logos">
+                <img src="https://s.cloudguide.me/m/files/d3e690c8-b10a-49e3-8cda-ac3335896b69.png" 
+                     alt="EU" class="funding-logo">
+                <img src="https://s.cloudguide.me/m/files/f1eabdef-d522-457d-90fe-fa00b513ac3c.png" 
+                     alt="Spain" class="funding-logo">
+            </div>
+        </div>
+
+        <!-- Translation Result Modal -->
+        <div id="translationModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title" id="modalTitle">Translation Result</h2>
+                    <button class="close-modal" onclick="closeTranslationModal()">&times;</button>
+                </div>
+                <div id="translationResult">
+                    <!-- Translation result will be shown here -->
+                </div>
+                <div style="display: flex; gap: 15px; margin-top: 30px; justify-content: flex-end;">
+                    <button class="btn-secondary btn-small" onclick="closeTranslationModal()">Close</button>
+                    <button class="btn-primary btn-small" onclick="saveTranslation()">Save to Library</button>
+                    <button class="btn-primary btn-small" onclick="downloadTranslation()">Download</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentFilter = 'all';
+        let currentTranslationResult = '';
+        let currentTranslationMeta = {};
+
+        // Load page
+        window.addEventListener('DOMContentLoaded', function() {
+            loadLibrary();
+            loadAudioguideSelector();
+            setupSearch();
+        });
+
+        function loadLibrary() {
+            const audioguides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
+            const libraryGrid = document.getElementById('libraryGrid');
+            
+            // Update stats
+            updateLibraryStats(audioguides);
+            
+            if (audioguides.length === 0) {
+                libraryGrid.innerHTML = `
+                    <div style="text-align: center; padding: 60px 20px; color: #a0aec0;">
+                        <div style="font-size: 3em; margin-bottom: 20px;">📚</div>
+                        <p style="font-size: 1.2em; margin-bottom: 15px;">Your library is empty</p>
+                        <p><a href="index.html" style="color: #48bb78; text-decoration: none;">Generate your first audioguide →</a></p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Filter audioguides
+            const filteredAudioguides = currentFilter === 'all' 
+                ? audioguides 
+                : audioguides.filter(guide => guide.language === currentFilter);
+
+            if (filteredAudioguides.length === 0) {
+                libraryGrid.innerHTML = `
+                    <div style="text-align: center; padding: 40px 20px; color: #a0aec0;">
+                        <p>No audioguides found for "${currentFilter}"</p>
+                    </div>
+                `;
+                return;
+            }
+
+            libraryGrid.innerHTML = filteredAudioguides.map((guide, index) => {
+                const preview = guide.content ? guide.content.substring(0, 200) + '...' : 'No content available';
+                const date = new Date(guide.date).toLocaleDateString();
+                
+                return `
+                    <div class="library-item">
+                        <div class="library-item-header">
+                            <div>
+                                <div class="library-item-title">${guide.title}</div>
+                                <div class="library-item-meta">
+                                    <span>📍 ${guide.location}</span>
+                                    <span>🗣️ ${guide.language}</span>
+                                    <span>🎯 ${guide.stops} stops</span>
+                                    <span>📅 ${date}</span>
+                                </div>
+                            </div>
+                            <div class="library-item-actions">
+                                <button class="btn-small btn-primary" onclick="translateAudioguide('${guide.id}')">Translate</button>
+                                <button class="btn-small btn-secondary" onclick="viewAudioguide('${guide.id}')">View</button>
+                                <button class="btn-small btn-secondary" onclick="editAudioguide('${guide.id}')">Edit</button>
+                                <button class="btn-small btn-danger" onclick="deleteAudioguide('${guide.id}')">Delete</button>
+                            </div>
+                        </div>
+                        <div class="library-item-preview">${preview}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateLibraryStats(audioguides) {
+            const totalAudioguides = audioguides.length;
+            const totalLanguages = [...new Set(audioguides.map(guide => guide.language))].length;
+            const totalStops = audioguides.reduce((sum, guide) => sum + (guide.stops || 0), 0);
+
+            document.getElementById('totalAudioguides').textContent = totalAudioguides;
+            document.getElementById('totalLanguages').textContent = totalLanguages;
+            document.getElementById('totalStops').textContent = totalStops;
+        }
+
+        function loadAudioguideSelector() {
+            const audioguides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
+            const selector = document.getElementById('selectAudioguide');
+            
+            selector.innerHTML = '<option value="">Choose an audioguide to translate...</option>';
+            
+            audioguides.forEach(guide => {
+                const option = document.createElement('option');
+                option.value = guide.id;
+                option.textContent = `${guide.title} (${guide.language})`;
+                selector.appendChild(option);
+            });
+        }
+
+        function setupSearch() {
+            const searchInput = document.getElementById('searchInput');
+            searchInput.addEventListener('input', function() {
+                // Simple search implementation
+                loadLibrary();
+            });
+        }
+
+        function filterByLanguage(language) {
+            currentFilter = language;
+            
+            // Update active button
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            loadLibrary();
+        }
+
+        function switchTranslationTab(tab) {
+            // Update tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            if (tab === 'existing') {
+                document.getElementById('existingTab').classList.add('active');
+            } else {
+                document.getElementById('newTab').classList.add('active');
+            }
+        }
+
+        function translateAudioguide(id) {
+            // Find the audioguide
+            const audioguides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
+            const guide = audioguides.find(g => g.id == id);
+            
+            if (guide) {
+                // Set up translation form
+                document.getElementById('selectAudioguide').value = id;
+                document.getElementById('fromLanguage').value = guide.language;
+                
+                // Switch to existing tab
+                switchTranslationTab('existing');
+                document.querySelector('[onclick="switchTranslationTab(\'existing\')"]').click();
+            }
+        }
+
+        async function translateText() {
+            const currentTab = document.querySelector('.tab-content.active').id;
+            const fromLang = document.getElementById('fromLanguage').value;
+            const toLang = document.getElementById('toLanguage').value;
+            const model = document.getElementById('translationModel').value;
+            
+            let textToTranslate = '';
+            let sourceMeta = {};
+            
+            if (currentTab === 'existingTab') {
+                const selectedId = document.getElementById('selectAudioguide').value;
+                if (!selectedId) {
+                    alert('Please select an audioguide to translate');
+                    return;
+                }
+                
+                const audioguides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
+                const guide = audioguides.find(g => g.id == selectedId);
+                if (!guide) {
+                    alert('Audioguide not found');
+                    return;
+                }
+                
+                textToTranslate = guide.content;
+                sourceMeta = {
+                    originalTitle: guide.title,
+                    originalLocation: guide.location,
+                    originalLanguage: guide.language,
+                    stops: guide.stops,
+                    tourType: guide.tourType
+                };
+            } else {
+                textToTranslate = document.getElementById('newText').value.trim();
+                if (!textToTranslate) {
+                    alert('Please enter text to translate');
+                    return;
+                }
+                sourceMeta = {
+                    originalTitle: 'Custom Translation',
+                    originalLocation: 'User Input',
+                    originalLanguage: fromLang,
+                    stops: 'Unknown',
+                    tourType: 'custom'
+                };
+            }
+
+            if (fromLang === toLang) {
+                alert('Please select different source and target languages');
+                return;
+            }
+
+            // Show progress
+            showProgress(true);
+            updateProgress(10, 'Preparing translation...');
+
+            try {
+                updateProgress(30, 'Connecting to AI translation service...');
+                
+                const translatedContent = await callTranslationAPI(textToTranslate, fromLang, toLang, model);
+                
+                updateProgress(90, 'Finalizing translation...');
+                
+                // Store result for potential saving
+                currentTranslationResult = translatedContent;
+                currentTranslationMeta = {
+                    ...sourceMeta,
+                    targetLanguage: toLang,
+                    translatedTitle: sourceMeta.originalTitle + ` (${toLang})`,
+                    model: model,
+                    translatedDate: new Date().toISOString()
+                };
+                
+                updateProgress(100, 'Translation completed!');
+                
+                // Show result in modal
+                showTranslationResult(translatedContent, sourceMeta.originalTitle, toLang);
+                
+                showSuccess('Translation completed successfully!');
+                
+            } catch (error) {
+                console.error('Translation error:', error);
+                showError('Translation failed: ' + error.message);
+            } finally {
+                showProgress(false);
+            }
+        }
+
+        async function callTranslationAPI(text, fromLang, toLang, model) {
+            const prompt = `Translate the following audioguide content from ${fromLang} to ${toLang}. 
+
+IMPORTANT INSTRUCTIONS:
+- Maintain the exact same structure and formatting
+- Keep all section headers (STOP 1:, STOP 2:, etc.) in the original format
+- Preserve all line breaks and spacing
+- Translate the content naturally while keeping the professional audioguide tone
+- Maintain cultural and historical accuracy
+- Keep technical terms and proper nouns appropriate for the target language
+
+TEXT TO TRANSLATE:
+${text}
+
+Provide only the translated text with the same formatting:`;
+
+            let apiEndpoint = '';
+            switch (model) {
+                case 'groq':
+                    apiEndpoint = '/api/groq';
+                    break;
+                case 'openai':
+                    apiEndpoint = '/api/openai';
+                    break;
+                case 'deepseek':
+                    apiEndpoint = '/api/deepseek';
+                    break;
+                default:
+                    throw new Error('Invalid AI model selected');
+            }
+
+            const response = await fetch(apiEndpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    prompt: prompt,
+                    max_tokens: 8000,
+                    temperature: 0.3 // Lower temperature for more accurate translation
+                })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Translation API request failed');
+            }
+
+            const data = await response.json();
+            
+            // Extract content based on API response format
+            let translatedText = '';
+            if (data.content) {
+                translatedText = data.content;
+            } else if (data.choices && data.choices[0]) {
+                translatedText = data.choices[0].message?.content || data.choices[0].text || '';
+            } else {
+                throw new Error('Invalid response format from translation API');
+            }
+
+            if (!translatedText) {
+                throw new Error('No translated content received');
+            }
+
+            return translatedText;
+        }
+
+        function showTranslationResult(translatedContent, originalTitle, targetLanguage) {
+            const modal = document.getElementById('translationModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const resultDiv = document.getElementById('translationResult');
+            
+            modalTitle.textContent = `Translation: ${originalTitle} → ${targetLanguage}`;
+            resultDiv.innerHTML = `
+                <div style="background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 20px; max-height: 400px; overflow-y: auto;">
+                    <pre style="white-space: pre-wrap; font-family: 'Nunito Sans', sans-serif; font-size: 14px; line-height: 1.6; margin: 0;">${translatedContent}</pre>
+                </div>
+            `;
+            
+            modal.style.display = 'block';
+        }
+
+        function closeTranslationModal() {
+            document.getElementById('translationModal').style.display = 'none';
+        }
+
+        function saveTranslation() {
+            if (!currentTranslationResult) {
+                alert('No translation to save');
+                return;
+            }
+
+            const audioguides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
+            
+            const newGuide = {
+                id: Date.now(),
+                title: currentTranslationMeta.translatedTitle,
+                location: currentTranslationMeta.originalLocation,
+                language: currentTranslationMeta.targetLanguage,
+                tourType: currentTranslationMeta.tourType,
+                stops: currentTranslationMeta.stops,
+                content: currentTranslationResult,
+                date: currentTranslationMeta.translatedDate,
+                model: currentTranslationMeta.model,
+                isTranslation: true,
+                originalLanguage: currentTranslationMeta.originalLanguage
+            };
+            
+            audioguides.unshift(newGuide);
+            
+            // Keep only last 50 audioguides
+            if (audioguides.length > 50) {
+                audioguides.splice(50);
+            }
+            
+            localStorage.setItem('cloudguide_audioguides', JSON.stringify(audioguides));
+            
+            // Refresh library
+            loadLibrary();
+            loadAudioguideSelector();
+            
+            closeTranslationModal();
+            showSuccess('Translation saved to library!');
+        }
+
+        function downloadTranslation() {
+            if (!currentTranslationResult) {
+                alert('No translation to download');
+                return;
+            }
+
+            const blob = new Blob([currentTranslationResult], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${currentTranslationMeta.translatedTitle.replace(/[^a-z0-9]/gi, '_')}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function viewAudioguide(id) {
+            const audioguides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
+            const guide = audioguides.find(g => g.id == id);
+            
+            if (guide) {
+                // Open in audio generation page
+                window.open(`audio.html?id=${id}`, '_blank');
+            }
+        }
+
+        function editAudioguide(id) {
+            // For now, just show the content in an alert
+            // In a full implementation, you'd open an edit modal
+            const audioguides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
+            const guide = audioguides.find(g => g.id == id);
+            
+            if (guide) {
+                alert('Edit functionality would open here. For now, you can view the content and copy it to create a new version.');
+            }
+        }
+
+        function deleteAudioguide(id) {
+            if (confirm('Are you sure you want to delete this audioguide? This action cannot be undone.')) {
+                let audioguides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
+                audioguides = audioguides.filter(g => g.id != id);
+                localStorage.setItem('cloudguide_audioguides', JSON.stringify(audioguides));
+                
+                loadLibrary();
+                loadAudioguideSelector();
+                showSuccess('Audioguide deleted successfully');
+            }
+        }
+
+        // Utility functions
+        function showProgress(show) {
+            const container = document.getElementById('progressContainer');
+            if (show) {
+                container.classList.add('active');
+            } else {
+                setTimeout(() => {
+                    container.classList.remove('active');
+                    document.getElementById('progressBar').style.width = '0%';
+                }, 2000);
+            }
+        }
+
+        function updateProgress(percentage, status) {
+            document.getElementById('progressBar').style.width = percentage + '%';
+            document.getElementById('progressPercentage').textContent = Math.round(percentage) + '%';
+            document.getElementById('progressStatus').textContent = status;
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.textContent = '✓ ' + message;
+            successDiv.classList.add('active');
+            setTimeout(() => {
+                successDiv.classList.remove('active');
+            }, 5000);
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = '✗ ' + message;
+            errorDiv.classList.add('active');
+            setTimeout(() => {
+                errorDiv.classList.remove('active');
+            }, 8000);
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('translationModal');
+            if (event.target == modal) {
+                closeTranslationModal();
+            }
+        }
+    </script>
+</body>
+</html>
