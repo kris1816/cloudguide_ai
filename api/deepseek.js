@@ -23,32 +23,17 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { location, duration, interests } = req.body;
+    const { prompt } = req.body;
 
-    if (!location) {
-      return res.status(400).json({ error: 'Location is required' });
+    if (!prompt) {
+      return res.status(400).json({ error: 'Prompt is required' });
     }
 
     // DeepSeek API configuration
     const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY || 'sk-02c5e57c70a24590bf83a60f3ea8a226';
     const DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions';
 
-    const prompt = `Create a detailed audioguide for visiting ${location}. 
-Duration: ${duration || 'half-day'}. 
-Interests: ${interests || 'general sightseeing'}.
-
-Please provide:
-1. A brief introduction to ${location}
-2. Top 5 must-see attractions with descriptions
-3. Suggested route and timing
-4. Local tips and recommendations
-5. Cultural insights
-6. Practical information (best time to visit, what to bring, etc.)
-
-Format the response with clear sections using "STOP 1:", "STOP 2:", etc. for each attraction.
-Make it engaging and informative, as if a knowledgeable local guide is speaking.`;
-
-    console.log('Calling DeepSeek API for:', location);
+    console.log('Calling DeepSeek API with prompt length:', prompt.length);
 
     const response = await fetch(DEEPSEEK_API_URL, {
       method: 'POST',
@@ -61,14 +46,14 @@ Make it engaging and informative, as if a knowledgeable local guide is speaking.
         messages: [
           {
             role: 'system',
-            content: 'You are a professional travel guide creating engaging audioguides for tourists. Your responses should be informative, friendly, and well-structured.'
+            content: 'You are a professional audioguide writer. Create engaging, detailed content for tourist audioguides. Write in a natural, flowing narrative style without headers or bullet points.'
           },
           {
             role: 'user',
             content: prompt
           }
         ],
-        temperature: 0.7,
+        temperature: 0.8,
         max_tokens: 2000,
         stream: false
       })
@@ -116,14 +101,10 @@ Make it engaging and informative, as if a knowledgeable local guide is speaking.
 
     const content = data.choices[0].message.content;
 
-    // Return success
+    // Return in the format that index.html expects
     return res.status(200).json({
-      success: true,
       content: content,
-      location: location,
-      duration: duration,
-      interests: interests,
-      model: 'deepseek-chat',
+      generated_text: content, // Fallback field
       usage: data.usage
     });
 
