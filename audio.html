@@ -785,7 +785,7 @@ Welcome to this remarkable destination. This audioguide will take you on a journ
                     var chunk = chunks[i];
                     
                     // Call your backend API endpoint
-                    var response = await fetch('/api/lovo-api-endpoint', {
+                    const response = await fetch('/api/lovo-tts', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
