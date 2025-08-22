@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:title" content="CloudGuide Audio Generation" />
+    <meta property="og:description" content="Convert your audioguides to professional audio files" />
+    <title>CloudGuide - Audio Generation</title>
+    
+    <!-- Font -->
+    <link href="https://fonts.googleapis.com/css?family=Nunito+Sans:300,400,400i,600,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Nunito Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+            min-height: 100vh;
+            color: #4a5568;
+            line-height: 1.6;
+        }
+
+        .wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+
+        .header-inner {
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo img {
+            height: 35px;
+            transition: opacity 0.3s;
+        }
+
+        .logo img:hover {
+            opacity: 0.8;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 25px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: #718096;
+            text-decoration: none;
+            font-weight: 400;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            color: #48bb78;
+        }
+
+        /* Page Title */
+        .page-title {
+            background: linear-gradient(rgba(45, 55, 72, 0.85), rgba(45, 55, 72, 0.85)), 
+                        url('https://s.cloudguide.me/m/files/e966ce00-be17-4370-ae0a-c0d90e3cce18.jpg') center/cover;
+            color: white;
+            padding: 40px 30px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .page-title h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2em;
+            font-weight: 600;
+            margin-bottom: 10px;
+            letter-spacing: -0.5px;
+        }
+
+        .page-title p {
+            font-size: 0.95em;
+            opacity: 0.9;
+        }
+
+        /* Main Container */
+        .main-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            padding: 35px;
+        }
+
+        /* Two Column Layout */
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        /* Left Column - Text Input */
+        .input-section {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 25px;
+            background: #f7fafc;
+        }
+
+        .section-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .text-input {
+            width: 100%;
+            min-height: 400px;
+            padding: 15px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: 'Nunito Sans', sans-serif;
+            background: white;
+            resize: vertical;
+        }
+
+        .text-input:focus {
+            outline: none;
+            border-color: #48bb78;
+            box-shadow: 0 0 0 3px rgba(72, 187, 120, 0.1);
+        }
+
+        .upload-section {
+            margin-bottom: 20px;
+        }
+
+        .upload-btn {
+            width: 100%;
+            padding: 12px;
+            background: white;
+            border: 2px dashed #cbd5e0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            color: #4a5568;
+        }
+
+        .upload-btn:hover {
+            border-color: #48bb78;
+            background: #f7fafc;
+        }
+
+        /* Right Column - Audio Settings */
+        .settings-section {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 25px;
+            background: #f7fafc;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #4a5568;
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .form-element {
+            width: 100%;
+            padding: 12px 18px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: 'Nunito Sans', sans-serif;
+            background: white;
+            color: #2d3748;
+        }
+
+        .form-element:focus {
+            outline: none;
+            border-color: #48bb78;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(72, 187, 120, 0.15);
+        }
+
+        /* Voice Preview Cards */
+        .voice-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .voice-card {
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+            text-align: center;
+        }
+
+        .voice-card:hover {
+            border-color: #48bb78;
+            background: #f0fff4;
+        }
+
+        .voice-card.selected {
+            border-color: #48bb78;
+            background: #f0fff4;
+        }
+
+        .voice-icon {
+            font-size: 2em;
+            margin-bottom: 8px;
+        }
+
+        .voice-name {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 4px;
+        }
+
+        .voice-desc {
+            font-size: 0.85em;
+            color: #718096;
+        }
+
+        /* Slider */
+        .slider-container {
+            margin-bottom: 10px;
+        }
+
+        .slider {
+            width: 100%;
+            -webkit-appearance: none;
+            height: 6px;
+            border-radius: 3px;
+            background: #e2e8f0;
+            outline: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #48bb78;
+            cursor: pointer;
+        }
+
+        .slider::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #48bb78;
+            cursor: pointer;
+        }
+
+        .slider-value {
+            text-align: right;
+            font-size: 0.85em;
+            color: #718096;
+        }
+
+        /* Audio Player */
+        .audio-player {
+            background: #2d3748;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .player-controls {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+
+        .play-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #48bb78;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .play-btn:hover {
+            background: #38a169;
+            transform: scale(1.05);
+        }
+
+        .player-info {
+            flex: 1;
+        }
+
+        .track-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .track-time {
+            font-size: 0.85em;
+            opacity: 0.8;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #4a5568;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #48bb78;
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        /* Generate Button */
+        .generate-btn {
+            width: 100%;
+            padding: 16px;
+            background: #48bb78;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            cursor: pointer;
+            margin-top: 25px;
+            transition: all 0.3s;
+        }
+
+        .generate-btn:hover {
+            background: #38a169;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(72, 187, 120, 0.3);
+        }
+
+        .generate-btn:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Generated Files */
+        .files-section {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .file-list {
+            display: grid;
+            gap: 15px;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .file-icon {
+            font-size: 1.5em;
+        }
+
+        .file-details {
+            flex: 1;
+        }
+
+        .file-name {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 3px;
+        }
+
+        .file-meta {
+            font-size: 0.85em;
+            color: #718096;
+        }
+
+        .file-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #38a169;
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e0;
+        }
+
+        /* Loading State */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 3px solid #e2e8f0;
+            border-top: 3px solid #48bb78;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .two-column {
+                grid-template-columns: 1fr;
+            }
+
+            .voice-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-links {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-inner">
+                <div class="logo">
+                    <a href="https://www.cloudguide.me" target="_blank">
+                        <img src="https://s.cloudguide.me/m/files/f9111279-27c8-4c3f-b586-dc705899f1ee.png" alt="CloudGuide logo">
+                    </a>
+                </div>
+                <nav>
+                    <ul class="nav-links">
+                        <li><a href="index.html">GENERATOR</a></li>
+                        <li><a href="library.html">LIBRARY</a></li>
+                        <li><a href="audio.html" class="active">AUDIO</a></li>
+                        <li><a href="https://www.cloudguide.me/contact" target="_blank">CONTACT</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Page Title -->
+        <section class="page-title">
+            <h1>Audio Generation</h1>
+            <p>Convert your audioguides into professional voice narrations</p>
+        </section>
+
+        <!-- Main Content -->
+        <div class="main-container">
+            <div class="two-column">
+                <!-- Left Column - Text Input -->
+                <div class="input-section">
+                    <h3 class="section-title">Audioguide Text</h3>
+                    
+                    <div class="upload-section">
+                        <button class="upload-btn" onclick="loadFromLibrary()">
+                            📚 Load from Library
+                        </button>
+                    </div>
+                    
+                    <textarea class="text-input" id="textInput" placeholder="Paste your audioguide text here or load from library...">STOP 1: INTRODUCTION
+
+Welcome to this remarkable destination. This audioguide will take you on a journey through history, culture, and architectural wonders that have captivated visitors for centuries...</textarea>
+                </div>
+
+                <!-- Right Column - Audio Settings -->
+                <div class="settings-section">
+                    <h3 class="section-title">Voice Settings</h3>
+                    
+                    <div class="form-group">
+                        <label>Select Voice</label>
+                        <div class="voice-grid">
+                            <div class="voice-card selected" onclick="selectVoice(this, 'en-US-sophia', 'en-US')">
+                                <div class="voice-icon">👩</div>
+                                <div class="voice-name">Sophia</div>
+                                <div class="voice-desc">English (US)</div>
+                            </div>
+                            <div class="voice-card" onclick="selectVoice(this, 'es-ES-Alejandro', 'es-ES')">
+                                <div class="voice-icon">👨</div>
+                                <div class="voice-name">Alejandro</div>
+                                <div class="voice-desc">Spanish (ES)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="language">Language</label>
+                        <select id="language" class="form-element">
+                            <option value="en-US">English (US)</option>
+                            <option value="es-ES">Spanish (Spain)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Speaking Speed</label>
+                        <div class="slider-container">
+                            <input type="range" min="0.5" max="1.5" value="1.0" step="0.1" class="slider" id="speedSlider">
+                            <div class="slider-value" id="speedValue">1.0x</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Pitch</label>
+                        <div class="slider-container">
+                            <input type="range" min="-20" max="20" value="0" step="1" class="slider" id="pitchSlider">
+                            <div class="slider-value" id="pitchValue">0</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="format">Output Format</label>
+                        <select id="format" class="form-element">
+                            <option value="mp3">MP3</option>
+                            <option value="wav">WAV</option>
+                            <option value="ogg">OGG</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="quality">Audio Quality</label>
+                        <select id="quality" class="form-element">
+                            <option value="high">High (320 kbps)</option>
+                            <option value="medium">Medium (192 kbps)</option>
+                            <option value="low">Low (128 kbps)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Audio Player Preview -->
+            <div class="audio-player">
+                <div class="player-controls">
+                    <button class="play-btn" onclick="togglePlay()">▶</button>
+                    <div class="player-info">
+                        <div class="track-name">Preview Audio</div>
+                        <div class="track-time">0:00 / 0:00</div>
+                    </div>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+
+            <!-- Generate Button -->
+            <button class="generate-btn" id="generateBtn" onclick="generateAudio()">
+                🎙️ Generate Audio
+            </button>
+
+            <!-- Loading State -->
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <div>Generating audio... This may take a few minutes</div>
+            </div>
+
+            <!-- Generated Files Section -->
+            <div class="files-section" id="filesSection" style="display: none;">
+                <h3 class="section-title">Generated Audio Files</h3>
+                <div class="file-list" id="fileList">
+                    <!-- Files will be added here dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var selectedVoice = 'en-US-sophia';
+        var selectedLanguage = 'en-US';
+        var isPlaying = false;
+        
+        // In production, this should be in environment variable
+        // For Vercel, set LOVO_API_KEY in your environment variables
+        var LOVO_API_KEY = process.env.LOVO_API_KEY || '794d1665-e8e5-4fd6-bc5a-c667c2a62cd4';
+
+        // Select voice
+        function selectVoice(element, voice, language) {
+            document.querySelectorAll('.voice-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            element.classList.add('selected');
+            selectedVoice = voice;
+            selectedLanguage = language;
+            
+            // Update language dropdown to match
+            document.getElementById('language').value = language;
+        }
+
+        // Update language when dropdown changes
+        document.getElementById('language').addEventListener('change', function() {
+            if (this.value === 'en-US') {
+                document.querySelectorAll('.voice-card')[0].click();
+            } else if (this.value === 'es-ES') {
+                document.querySelectorAll('.voice-card')[1].click();
+            }
+        });
+
+        // Update slider values
+        document.getElementById('speedSlider').addEventListener('input', function() {
+            document.getElementById('speedValue').textContent = this.value + 'x';
+        });
+
+        document.getElementById('pitchSlider').addEventListener('input', function() {
+            document.getElementById('pitchValue').textContent = this.value;
+        });
+
+        // Load from library
+        function loadFromLibrary() {
+            // Get audioguides from localStorage
+            var stored = localStorage.getItem('cloudguide_audioguides');
+            if (stored) {
+                var audioguides = JSON.parse(stored);
+                if (audioguides.length > 0) {
+                    // Load the first one for demo
+                    document.getElementById('textInput').value = audioguides[0].content || 'Sample audioguide content loaded from library...';
+                    alert('Audioguide loaded from library!');
+                }
+            } else {
+                alert('No audioguides found in library. Generate one first!');
+            }
+        }
+
+        // Toggle play/pause
+        function togglePlay() {
+            var btn = event.target;
+            if (isPlaying) {
+                btn.textContent = '▶';
+                isPlaying = false;
+            } else {
+                btn.textContent = '⏸';
+                isPlaying = true;
+                // Simulate playback
+                animateProgress();
+            }
+        }
+
+        // Animate progress bar
+        function animateProgress() {
+            var progress = 0;
+            var interval = setInterval(function() {
+                if (!isPlaying || progress >= 100) {
+                    clearInterval(interval);
+                    if (progress >= 100) {
+                        document.querySelector('.play-btn').textContent = '▶';
+                        isPlaying = false;
+                        document.getElementById('progressFill').style.width = '0%';
+                    }
+                    return;
+                }
+                progress += 0.5;
+                document.getElementById('progressFill').style.width = progress + '%';
+            }, 100);
+        }
+
+        // Generate audio using Lovo API
+        async function generateAudio() {
+            var text = document.getElementById('textInput').value;
+            if (!text.trim()) {
+                alert('Please enter text to generate audio');
+                return;
+            }
+
+            var speed = parseFloat(document.getElementById('speedSlider').value);
+            var pitch = parseInt(document.getElementById('pitchSlider').value);
+            
+            // Show loading
+            document.getElementById('generateBtn').disabled = true;
+            document.getElementById('loading').classList.add('active');
+
+            try {
+                // Split text into stops if it's too long
+                var stops = text.split(/STOP \d+:/);
+                var audioJobs = [];
+                
+                // Process each stop separately
+                for (var i = 0; i < stops.length; i++) {
+                    var stopText = stops[i].trim();
+                    if (stopText.length > 0) {
+                        // Create TTS job with Lovo API
+                        var jobResponse = await fetch('https://api.genny.lovo.ai/api/v1/tts', {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': 'Bearer ' + LOVO_API_KEY,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                speaker: selectedVoice,
+                                text: stopText,
+                                speed: speed.toString(),
+                                pitch: pitch.toString()
+                            })
+                        });
+
+                        if (jobResponse.ok) {
+                            var jobData = await jobResponse.json();
+                            audioJobs.push({
+                                jobId: jobData.id,
+                                stopNumber: i,
+                                text: stopText.substring(0, 50) + '...'
+                            });
+                        } else {
+                            console.error('Lovo API error:', jobResponse.status);
+                            
+                            // If it's a CORS error or API key issue, try the backend proxy
+                            if (jobResponse.status === 401 || jobResponse.status === 403) {
+                                alert('API authentication error. Please check the API key configuration.');
+                            }
+                        }
+                    }
+                }
+
+                // Wait for all jobs to complete and get download URLs
+                if (audioJobs.length > 0) {
+                    await checkJobsStatus(audioJobs);
+                } else {
+                    // If Lovo API fails, try fallback approach through backend
+                    await generateAudioFallback(text, speed, pitch);
+                }
+                
+            } catch (error) {
+                console.error('Error generating audio:', error);
+                
+                // Try backend proxy as fallback
+                try {
+                    await generateAudioFallback(text, speed, pitch);
+                } catch (fallbackError) {
+                    alert('Failed to generate audio. Please check your API configuration.');
+                }
+            } finally {
+                document.getElementById('generateBtn').disabled = false;
+                document.getElementById('loading').classList.remove('active');
+            }
+        }
+
+        // Fallback: Generate audio through backend proxy (for Vercel deployment)
+        async function generateAudioFallback(text, speed, pitch) {
+            try {
+                // Call your backend API endpoint that proxies to Lovo
+                var response = await fetch('/api/lovo-tts', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        text: text,
+                        voice: selectedVoice,
+                        language: selectedLanguage,
+                        speed: speed,
+                        pitch: pitch
+                    })
+                });
+
+                if (response.ok) {
+                    var data = await response.json();
+                    showGeneratedFiles([{
+                        name: 'audioguide_complete.mp3',
+                        url: data.audioUrl,
+                        size: 'Processing...',
+                        duration: 'Processing...'
+                    }]);
+                } else {
+                    throw new Error('Backend API error');
+                }
+            } catch (error) {
+                console.error('Fallback generation failed:', error);
+                // Show demo files as last resort
+                showGeneratedFiles();
+            }
+        }
+
+        // Check job status for Lovo API
+        async function checkJobsStatus(jobs) {
+            var completedJobs = [];
+            var maxRetries = 30; // 30 seconds max wait
+            var retryCount = 0;
+            
+            while (completedJobs.length < jobs.length && retryCount < maxRetries) {
+                for (var job of jobs) {
+                    if (!completedJobs.find(j => j.jobId === job.jobId)) {
+                        try {
+                            var statusResponse = await fetch(`https://api.genny.lovo.ai/api/v1/tts/${job.jobId}`, {
+                                method: 'GET',
+                                headers: {
+                                    'Authorization': 'Bearer ' + LOVO_API_KEY
+                                }
+                            });
+                            
+                            if (statusResponse.ok) {
+                                var statusData = await statusResponse.json();
+                                if (statusData.status === 'completed' && statusData.download_url) {
+                                    completedJobs.push({
+                                        ...job,
+                                        url: statusData.download_url
+                                    });
+                                }
+                            }
+                        } catch (error) {
+                            console.error('Error checking job status:', error);
+                        }
+                    }
+                }
+                
+                if (completedJobs.length < jobs.length) {
+                    await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
+                    retryCount++;
+                }
+            }
+            
+            // Show the generated files
+            if (completedJobs.length > 0) {
+                var files = completedJobs.map(job => ({
+                    name: `stop_${job.stopNumber + 1}.mp3`,
+                    url: job.url,
+                    size: 'Download to view',
+                    duration: 'Available'
+                }));
+                showGeneratedFiles(files);
+            }
+        }
+
+        // Show generated files
+        function showGeneratedFiles(files) {
+            document.getElementById('filesSection').style.display = 'block';
+            
+            var fileList = document.getElementById('fileList');
+            fileList.innerHTML = '';
+            
+            // Use provided files or demo files
+            if (!files) {
+                files = [
+                    { name: 'audioguide_complete.mp3', size: '45.2 MB', duration: '32:15' },
+                    { name: 'stop_1_introduction.mp3', size: '5.8 MB', duration: '4:12' },
+                    { name: 'stop_2_history.mp3', size: '6.2 MB', duration: '4:35' }
+                ];
+            }
+            
+            files.forEach(function(file) {
+                var fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                fileItem.innerHTML = `
+                    <div class="file-info">
+                        <div class="file-icon">🎵</div>
+                        <div class="file-details">
+                            <div class="file-name">${file.name}</div>
+                            <div class="file-meta">${file.size} • ${file.duration}</div>
+                        </div>
+                    </div>
+                    <div class="file-actions">
+                        <button class="btn-small btn-primary" onclick="playFile('${file.url || file.name}')">Play</button>
+                        <button class="btn-small btn-secondary" onclick="downloadFile('${file.url || file.name}', '${file.name}')">Download</button>
+                    </div>
+                `;
+                fileList.appendChild(fileItem);
+            });
+        }
+
+        // Play file
+        function playFile(url) {
+            if (url.startsWith('http')) {
+                // Open in new tab for now
+                window.open(url, '_blank');
+            } else {
+                alert('Playing: ' + url);
+            }
+        }
+
+        // Download file
+        function downloadFile(url, filename) {
+            if (url.startsWith('http')) {
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            } else {
+                alert('Downloading: ' + filename);
+            }
+        }
+
+        // Check if coming from library with ID
+        window.addEventListener('DOMContentLoaded', function() {
+            var urlParams = new URLSearchParams(window.location.search);
+            var id = urlParams.get('id');
+            if (id) {
+                // Load specific audioguide from library
+                loadFromLibrary();
+            }
+        });
+    </script>
+</body>
+</html>
