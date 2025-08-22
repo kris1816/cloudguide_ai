@@ -1107,35 +1107,23 @@
         }
 
         async function callTranslationAPI(text, fromLang, toLang, model) {
-            const prompt = `Translate the following audioguide content from ${fromLang} to ${toLang}. 
-
-IMPORTANT INSTRUCTIONS:
-- Maintain the exact same structure and formatting
-- Keep all section headers (STOP 1:, STOP 2:, etc.) in the original format
-- Preserve all line breaks and spacing
-- Translate the content naturally while keeping the professional audioguide tone
-- Maintain cultural and historical accuracy
-- Keep technical terms and proper nouns appropriate for the target language
-
-TEXT TO TRANSLATE:
-${text}
-
-Provide only the translated text with the same formatting:`;
-
+            // Use dedicated translation endpoints
             let apiEndpoint = '';
             switch (model) {
                 case 'groq':
-                    apiEndpoint = '/api/groq';
+                    apiEndpoint = '/api/translate-groq';
                     break;
                 case 'openai':
-                    apiEndpoint = '/api/openai';
+                    apiEndpoint = '/api/translate-openai';
                     break;
                 case 'deepseek':
-                    apiEndpoint = '/api/deepseek';
+                    apiEndpoint = '/api/translate-deepseek';
                     break;
                 default:
                     throw new Error('Invalid AI model selected');
             }
+
+            console.log(`Calling ${apiEndpoint} for translation`);
 
             const response = await fetch(apiEndpoint, {
                 method: 'POST',
@@ -1143,34 +1131,34 @@ Provide only the translated text with the same formatting:`;
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    prompt: prompt,
-                    max_tokens: 8000,
-                    temperature: 0.3 // Lower temperature for more accurate translation
+                    text: text,
+                    fromLanguage: fromLang,
+                    toLanguage: toLang
                 })
             });
 
+            console.log(`${model} translation response status:`, response.status);
+
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Translation API request failed');
+                const errorText = await response.text();
+                console.error(`${model} Translation API Error:`, errorText);
+                
+                try {
+                    const errorData = JSON.parse(errorText);
+                    throw new Error(errorData.error || errorData.message || `${model} translation failed`);
+                } catch (parseError) {
+                    throw new Error(`${model} API error (${response.status}): ${errorText.substring(0, 100)}`);
+                }
             }
 
             const data = await response.json();
+            console.log(`${model} translation success!`);
             
-            // Extract content based on API response format
-            let translatedText = '';
-            if (data.content) {
-                translatedText = data.content;
-            } else if (data.choices && data.choices[0]) {
-                translatedText = data.choices[0].message?.content || data.choices[0].text || '';
-            } else {
-                throw new Error('Invalid response format from translation API');
+            if (!data.translatedText) {
+                throw new Error('No translated content received from API');
             }
 
-            if (!translatedText) {
-                throw new Error('No translated content received');
-            }
-
-            return translatedText;
+            return data.translatedText;
         }
 
         function showTranslationResult(translatedContent, originalTitle, targetLanguage) {
