@@ -71,32 +71,38 @@
             transition: color 0.3s;
         }
 
-        .nav-links a:hover, .nav-links a.active {
+        .nav-links a:hover {
             color: #48bb78;
         }
 
-        /* Page Title */
-        .page-title {
+        /* Hero Section */
+        .hero-section {
             background: linear-gradient(rgba(45, 55, 72, 0.85), rgba(45, 55, 72, 0.85)), 
                         url('https://s.cloudguide.me/m/files/e966ce00-be17-4370-ae0a-c0d90e3cce18.jpg') center/cover;
             color: white;
-            padding: 40px 30px;
+            padding: 50px 30px;
             border-radius: 8px;
             text-align: center;
             margin-bottom: 25px;
+            position: relative;
+            overflow: hidden;
         }
 
-        .page-title h1 {
+        .hero-title {
             font-family: 'Montserrat', sans-serif;
-            font-size: 2em;
+            font-size: 2.2em;
             font-weight: 600;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             letter-spacing: -0.5px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
 
-        .page-title p {
+        .hero-subtitle {
             font-size: 0.95em;
+            font-weight: 300;
             opacity: 0.9;
+            max-width: 500px;
+            margin: 0 auto;
         }
 
         /* Main Container */
@@ -169,6 +175,106 @@
         .upload-btn:hover {
             border-color: #48bb78;
             background: #f7fafc;
+        }
+
+        /* Library Modal */
+        .library-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .library-modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .library-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .library-modal-title {
+            font-size: 1.5em;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: #718096;
+            padding: 5px;
+        }
+
+        .close-modal:hover {
+            color: #e53e3e;
+        }
+
+        .library-item {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .library-item:hover {
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .library-item.selected {
+            border-color: #48bb78;
+            background: #f0fff4;
+        }
+
+        .library-item-title {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+
+        .library-item-meta {
+            font-size: 12px;
+            color: #718096;
+            display: flex;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .library-item-preview {
+            font-size: 13px;
+            color: #4a5568;
+            max-height: 60px;
+            overflow: hidden;
+            line-height: 1.4;
+        }
+
+        .library-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: flex-end;
         }
 
         /* Right Column - Audio Settings */
@@ -537,6 +643,39 @@
             100% { transform: rotate(360deg); }
         }
 
+        /* Footer Section */
+        .footer-section {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid #e2e8f0;
+            text-align: center;
+        }
+
+        .funding-text {
+            font-size: 12px;
+            color: #718096;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .funding-logos {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 40px;
+        }
+
+        .funding-logo {
+            height: 45px;
+            opacity: 0.6;
+            transition: opacity 0.3s;
+            filter: grayscale(20%);
+        }
+
+        .funding-logo:hover {
+            opacity: 0.8;
+        }
+
         @media (max-width: 768px) {
             .two-column {
                 grid-template-columns: 1fr;
@@ -548,6 +687,25 @@
 
             .nav-links {
                 display: none;
+            }
+
+            .funding-logos {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .hero-title {
+                font-size: 2em;
+            }
+
+            .main-container {
+                padding: 25px;
+            }
+
+            .library-modal-content {
+                width: 95%;
+                margin: 2% auto;
+                padding: 20px;
             }
         }
     </style>
@@ -566,17 +724,18 @@
                     <ul class="nav-links">
                         <li><a href="index.html">GENERATOR</a></li>
                         <li><a href="library.html">LIBRARY</a></li>
-                        <li><a href="audio.html" class="active">AUDIO</a></li>
+                        <li><a href="audio.html" style="color: #48bb78;">AUDIO</a></li>
+                        <li><a href="about.html">ABOUT</a></li>
                         <li><a href="https://www.cloudguide.me/contact" target="_blank">CONTACT</a></li>
                     </ul>
                 </nav>
             </div>
         </header>
 
-        <!-- Page Title -->
-        <section class="page-title">
-            <h1>Audio Generation</h1>
-            <p>Convert your audioguides into professional voice narrations</p>
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <h1 class="hero-title">Audio Generation</h1>
+            <p class="hero-subtitle">Convert Your Audioguides to Professional Audio Files</p>
         </section>
 
         <!-- Main Content -->
@@ -587,7 +746,7 @@
                     <h3 class="section-title">Audioguide Text</h3>
                     
                     <div class="upload-section">
-                        <button class="upload-btn" onclick="loadFromLibrary()">
+                        <button class="upload-btn" onclick="openLibraryModal()">
                             📚 Load from Library
                         </button>
                     </div>
@@ -704,6 +863,37 @@
                 </div>
             </div>
         </div>
+
+        <!-- Library Modal -->
+        <div id="libraryModal" class="library-modal">
+            <div class="library-modal-content">
+                <div class="library-modal-header">
+                    <h2 class="library-modal-title">Select Audioguide from Library</h2>
+                    <button class="close-modal" onclick="closeLibraryModal()">&times;</button>
+                </div>
+                <div id="libraryList">
+                    <!-- Library items will be loaded here -->
+                </div>
+                <div class="library-actions">
+                    <button class="btn-secondary btn-small" onclick="closeLibraryModal()">Cancel</button>
+                    <button class="btn-primary btn-small" onclick="loadSelectedAudioguide()" id="loadSelectedBtn" disabled>Load Selected</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Section -->
+        <div class="footer-section">
+            <p class="funding-text">
+                Financiado por la Unión Europea – Next Generation EU<br>
+                a través del Ministerio de Industria y Turismo
+            </p>
+            <div class="funding-logos">
+                <img src="https://s.cloudguide.me/m/files/d3e690c8-b10a-49e3-8cda-ac3335896b69.png" 
+                     alt="EU" class="funding-logo">
+                <img src="https://s.cloudguide.me/m/files/f1eabdef-d522-457d-90fe-fa00b513ac3c.png" 
+                     alt="Spain" class="funding-logo">
+            </div>
+        </div>
     </div>
 
     <script>
@@ -711,6 +901,7 @@
         var selectedLanguage = 'en-US';
         var isPlaying = false;
         var currentAudioUrl = null;
+        var selectedLibraryItem = null;
 
         // Select voice
         function selectVoice(element, voice, language) {
@@ -741,17 +932,89 @@
             document.getElementById('speedValue').textContent = this.value + 'x';
         });
 
-        // Load from library
-        function loadFromLibrary() {
-            var stored = localStorage.getItem('cloudguide_audioguides');
-            if (stored) {
-                var audioguides = JSON.parse(stored);
-                if (audioguides.length > 0) {
-                    document.getElementById('textInput').value = audioguides[audioguides.length - 1].content || '';
-                    alert('Audioguide loaded from library!');
-                }
-            } else {
-                alert('No audioguides found in library. Generate one first!');
+        // Library Modal Functions
+        function openLibraryModal() {
+            var modal = document.getElementById('libraryModal');
+            modal.style.display = 'block';
+            loadLibraryItems();
+        }
+
+        function closeLibraryModal() {
+            var modal = document.getElementById('libraryModal');
+            modal.style.display = 'none';
+            selectedLibraryItem = null;
+            document.getElementById('loadSelectedBtn').disabled = true;
+        }
+
+        function loadLibraryItems() {
+            var audioguides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
+            var libraryList = document.getElementById('libraryList');
+            
+            if (audioguides.length === 0) {
+                libraryList.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #a0aec0;">
+                        <p>No audioguides found in library.</p>
+                        <p><a href="index.html" style="color: #48bb78;">Generate some audioguides first!</a></p>
+                    </div>
+                `;
+                return;
+            }
+
+            libraryList.innerHTML = audioguides.map((guide, index) => {
+                var preview = guide.content ? guide.content.substring(0, 150) + '...' : 'No content preview available';
+                return `
+                    <div class="library-item" onclick="selectLibraryItem(${index}, '${guide.id}')">
+                        <div class="library-item-title">${guide.title}</div>
+                        <div class="library-item-meta">
+                            <span>📍 ${guide.location}</span>
+                            <span>🗣️ ${guide.language}</span>
+                            <span>🎯 ${guide.stops} stops</span>
+                            <span>📅 ${new Date(guide.date).toLocaleDateString()}</span>
+                        </div>
+                        <div class="library-item-preview">${preview}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function selectLibraryItem(index, id) {
+            // Remove previous selection
+            document.querySelectorAll('.library-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            
+            // Add selection to clicked item
+            event.target.closest('.library-item').classList.add('selected');
+            
+            selectedLibraryItem = index;
+            document.getElementById('loadSelectedBtn').disabled = false;
+        }
+
+        function loadSelectedAudioguide() {
+            if (selectedLibraryItem === null) return;
+            
+            var audioguides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
+            var guide = audioguides[selectedLibraryItem];
+            
+            if (guide && guide.content) {
+                document.getElementById('textInput').value = guide.content;
+                closeLibraryModal();
+                
+                // Show success message
+                var trackName = document.querySelector('.track-name');
+                var originalText = trackName.textContent;
+                trackName.textContent = `Loaded: ${guide.title}`;
+                setTimeout(() => {
+                    trackName.textContent = originalText;
+                }, 3000);
+            }
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            var modal = document.getElementById('libraryModal');
+            if (event.target == modal) {
+                closeLibraryModal();
             }
         }
 
@@ -956,7 +1219,7 @@
             var urlParams = new URLSearchParams(window.location.search);
             var id = urlParams.get('id');
             if (id) {
-                loadFromLibrary();
+                openLibraryModal();
             }
         });
     </script>
