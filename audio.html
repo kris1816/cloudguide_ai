@@ -255,6 +255,36 @@
             color: #718096;
         }
 
+        /* More voices section */
+        .more-voices {
+            margin-top: 10px;
+        }
+
+        .more-voices-btn {
+            width: 100%;
+            padding: 10px;
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #4a5568;
+            transition: all 0.3s;
+        }
+
+        .more-voices-btn:hover {
+            background: #e2e8f0;
+        }
+
+        .extra-voices {
+            display: none;
+            margin-top: 15px;
+        }
+
+        .extra-voices.show {
+            display: block;
+        }
+
         /* Slider */
         .slider-container {
             margin-bottom: 10px;
@@ -356,6 +386,17 @@
             background: #48bb78;
             width: 0%;
             transition: width 0.3s;
+        }
+
+        /* Audio element */
+        .audio-element {
+            width: 100%;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .audio-element.show {
+            display: block;
         }
 
         /* Generate Button */
@@ -551,9 +592,7 @@
                         </button>
                     </div>
                     
-                    <textarea class="text-input" id="textInput" placeholder="Paste your audioguide text here or load from library...">STOP 1: INTRODUCTION
-
-Welcome to this remarkable destination. This audioguide will take you on a journey through history, culture, and architectural wonders that have captivated visitors for centuries...</textarea>
+                    <textarea class="text-input" id="textInput" placeholder="Paste your audioguide text here or load from library...">Welcome to this remarkable destination. This audioguide will take you on a journey through history, culture, and architectural wonders that have captivated visitors for centuries...</textarea>
                 </div>
 
                 <!-- Right Column - Audio Settings -->
@@ -561,45 +600,64 @@ Welcome to this remarkable destination. This audioguide will take you on a journ
                     <h3 class="section-title">Voice Settings</h3>
                     
                     <div class="form-group">
-                        <label>Select Voice</label>
+                        <label>Select Voice (OpenAI TTS)</label>
                         <div class="voice-grid">
-                            <div class="voice-card selected" onclick="selectVoice(this, 'en-US-sophia', 'en-US')">
-                                <div class="voice-icon">👩</div>
-                                <div class="voice-name">Sophia</div>
-                                <div class="voice-desc">English (US)</div>
+                            <div class="voice-card selected" onclick="selectVoice(this, 'alloy', 'en-US')">
+                                <div class="voice-icon">🎭</div>
+                                <div class="voice-name">Alloy</div>
+                                <div class="voice-desc">Neutral</div>
                             </div>
-                            <div class="voice-card" onclick="selectVoice(this, 'es-ES-Alejandro', 'es-ES')">
-                                <div class="voice-icon">👨</div>
-                                <div class="voice-name">Alejandro</div>
-                                <div class="voice-desc">Spanish (ES)</div>
+                            <div class="voice-card" onclick="selectVoice(this, 'nova', 'en-US')">
+                                <div class="voice-icon">👩</div>
+                                <div class="voice-name">Nova</div>
+                                <div class="voice-desc">Female</div>
                             </div>
                         </div>
-                        <p style="font-size: 12px; color: #718096; margin-top: 10px;">
-                            Note: Using Lovo TTS API for voice generation
-                        </p>
+                        
+                        <div class="more-voices">
+                            <button class="more-voices-btn" onclick="toggleMoreVoices()">
+                                Show More Voices ↓
+                            </button>
+                            <div class="extra-voices" id="extraVoices">
+                                <div class="voice-grid">
+                                    <div class="voice-card" onclick="selectVoice(this, 'echo', 'en-US')">
+                                        <div class="voice-icon">🎤</div>
+                                        <div class="voice-name">Echo</div>
+                                        <div class="voice-desc">Male</div>
+                                    </div>
+                                    <div class="voice-card" onclick="selectVoice(this, 'fable', 'en-US')">
+                                        <div class="voice-icon">📖</div>
+                                        <div class="voice-name">Fable</div>
+                                        <div class="voice-desc">British</div>
+                                    </div>
+                                    <div class="voice-card" onclick="selectVoice(this, 'onyx', 'en-US')">
+                                        <div class="voice-icon">🗿</div>
+                                        <div class="voice-name">Onyx</div>
+                                        <div class="voice-desc">Deep Male</div>
+                                    </div>
+                                    <div class="voice-card" onclick="selectVoice(this, 'shimmer', 'en-US')">
+                                        <div class="voice-icon">✨</div>
+                                        <div class="voice-name">Shimmer</div>
+                                        <div class="voice-desc">Female</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="form-group">
-                        <label for="language">Language</label>
-                        <select id="language" class="form-element">
-                            <option value="en-US">English (US)</option>
-                            <option value="es-ES">Spanish (Spain)</option>
+                        <label for="model">Model Quality</label>
+                        <select id="model" class="form-element">
+                            <option value="tts-1">Standard (Faster)</option>
+                            <option value="tts-1-hd">HD (Higher Quality)</option>
                         </select>
                     </div>
 
                     <div class="form-group">
                         <label>Speaking Speed</label>
                         <div class="slider-container">
-                            <input type="range" min="0.5" max="1.5" value="1.0" step="0.1" class="slider" id="speedSlider">
+                            <input type="range" min="0.25" max="4.0" value="1.0" step="0.25" class="slider" id="speedSlider">
                             <div class="slider-value" id="speedValue">1.0x</div>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Pitch</label>
-                        <div class="slider-container">
-                            <input type="range" min="-20" max="20" value="0" step="1" class="slider" id="pitchSlider">
-                            <div class="slider-value" id="pitchValue">0</div>
                         </div>
                     </div>
 
@@ -607,17 +665,9 @@ Welcome to this remarkable destination. This audioguide will take you on a journ
                         <label for="format">Output Format</label>
                         <select id="format" class="form-element">
                             <option value="mp3">MP3</option>
-                            <option value="wav">WAV</option>
-                            <option value="ogg">OGG</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="quality">Audio Quality</label>
-                        <select id="quality" class="form-element">
-                            <option value="high">High (320 kbps)</option>
-                            <option value="medium">Medium (192 kbps)</option>
-                            <option value="low">Low (128 kbps)</option>
+                            <option value="opus">Opus</option>
+                            <option value="aac">AAC</option>
+                            <option value="flac">FLAC</option>
                         </select>
                     </div>
                 </div>
@@ -628,24 +678,22 @@ Welcome to this remarkable destination. This audioguide will take you on a journ
                 <div class="player-controls">
                     <button class="play-btn" onclick="togglePlay()">▶</button>
                     <div class="player-info">
-                        <div class="track-name">Preview Audio</div>
-                        <div class="track-time">0:00 / 0:00</div>
+                        <div class="track-name">Generated Audio</div>
+                        <div class="track-time">Ready to generate</div>
                     </div>
                 </div>
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill"></div>
-                </div>
+                <audio id="audioElement" class="audio-element" controls></audio>
             </div>
 
             <!-- Generate Button -->
             <button class="generate-btn" id="generateBtn" onclick="generateAudio()">
-                🎙️ Generate Audio
+                🎙️ Generate Audio with OpenAI
             </button>
 
             <!-- Loading State -->
             <div class="loading" id="loading">
                 <div class="spinner"></div>
-                <div>Generating audio... This may take a few minutes</div>
+                <div>Generating audio... Please wait...</div>
             </div>
 
             <!-- Generated Files Section -->
@@ -659,13 +707,10 @@ Welcome to this remarkable destination. This audioguide will take you on a journ
     </div>
 
     <script>
-        var selectedVoice = 'en-US-sophia';
+        var selectedVoice = 'alloy';
         var selectedLanguage = 'en-US';
         var isPlaying = false;
-        
-        // For production, always use the backend API endpoint
-        // Never expose API keys in client-side code
-        var USE_BACKEND_API = true;
+        var currentAudioUrl = null;
 
         // Select voice
         function selectVoice(element, voice, language) {
@@ -675,38 +720,34 @@ Welcome to this remarkable destination. This audioguide will take you on a journ
             element.classList.add('selected');
             selectedVoice = voice;
             selectedLanguage = language;
-            
-            // Update language dropdown to match
-            document.getElementById('language').value = language;
         }
 
-        // Update language when dropdown changes
-        document.getElementById('language').addEventListener('change', function() {
-            if (this.value === 'en-US') {
-                document.querySelectorAll('.voice-card')[0].click();
-            } else if (this.value === 'es-ES') {
-                document.querySelectorAll('.voice-card')[1].click();
+        // Toggle more voices
+        function toggleMoreVoices() {
+            var extraVoices = document.getElementById('extraVoices');
+            var btn = event.target;
+            
+            if (extraVoices.classList.contains('show')) {
+                extraVoices.classList.remove('show');
+                btn.textContent = 'Show More Voices ↓';
+            } else {
+                extraVoices.classList.add('show');
+                btn.textContent = 'Show Less Voices ↑';
             }
-        });
+        }
 
-        // Update slider values
+        // Update slider value
         document.getElementById('speedSlider').addEventListener('input', function() {
             document.getElementById('speedValue').textContent = this.value + 'x';
         });
 
-        document.getElementById('pitchSlider').addEventListener('input', function() {
-            document.getElementById('pitchValue').textContent = this.value;
-        });
-
         // Load from library
         function loadFromLibrary() {
-            // Get audioguides from localStorage
             var stored = localStorage.getItem('cloudguide_audioguides');
             if (stored) {
                 var audioguides = JSON.parse(stored);
                 if (audioguides.length > 0) {
-                    // Load the first one for demo
-                    document.getElementById('textInput').value = audioguides[0].content || 'Sample audioguide content loaded from library...';
+                    document.getElementById('textInput').value = audioguides[audioguides.length - 1].content || '';
                     alert('Audioguide loaded from library!');
                 }
             } else {
@@ -716,37 +757,26 @@ Welcome to this remarkable destination. This audioguide will take you on a journ
 
         // Toggle play/pause
         function togglePlay() {
+            var audio = document.getElementById('audioElement');
             var btn = event.target;
+            
+            if (!audio.src) {
+                alert('Please generate audio first');
+                return;
+            }
+            
             if (isPlaying) {
+                audio.pause();
                 btn.textContent = '▶';
                 isPlaying = false;
             } else {
+                audio.play();
                 btn.textContent = '⏸';
                 isPlaying = true;
-                // Simulate playback
-                animateProgress();
             }
         }
 
-        // Animate progress bar
-        function animateProgress() {
-            var progress = 0;
-            var interval = setInterval(function() {
-                if (!isPlaying || progress >= 100) {
-                    clearInterval(interval);
-                    if (progress >= 100) {
-                        document.querySelector('.play-btn').textContent = '▶';
-                        isPlaying = false;
-                        document.getElementById('progressFill').style.width = '0%';
-                    }
-                    return;
-                }
-                progress += 0.5;
-                document.getElementById('progressFill').style.width = progress + '%';
-            }, 100);
-        }
-
-        // Generate audio using Lovo API through backend
+        // Generate audio using OpenAI TTS
         async function generateAudio() {
             var text = document.getElementById('textInput').value;
             if (!text.trim()) {
@@ -755,16 +785,14 @@ Welcome to this remarkable destination. This audioguide will take you on a journ
             }
 
             var speed = parseFloat(document.getElementById('speedSlider').value);
-            var pitch = parseInt(document.getElementById('pitchSlider').value);
+            var model = document.getElementById('model').value;
             
             // Show loading
             document.getElementById('generateBtn').disabled = true;
             document.getElementById('loading').classList.add('active');
 
             try {
-                // Always use backend API for security
-                await generateAudioThroughBackend(text, speed, pitch);
-                
+                await generateAudioThroughBackend(text, speed, model);
             } catch (error) {
                 console.error('Error generating audio:', error);
                 alert('Failed to generate audio. Please check your configuration and try again.');
@@ -774,18 +802,18 @@ Welcome to this remarkable destination. This audioguide will take you on a journ
             }
         }
 
-        // Generate audio through backend proxy (secure method)
-        async function generateAudioThroughBackend(text, speed, pitch) {
+        // Generate audio through backend
+        async function generateAudioThroughBackend(text, speed, model) {
             try {
-                // Split text into smaller chunks if needed
-                var chunks = splitTextIntoChunks(text, 3000); // Lovo has character limits
+                // Split text into chunks if it's too long (OpenAI has a 4096 character limit)
+                var chunks = splitTextIntoChunks(text, 4000);
                 var generatedFiles = [];
                 
                 for (var i = 0; i < chunks.length; i++) {
                     var chunk = chunks[i];
                     
-                    // Call your backend API endpoint - FIXED TO USE /api/lovotts
-                    const response = await fetch('/api/lovotts', {
+                    // Call OpenAI TTS API endpoint
+                    const response = await fetch('/api/openai-tts', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -793,80 +821,82 @@ Welcome to this remarkable destination. This audioguide will take you on a journ
                         body: JSON.stringify({
                             text: chunk,
                             voice: selectedVoice,
-                            language: selectedLanguage,
                             speed: speed,
-                            pitch: pitch
+                            model: model
                         })
                     });
 
                     if (response.ok) {
                         var data = await response.json();
                         if (data.audioUrl) {
+                            // If it's the first/only chunk, play it immediately
+                            if (i === 0) {
+                                displayAudio(data.audioUrl);
+                            }
+                            
                             generatedFiles.push({
                                 name: chunks.length > 1 ? `audioguide_part_${i + 1}.mp3` : 'audioguide_complete.mp3',
                                 url: data.audioUrl,
-                                size: 'Processing...',
-                                duration: 'Processing...'
+                                size: 'Generated',
+                                duration: 'Ready'
                             });
                         }
                     } else {
                         var errorData = await response.json();
                         console.error('Backend API error:', errorData);
-                        
-                        // If backend fails, show demo files
-                        if (generatedFiles.length === 0) {
-                            showGeneratedFiles();
-                            alert('Using demo files. Please check API configuration.');
-                            return;
-                        }
+                        alert('Error: ' + (errorData.error || 'Failed to generate audio'));
+                        return;
                     }
                 }
                 
                 if (generatedFiles.length > 0) {
                     showGeneratedFiles(generatedFiles);
-                } else {
-                    // Show demo files as fallback
-                    showGeneratedFiles();
-                    alert('Audio generation completed with demo files.');
                 }
                 
             } catch (error) {
                 console.error('Backend API error:', error);
-                // Show demo files as fallback
-                showGeneratedFiles();
-                alert('Using demo files. Backend API connection failed.');
+                alert('Failed to connect to audio generation service.');
             }
         }
 
-        // Split text into chunks for API limits
+        // Display audio in player
+        function displayAudio(audioUrl) {
+            var audio = document.getElementById('audioElement');
+            audio.src = audioUrl;
+            audio.classList.add('show');
+            currentAudioUrl = audioUrl;
+            
+            // Update player info
+            document.querySelector('.track-name').textContent = 'Audio Ready';
+            document.querySelector('.track-time').textContent = 'Click play to listen';
+        }
+
+        // Split text into chunks
         function splitTextIntoChunks(text, maxLength) {
             if (text.length <= maxLength) {
                 return [text];
             }
             
             var chunks = [];
-            var stops = text.split(/STOP \d+:/);
-            
+            var sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
             var currentChunk = '';
-            for (var i = 0; i < stops.length; i++) {
-                var stop = stops[i].trim();
-                if (stop) {
-                    if (currentChunk.length + stop.length > maxLength) {
-                        if (currentChunk) {
-                            chunks.push(currentChunk);
-                        }
-                        currentChunk = stop;
-                    } else {
-                        currentChunk += (currentChunk ? '\n\n' : '') + stop;
+            
+            for (var sentence of sentences) {
+                if (currentChunk.length + sentence.length > maxLength) {
+                    if (currentChunk) {
+                        chunks.push(currentChunk.trim());
                     }
+                    currentChunk = sentence;
+                } else {
+                    currentChunk += ' ' + sentence;
                 }
             }
             
             if (currentChunk) {
-                chunks.push(currentChunk);
+                chunks.push(currentChunk.trim());
             }
             
-            return chunks.length > 0 ? chunks : [text.substring(0, maxLength)];
+            return chunks;
         }
 
         // Show generated files
@@ -875,15 +905,6 @@ Welcome to this remarkable destination. This audioguide will take you on a journ
             
             var fileList = document.getElementById('fileList');
             fileList.innerHTML = '';
-            
-            // Use provided files or demo files
-            if (!files || files.length === 0) {
-                files = [
-                    { name: 'audioguide_complete.mp3', size: '45.2 MB', duration: '32:15' },
-                    { name: 'stop_1_introduction.mp3', size: '5.8 MB', duration: '4:12' },
-                    { name: 'stop_2_history.mp3', size: '6.2 MB', duration: '4:35' }
-                ];
-            }
             
             files.forEach(function(file) {
                 var fileItem = document.createElement('div');
@@ -897,8 +918,8 @@ Welcome to this remarkable destination. This audioguide will take you on a journ
                         </div>
                     </div>
                     <div class="file-actions">
-                        <button class="btn-small btn-primary" onclick="playFile('${file.url || file.name}')">Play</button>
-                        <button class="btn-small btn-secondary" onclick="downloadFile('${file.url || file.name}', '${file.name}')">Download</button>
+                        <button class="btn-small btn-primary" onclick="playFile('${file.url}')">Play</button>
+                        <button class="btn-small btn-secondary" onclick="downloadFile('${file.url}', '${file.name}')">Download</button>
                     </div>
                 `;
                 fileList.appendChild(fileItem);
@@ -907,34 +928,34 @@ Welcome to this remarkable destination. This audioguide will take you on a journ
 
         // Play file
         function playFile(url) {
-            if (url && url.startsWith('http')) {
-                // Open in new tab for now
-                window.open(url, '_blank');
-            } else {
-                alert('Demo: Playing ' + url);
-            }
+            displayAudio(url);
+            document.getElementById('audioElement').play();
+            document.querySelector('.play-btn').textContent = '⏸';
+            isPlaying = true;
         }
 
         // Download file
         function downloadFile(url, filename) {
-            if (url && url.startsWith('http')) {
-                var a = document.createElement('a');
-                a.href = url;
-                a.download = filename;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-            } else {
-                alert('Demo: Downloading ' + filename);
-            }
+            // Create a temporary anchor element
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
         }
+
+        // Audio ended event
+        document.getElementById('audioElement').addEventListener('ended', function() {
+            document.querySelector('.play-btn').textContent = '▶';
+            isPlaying = false;
+        });
 
         // Check if coming from library with ID
         window.addEventListener('DOMContentLoaded', function() {
             var urlParams = new URLSearchParams(window.location.search);
             var id = urlParams.get('id');
             if (id) {
-                // Load specific audioguide from library
                 loadFromLibrary();
             }
         });
