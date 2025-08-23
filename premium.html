@@ -248,7 +248,7 @@
             border-radius: 6px;
             padding: 20px;
             margin-top: 20px;
-            max-height: 400px;
+            max-height: 500px;
             overflow-y: auto;
             font-size: 13px;
             line-height: 1.8;
@@ -398,14 +398,18 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Responsive */
-        @media (max-width: 1024px) {
-            .main-layout {
-                grid-template-columns: 1fr;
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
             }
         }
 
-        @media (max-width: 768px) {
+: 768px) {
             .nav-links {
                 display: none;
             }
@@ -451,11 +455,11 @@
         <div class="main-layout">
             <!-- Claude AI Content Generation -->
             <div class="panel">
-                <h2 class="panel-title">Content Generation</h2>
+                <h2 class="panel-title">🚀 Enhanced Batch Generation</h2>
 
                 <div class="form-group">
                     <label for="destination">Destination / Topic</label>
-                    <input type="text" id="destination" class="form-element" placeholder="e.g., Louvre Museum, Ancient Rome, Yosemite National Park...">
+                    <input type="text" id="destination" class="form-element" placeholder="e.g., Hong Kong, Tokyo, Paris, New York City...">
                 </div>
 
                 <div class="form-group">
@@ -492,28 +496,43 @@
                 </div>
 
                 <div class="form-group">
+                    <label for="websiteRefs">Information Sources (Optional)</label>
+                    <div id="websiteRefsContainer">
+                        <div class="website-ref-input">
+                            <input type="url" class="form-element website-url" placeholder="https://official-tourism-site.com or https://museum-website.org">
+                            <button type="button" class="btn btn-secondary add-website-btn" onclick="addWebsiteRef()">+</button>
+                        </div>
+                    </div>
+                    <div style="font-size: 12px; color: #718096; margin-top: 8px;">
+                        🔍 Add official websites, tourism sites, or sources with must-have information for your audioguide
+                    </div>
+                </div>
+
+                <div class="form-group">
                     <label for="customPrompt">Custom Instructions (Optional)</label>
                     <textarea id="customPrompt" class="form-element" placeholder="Add specific requirements, focus areas, or special instructions..."></textarea>
                 </div>
 
                 <div class="advanced-settings">
-                    <h4 style="margin-bottom: 15px; color: #4a5568; font-size: 13px;">ADVANCED SETTINGS</h4>
+                    <h4 style="margin-bottom: 15px; color: #4a5568; font-size: 13px;">⚙️ BATCH SETTINGS</h4>
                     <div class="settings-grid">
                         <div class="form-group" style="margin: 0;">
-                            <label for="numStops">Number of Stops</label>
+                            <label for="numStops">Total Stops</label>
                             <select id="numStops" class="form-element">
-                                <option value="3">3 Stops</option>
-                                <option value="4" selected>4 Stops (Best for rate limit)</option>
-                                <option value="5">5 Stops</option>
-                                <option value="8">8 Stops</option>
-                                <option value="10">10 Stops</option>
-                                <option value="15">15 Stops</option>
+                                <option value="4">4 Stops (1 batch)</option>
+                                <option value="8">8 Stops (2 batches)</option>
+                                <option value="12">12 Stops (3 batches)</option>
+                                <option value="16">16 Stops (4 batches)</option>
+                                <option value="20">20 Stops (5 batches)</option>
+                                <option value="24">24 Stops (6 batches)</option>
+                                <option value="28">28 Stops (7 batches)</option>
+                                <option value="30">30 Stops (8 batches)</option>
                             </select>
                         </div>
                         <div class="form-group" style="margin: 0;">
                             <label for="stopLength">Words per Stop</label>
                             <select id="stopLength" class="form-element">
-                                <option value="500">~500 words</option>
+                                <option value="600">~600 words</option>
                                 <option value="750">~750 words</option>
                                 <option value="900" selected>~900 words (Optimal)</option>
                                 <option value="1000">~1000 words</option>
@@ -523,12 +542,12 @@
                     </div>
                 </div>
 
-                <button class="btn btn-primary" style="width: 100%; margin-top: 20px;" onclick="console.log('Button clicked'); generateWithClaude()">
-                    Generate Content
+                <button class="btn btn-primary" style="width: 100%; margin-top: 20px;" onclick="generateWithClaude()">
+                    🚀 Start Batch Generation
                 </button>
 
                 <div class="progress-section" id="claudeProgress">
-                    <div class="progress-text">Generating content...</div>
+                    <div class="progress-text">Batch generation in progress...</div>
                     <div class="progress-bar">
                         <div class="progress-fill" id="claudeProgressBar"></div>
                     </div>
@@ -540,7 +559,7 @@
 
             <!-- Audio Generation -->
             <div class="panel">
-                <h2 class="panel-title">Audio Generation</h2>
+                <h2 class="panel-title">🎙️ Premium Audio Generation</h2>
 
                 <div class="form-group">
                     <label>Select Voice</label>
@@ -589,8 +608,13 @@
                     </select>
                 </div>
 
+                <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 6px; padding: 15px; margin: 20px 0; font-size: 13px;">
+                    <strong>💡 Large Audio Files:</strong><br>
+                    30-stop audioguides create ~45-60 minute audio files. Generation may take several minutes.
+                </div>
+
                 <button class="btn btn-primary" style="width: 100%; margin-top: 20px;" onclick="generateWithSpeechify()">
-                    Generate Audio
+                    🎵 Generate Large Audio
                 </button>
 
                 <div class="progress-section" id="speechifyProgress">
@@ -605,7 +629,7 @@
 
         <!-- Audio Player Section -->
         <div class="audio-player-section" id="audioPlayerSection">
-            <h2 class="panel-title">Audio Player</h2>
+            <h2 class="panel-title">🎵 Premium Audio Player</h2>
             <div class="custom-audio-player">
                 <div class="audio-controls">
                     <button class="play-btn" id="playBtn" onclick="togglePlayback()">▶️</button>
@@ -618,9 +642,9 @@
                     </div>
                 </div>
                 <div style="display: flex; gap: 10px; margin-top: 20px;">
-                    <button class="btn btn-secondary" onclick="downloadAudio()">Download Audio</button>
-                    <button class="btn btn-secondary" onclick="downloadScript()">Download Script</button>
-                    <button class="btn btn-primary" onclick="saveToLibrary()">Save to Library</button>
+                    <button class="btn btn-secondary" onclick="downloadAudio()">📥 Download Audio</button>
+                    <button class="btn btn-secondary" onclick="downloadScript()">📄 Download Script</button>
+                    <button class="btn btn-primary" onclick="saveToLibrary()">💾 Save to Library</button>
                 </div>
             </div>
         </div>
@@ -636,13 +660,26 @@
     </div>
 
     <script>
+        // Enhanced Premium CloudGuide JavaScript with Batch Generation
         // Global variables
         let selectedVoice = 'snoop';
         let generatedContent = '';
         let audioUrl = null;
         let currentAudio = null;
 
-        console.log('Script loaded');
+        // Batch generation state
+        let batchState = {
+            isGenerating: false,
+            targetStops: 0,
+            completedStops: 0,
+            currentBatch: 1,
+            totalBatches: 0,
+            allContent: [],
+            destination: '',
+            settings: {}
+        };
+
+        console.log('Enhanced script loaded with batch generation');
 
         // Initialize on load
         window.addEventListener('DOMContentLoaded', function() {
@@ -655,14 +692,55 @@
                     document.getElementById('speedValue').textContent = this.value + 'x';
                 });
                 console.log('Speed slider initialized');
-            } else {
-                console.error('Speed slider not found');
             }
             
-            // Test if buttons are accessible
-            const testButton = document.querySelector('[onclick*="generateWithClaude"]');
-            console.log('Generate button found:', !!testButton);
+            // Update stop count display
+            const stopSelect = document.getElementById('numStops');
+            if (stopSelect) {
+                stopSelect.addEventListener('change', function() {
+                    updateBatchInfo();
+                });
+                updateBatchInfo(); // Initial update
+            }
+            
+            console.log('Enhanced initialization complete');
         });
+
+        // Update batch information display
+        function updateBatchInfo() {
+            const numStops = parseInt(document.getElementById('numStops').value);
+            const batchSize = 4;
+            const numBatches = Math.ceil(numStops / batchSize);
+            
+            // Add batch info to the interface
+            let batchInfoDiv = document.getElementById('batchInfo');
+            if (!batchInfoDiv) {
+                batchInfoDiv = document.createElement('div');
+                batchInfoDiv.id = 'batchInfo';
+                batchInfoDiv.style.cssText = `
+                    background: #e6fffa;
+                    border: 1px solid #38b2ac;
+                    border-radius: 6px;
+                    padding: 15px;
+                    margin-top: 15px;
+                    font-size: 13px;
+                    color: #234e52;
+                `;
+                
+                const advancedSettings = document.querySelector('.advanced-settings');
+                if (advancedSettings) {
+                    advancedSettings.appendChild(batchInfoDiv);
+                }
+            }
+            
+            batchInfoDiv.innerHTML = `
+                <strong>📊 Batch Generation Info:</strong><br>
+                • Total Stops: ${numStops}<br>
+                • Batches: ${numBatches} (4 stops each)<br>
+                • Estimated Time: ~${numBatches} minutes<br>
+                • Rate Limit Safe: ✅
+            `;
+        }
 
         // Select voice
         function selectVoice(element, voice) {
@@ -671,9 +749,9 @@
             selectedVoice = voice;
         }
 
-        // Generate content with Claude (with rate limit handling)
+        // Enhanced generate function with batch processing
         async function generateWithClaude() {
-            console.log('generateWithClaude called');
+            console.log('generateWithClaude called (enhanced version)');
             
             const destination = document.getElementById('destination').value;
             console.log('Destination:', destination);
@@ -684,39 +762,91 @@
                 return;
             }
 
+            // Get website references
+            const websiteRefs = getWebsiteReferences();
+            console.log('Website references:', websiteRefs);
+
+            // Get all form values
             const guideType = document.getElementById('guideType').value;
             const audience = document.getElementById('audienceType').value;
             const style = document.getElementById('contentStyle').value;
             const customPrompt = document.getElementById('customPrompt').value;
-            const numStops = document.getElementById('numStops').value;
-            const stopLength = document.getElementById('stopLength').value;
+            const numStops = parseInt(document.getElementById('numStops').value);
+            const stopLength = parseInt(document.getElementById('stopLength').value);
 
-            console.log('Form values collected:', {
-                destination, guideType, audience, style, numStops, stopLength
-            });
+            // Initialize batch state
+            batchState = {
+                isGenerating: true,
+                targetStops: numStops,
+                completedStops: 0,
+                currentBatch: 1,
+                totalBatches: Math.ceil(numStops / 4),
+                allContent: [],
+                destination: destination,
+                settings: {
+                    guideType,
+                    audience,
+                    style,
+                    customPrompt,
+                    stopLength,
+                    websiteRefs
+                }
+            };
+
+            console.log('Starting batch generation:', batchState);
+
+            // Update UI for batch mode
+            const generateButton = document.querySelector('[onclick*="generateWithClaude"]');
+            generateButton.textContent = 'GENERATING... (BATCH MODE)';
+            generateButton.disabled = true;
 
             // Show progress
-            console.log('Showing progress...');
             document.getElementById('claudeProgress').classList.add('active');
-            updateProgress('claude', 10, 'Connecting to AI...');
+            updateProgress('claude', 5, `Starting batch generation (${batchState.totalBatches} batches)`);
+
+            // Clear previous content
+            document.getElementById('generatedContent').textContent = '';
+            generatedContent = '';
 
             try {
-                console.log('Starting API call...');
-                updateProgress('claude', 30, 'Generating content...');
+                await generateNextBatch();
+            } catch (error) {
+                console.error('Batch generation failed:', error);
+                resetBatchState();
+                showMessage('Batch generation failed: ' + error.message, 'error');
+            }
+        }
 
-                // Call Claude API through backend
-                const requestBody = {
-                    destination: destination,
-                    guideType: guideType,
-                    audience: audience,
-                    style: style,
-                    customPrompt: customPrompt,
-                    numStops: parseInt(numStops),
-                    stopLength: parseInt(stopLength)
-                };
-                
-                console.log('Request body:', requestBody);
-                console.log('Fetching /api/claude...');
+        // Generate the next batch of stops
+        async function generateNextBatch() {
+            const stopsRemaining = batchState.targetStops - batchState.completedStops;
+            const stopsInThisBatch = Math.min(4, stopsRemaining);
+            
+            console.log(`Generating batch ${batchState.currentBatch}/${batchState.totalBatches} (${stopsInThisBatch} stops)`);
+            
+            const progressBase = ((batchState.currentBatch - 1) / batchState.totalBatches) * 90;
+            updateProgress('claude', progressBase + 10, 
+                `Batch ${batchState.currentBatch}/${batchState.totalBatches} - Connecting to AI...`);
+
+            // Create batch-specific prompt
+            const batchPrompt = createBatchPrompt(stopsInThisBatch);
+            
+            const requestBody = {
+                destination: batchState.destination,
+                guideType: batchState.settings.guideType,
+                audience: batchState.settings.audience,
+                style: batchState.settings.style,
+                customPrompt: batchPrompt,
+                numStops: stopsInThisBatch,
+                stopLength: batchState.settings.stopLength,
+                websiteRefs: batchState.settings.websiteRefs || []
+            };
+            
+            console.log('Batch request:', requestBody);
+
+            try {
+                updateProgress('claude', progressBase + 25, 
+                    `Batch ${batchState.currentBatch}/${batchState.totalBatches} - Generating content...`);
 
                 const response = await fetch('/api/claude', {
                     method: 'POST',
@@ -726,68 +856,173 @@
                     body: JSON.stringify(requestBody)
                 });
 
-                console.log('API response status:', response.status);
+                console.log('Batch API response status:', response.status);
 
                 if (!response.ok) {
                     const errorData = await response.json();
-                    console.error('API error:', errorData);
+                    console.error('Batch API error:', errorData);
                     
-                    // Check if it's a rate limit error
                     if (errorData.error && errorData.error.includes('rate limit')) {
-                        console.log('Rate limit detected, showing retry option...');
-                        updateProgress('claude', 30, 'Rate limit reached. Waiting 60 seconds...');
-                        showMessage('Rate limit reached. Will retry in 60 seconds...', 'info');
-                        
-                        // Show countdown
-                        let countdown = 60;
-                        const countdownInterval = setInterval(() => {
-                            countdown--;
-                            updateProgress('claude', 30 + (30 - countdown/2), `Retrying in ${countdown} seconds...`);
-                            
-                            if (countdown <= 0) {
-                                clearInterval(countdownInterval);
-                                // Retry the request
-                                generateWithClaude();
-                            }
-                        }, 1000);
-                        
-                        return;
+                        console.log('Rate limit in batch, waiting...');
+                        await handleRateLimit();
+                        return; // Will retry after rate limit
                     }
                     
                     throw new Error(errorData.error || `API error: ${response.status}`);
                 }
 
                 const data = await response.json();
-                console.log('API response data:', data);
-                updateProgress('claude', 90, 'Processing response...');
-
-                generatedContent = data.rawContent || data.content;
-                document.getElementById('generatedContent').textContent = data.content;
-
-                updateProgress('claude', 100, 'Content generated successfully!');
-                showMessage('Content generated successfully!', 'success');
+                console.log('Batch API response received');
                 
-                // Show quality info
-                const wordCount = generatedContent.split(/\s+/).length;
-                showMessage(`Generated ${numStops} stops with ~${Math.round(wordCount/numStops)} words per stop`, 'info');
+                // Process the batch content
+                const batchContent = data.rawContent || data.content;
+                batchState.allContent.push(batchContent);
+                batchState.completedStops += stopsInThisBatch;
+                
+                updateProgress('claude', progressBase + 80, 
+                    `Batch ${batchState.currentBatch}/${batchState.totalBatches} completed (${batchState.completedStops}/${batchState.targetStops} stops)`);
 
-                setTimeout(() => {
-                    document.getElementById('claudeProgress').classList.remove('active');
-                }, 2000);
+                // Update display with accumulated content
+                const combinedContent = batchState.allContent.join('\n\n' + '='.repeat(50) + '\n\n');
+                document.getElementById('generatedContent').textContent = combinedContent;
+                generatedContent = combinedContent;
+
+                showMessage(`Batch ${batchState.currentBatch} completed! (${batchState.completedStops}/${batchState.targetStops} stops)`, 'success');
+
+                // Check if we need more batches
+                if (batchState.completedStops < batchState.targetStops) {
+                    batchState.currentBatch++;
+                    
+                    // Wait 60 seconds before next batch to respect rate limits
+                    updateProgress('claude', progressBase + 85, 
+                        `Waiting 60 seconds before next batch...`);
+                    
+                    showMessage('Waiting 60 seconds before next batch to respect rate limits...', 'info');
+                    
+                    // Show countdown
+                    let countdown = 60;
+                    const countdownInterval = setInterval(() => {
+                        countdown--;
+                        updateProgress('claude', progressBase + 85, 
+                            `Next batch in ${countdown} seconds... (${batchState.completedStops}/${batchState.targetStops} stops)`);
+                        
+                        if (countdown <= 0) {
+                            clearInterval(countdownInterval);
+                            generateNextBatch(); // Continue with next batch
+                        }
+                    }, 1000);
+                } else {
+                    // All batches complete!
+                    completeBatchGeneration();
+                }
 
             } catch (error) {
-                console.error('API Error:', error);
-                console.error('Error stack:', error.stack);
-                showMessage('Error: ' + error.message, 'error');
-                document.getElementById('claudeProgress').classList.remove('active');
+                console.error('Batch generation error:', error);
+                throw error;
             }
         }
 
-        // Generate audio with Speechify
+        // Create batch-specific prompt
+        function createBatchPrompt(stopsInBatch) {
+            const startStop = batchState.completedStops + 1;
+            const endStop = batchState.completedStops + stopsInBatch;
+            
+            let contextPrompt = batchState.settings.customPrompt;
+            
+            // Add website references to prompt
+            if (batchState.settings.websiteRefs && batchState.settings.websiteRefs.length > 0) {
+                contextPrompt += `\n\nIMPORTANT INFORMATION SOURCES: Please reference and include key information from these official sources: ${batchState.settings.websiteRefs.join(', ')}. Use these sources to ensure accuracy and include must-have facts, opening hours, ticket prices, and official details.`;
+            }
+            
+            if (batchState.currentBatch > 1) {
+                contextPrompt += `\n\nCONTEXT: This is batch ${batchState.currentBatch} of a ${batchState.targetStops}-stop audioguide. `;
+                contextPrompt += `Previous batches covered stops 1-${batchState.completedStops}. `;
+                contextPrompt += `Now generate stops ${startStop}-${endStop}, ensuring they complement and continue from the previous stops without repetition.`;
+            } else {
+                contextPrompt += `\n\nThis is the first batch of a ${batchState.targetStops}-stop audioguide. Generate stops ${startStop}-${endStop}.`;
+            }
+            
+            return contextPrompt;
+        }
+
+        // Handle rate limit with automatic retry
+        async function handleRateLimit() {
+            updateProgress('claude', 
+                ((batchState.currentBatch - 1) / batchState.totalBatches) * 90 + 30, 
+                'Rate limit reached. Waiting 60 seconds...');
+            
+            showMessage('Rate limit reached. Automatically retrying in 60 seconds...', 'info');
+            
+            let countdown = 60;
+            const countdownInterval = setInterval(() => {
+                countdown--;
+                updateProgress('claude', 
+                    ((batchState.currentBatch - 1) / batchState.totalBatches) * 90 + 30, 
+                    `Rate limit - Retrying batch ${batchState.currentBatch} in ${countdown} seconds...`);
+                
+                if (countdown <= 0) {
+                    clearInterval(countdownInterval);
+                    generateNextBatch(); // Retry current batch
+                }
+            }, 1000);
+        }
+
+        // Complete batch generation
+        function completeBatchGeneration() {
+            console.log('All batches completed!');
+            
+            updateProgress('claude', 100, `All ${batchState.targetStops} stops generated successfully!`);
+            
+            showMessage(`🎉 Complete! Generated ${batchState.targetStops} stops in ${batchState.totalBatches} batches`, 'success');
+            
+            // Add final summary
+            const wordCount = generatedContent.split(/\s+/).length;
+            const summaryContent = `
+COMPLETE AUDIOGUIDE: ${batchState.destination.toUpperCase()}
+===================================================
+✅ Generated: ${batchState.completedStops} stops
+📊 Batches: ${batchState.totalBatches}
+📝 Word Count: ${wordCount.toLocaleString()} words
+⏱️ Est. Duration: ~${Math.round(wordCount * 0.5 / 60)} minutes
+🎯 Style: ${batchState.settings.style}
+👥 Audience: ${batchState.settings.audience}
+📍 Type: ${batchState.settings.guideType}
+===================================================
+
+${generatedContent}
+`;
+            
+            document.getElementById('generatedContent').textContent = summaryContent;
+            generatedContent = summaryContent;
+            
+            // Reset UI
+            setTimeout(() => {
+                document.getElementById('claudeProgress').classList.remove('active');
+                resetBatchState();
+            }, 3000);
+        }
+
+        // Reset batch state and UI
+        function resetBatchState() {
+            batchState.isGenerating = false;
+            
+            const generateButton = document.querySelector('[onclick*="generateWithClaude"]');
+            generateButton.textContent = '🚀 Start Batch Generation';
+            generateButton.disabled = false;
+        }
+
+        // Generate audio with Speechify (enhanced for large content)
         async function generateWithSpeechify() {
             if (!generatedContent) {
                 showMessage('Please generate content first', 'error');
                 return;
+            }
+
+            // Check content length
+            const wordCount = generatedContent.split(/\s+/).length;
+            if (wordCount > 10000) {
+                const confirm = window.confirm(`This is a large audioguide (${Math.round(wordCount/1000)}k words). Audio generation may take several minutes. Continue?`);
+                if (!confirm) return;
             }
 
             const speed = document.getElementById('speechSpeed').value;
@@ -795,12 +1030,11 @@
 
             // Show progress
             document.getElementById('speechifyProgress').classList.add('active');
-            updateProgress('speechify', 10, 'Preparing audio generation...');
+            updateProgress('speechify', 10, 'Preparing large audio generation...');
 
             try {
-                updateProgress('speechify', 30, 'Processing with Speechify...');
+                updateProgress('speechify', 30, `Processing ${Math.round(wordCount/1000)}k words with Speechify...`);
 
-                // Call Speechify API through backend
                 const response = await fetch('/api/speechify', {
                     method: 'POST',
                     headers: {
@@ -824,21 +1058,17 @@
                 const data = await response.json();
                 updateProgress('speechify', 90, 'Finalizing audio...');
 
-                // Handle response
                 if (data.audioUrl) {
                     audioUrl = data.audioUrl;
-                    
-                    // Show audio player
                     document.getElementById('audioPlayerSection').classList.add('active');
                     
-                    // Set up audio element
                     if (!currentAudio) {
                         currentAudio = new Audio();
                     }
                     currentAudio.src = audioUrl;
                     
-                    updateProgress('speechify', 100, 'Audio generated successfully!');
-                    showMessage('Audio generated successfully!', 'success');
+                    updateProgress('speechify', 100, 'Large audio file generated successfully!');
+                    showMessage(`🎵 Audio generated! (~${Math.round(wordCount * 0.5 / 60)} minutes)`, 'success');
                 }
 
                 setTimeout(() => {
@@ -857,8 +1087,39 @@
             const progressBar = document.getElementById(type + 'ProgressBar');
             const statusText = document.getElementById(type + 'Status');
             
-            progressBar.style.width = percentage + '%';
-            statusText.textContent = status;
+            if (progressBar) progressBar.style.width = percentage + '%';
+            if (statusText) statusText.textContent = status;
+        }
+
+        // Enhanced save to library with batch info
+        function saveToLibrary() {
+            if (!generatedContent) {
+                showMessage('No content to save', 'error');
+                return;
+            }
+            
+            const audioguides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
+            const wordCount = generatedContent.split(/\s+/).length;
+            
+            const newGuide = {
+                id: Date.now(),
+                title: document.getElementById('destination').value,
+                content: generatedContent,
+                type: 'premium-batch',
+                createdWith: 'Premium Batch Generator',
+                date: new Date().toISOString(),
+                location: document.getElementById('destination').value,
+                language: document.getElementById('voiceLanguage').value,
+                stops: batchState.targetStops || document.getElementById('numStops').value,
+                tourType: document.getElementById('guideType').value,
+                wordCount: wordCount,
+                estimatedDuration: Math.round(wordCount * 0.5 / 60) // rough estimate in minutes
+            };
+            
+            audioguides.unshift(newGuide);
+            localStorage.setItem('cloudguide_audioguides', JSON.stringify(audioguides));
+            
+            showMessage(`💾 Saved! ${newGuide.stops} stops, ${Math.round(wordCount/1000)}k words`, 'success');
         }
 
         // Toggle audio playback
@@ -891,12 +1152,12 @@
             
             const a = document.createElement('a');
             a.href = audioUrl;
-            a.download = 'audioguide.mp3';
+            a.download = `${document.getElementById('destination').value.replace(/\s+/g, '_')}_audioguide.mp3`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             
-            showMessage('Downloading audio...', 'info');
+            showMessage('📥 Downloading audio...', 'info');
         }
 
         function downloadScript() {
@@ -909,43 +1170,74 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'audioguide_script.txt';
+            a.download = `${document.getElementById('destination').value.replace(/\s+/g, '_')}_script.txt`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
             
-            showMessage('Script downloaded!', 'success');
+            const wordCount = generatedContent.split(/\s+/).length;
+            showMessage(`📄 Script downloaded! (${Math.round(wordCount/1000)}k words)`, 'success');
         }
 
-        function saveToLibrary() {
-            if (!generatedContent) {
-                showMessage('No content to save', 'error');
-                return;
+        // Website references functions
+        function addWebsiteRef() {
+            const container = document.getElementById('websiteRefsContainer');
+            const newInput = document.createElement('div');
+            newInput.className = 'website-ref-input';
+            newInput.innerHTML = `
+                <input type="url" class="form-element website-url" placeholder="https://official-website.com/must-have-info">
+                <button type="button" class="btn remove-website-btn" onclick="removeWebsiteRef(this)">−</button>
+            `;
+            container.appendChild(newInput);
+            updateWebsiteRefsList();
+        }
+
+        function removeWebsiteRef(button) {
+            button.parentElement.remove();
+            updateWebsiteRefsList();
+        }
+
+        function getWebsiteReferences() {
+            const inputs = document.querySelectorAll('.website-url');
+            const urls = [];
+            inputs.forEach(input => {
+                if (input.value.trim() && input.value.startsWith('http')) {
+                    urls.push(input.value.trim());
+                }
+            });
+            return urls;
+        }
+
+        function updateWebsiteRefsList() {
+            const refs = getWebsiteReferences();
+            let listDiv = document.getElementById('websiteRefsList');
+            
+            if (refs.length > 0) {
+                if (!listDiv) {
+                    listDiv = document.createElement('div');
+                    listDiv.id = 'websiteRefsList';
+                    listDiv.className = 'website-refs-list';
+                    document.getElementById('websiteRefsContainer').appendChild(listDiv);
+                }
+                
+                listDiv.innerHTML = `
+                    <h5>📋 Information Sources (${refs.length}):</h5>
+                    <ul>
+                        ${refs.map(url => `<li>${url}</li>`).join('')}
+                    </ul>
+                `;
+            } else if (listDiv) {
+                listDiv.remove();
             }
-            
-            // Save to localStorage library
-            const audioguides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
-            const newGuide = {
-                id: Date.now(),
-                title: document.getElementById('destination').value,
-                content: generatedContent,
-                type: 'premium',
-                createdWith: 'Premium',
-                date: new Date().toISOString(),
-                location: document.getElementById('destination').value,
-                language: document.getElementById('voiceLanguage').value,
-                stops: document.getElementById('numStops').value,
-                tourType: document.getElementById('guideType').value
-            };
-            
-            audioguides.unshift(newGuide);
-            localStorage.setItem('cloudguide_audioguides', JSON.stringify(audioguides));
-            
-            showMessage('Saved to library!', 'success');
         }
 
-        // Show message
+        // Update website refs list when URLs change
+        document.addEventListener('input', function(e) {
+            if (e.target.classList.contains('website-url')) {
+                updateWebsiteRefsList();
+            }
+        });
         function showMessage(message, type) {
             const messageDiv = document.createElement('div');
             messageDiv.style.cssText = `
@@ -958,6 +1250,9 @@
                 animation: slideIn 0.3s ease-out;
                 box-shadow: 0 2px 8px rgba(0,0,0,0.15);
                 font-size: 14px;
+                font-weight: 500;
+                max-width: 400px;
+                word-wrap: break-word;
             `;
             
             if (type === 'success') {
@@ -976,8 +1271,9 @@
             
             setTimeout(() => {
                 messageDiv.remove();
-            }, 4000);
+            }, type === 'info' ? 6000 : 4000);
         }
+
         // Make functions globally accessible
         window.generateWithClaude = generateWithClaude;
         window.generateWithSpeechify = generateWithSpeechify;
@@ -986,8 +1282,10 @@
         window.downloadAudio = downloadAudio;
         window.downloadScript = downloadScript;
         window.saveToLibrary = saveToLibrary;
-        
-        console.log('Functions registered to window');
+        window.addWebsiteRef = addWebsiteRef;
+        window.removeWebsiteRef = removeWebsiteRef;
+
+        console.log('Enhanced functions registered to window with batch generation support');
     </script>
 </body>
 </html>
