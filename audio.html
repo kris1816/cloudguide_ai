@@ -1313,9 +1313,42 @@ Leonardo da Vinci's masterpiece from the 16th century. The painting measures 77c
             const lang = document.getElementById('audioLanguage').value;
             const alert = document.getElementById('languageAlert');
             
+            // Only show warning for non-English if Google TTS is NOT configured
             if (!lang.startsWith('en-')) {
-                alert.style.display = 'block';
+                // Check if Google is configured by making a test call
+                try {
+                    const testResponse = await fetch('/api/multilingual-tts', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            text: 'test',
+                            language: lang,
+                            voice: 'alloy',
+                            speed: 1.0
+                        })
+                    });
+                    
+                    if (testResponse.ok) {
+                        const testData = await testResponse.json();
+                        console.log('TTS provider check:', testData.provider);
+                        
+                        // Only show warning if NOT using Google
+                        if (testData.provider === 'google' && testData.nativeLanguage) {
+                            alert.style.display = 'none';
+                            console.log('✅ Google Cloud TTS is active for', lang);
+                        } else if (testData.warning) {
+                            alert.style.display = 'block';
+                            alert.innerHTML = testData.warning;
+                        } else {
+                            alert.style.display = 'none';
+                        }
+                    }
+                } catch (e) {
+                    console.error('Error checking TTS provider:', e);
+                    alert.style.display = 'block';
+                }
             } else {
+                // English selected - no warning needed
                 alert.style.display = 'none';
             }
         }
@@ -1731,11 +1764,29 @@ Leonardo da Vinci's masterpiece from the 16th century. The painting measures 77c
             `).join('');
         }
 
-        // Play audio with controls
-        function playAudio(url) {
-            // Stop any currently playing audio
+        // Play/Stop audio with proper toggle
+        function playAudio(url, buttonElement) {
+            // If no button element passed, try to get it from the event
+            const button = buttonElement || event.target;
+            
+            // Check if this button is currently playing
+            if (button.textContent === 'Stop') {
+                // Stop the audio
+                if (currentAudioPlayer) {
+                    currentAudioPlayer.pause();
+                    currentAudioPlayer.currentTime = 0;
+                    currentAudioPlayer = null;
+                }
+                button.textContent = 'Play';
+                button.classList.remove('btn-danger');
+                button.classList.add('btn-primary');
+                return;
+            }
+            
+            // Stop any other playing audio
             if (currentAudioPlayer) {
                 currentAudioPlayer.pause();
+                currentAudioPlayer.currentTime = 0;
                 currentAudioPlayer = null;
                 
                 // Reset all play buttons
@@ -1745,9 +1796,6 @@ Leonardo da Vinci's masterpiece from the 16th century. The painting measures 77c
                     btn.classList.add('btn-primary');
                 });
             }
-            
-            // Find the button that was clicked
-            const button = event.target;
             
             // Create new audio player
             currentAudioPlayer = new Audio(url);
@@ -1773,6 +1821,16 @@ Leonardo da Vinci's masterpiece from the 16th century. The painting measures 77c
                 currentAudioPlayer = null;
             };
             
+            // Handle pause event (in case paused by browser)
+            currentAudioPlayer.onpause = () => {
+                if (currentAudioPlayer && currentAudioPlayer.currentTime < currentAudioPlayer.duration) {
+                    // Audio was paused but not ended
+                    button.textContent = 'Play';
+                    button.classList.remove('btn-danger');
+                    button.classList.add('btn-primary');
+                }
+            };
+            
             // Start playing
             currentAudioPlayer.play().catch(error => {
                 console.error('Play error:', error);
@@ -1782,21 +1840,6 @@ Leonardo da Vinci's masterpiece from the 16th century. The painting measures 77c
                 button.classList.add('btn-primary');
                 currentAudioPlayer = null;
             });
-        }
-
-        // Stop audio playback
-        function stopAudio() {
-            if (currentAudioPlayer) {
-                currentAudioPlayer.pause();
-                currentAudioPlayer = null;
-                
-                // Reset all play buttons
-                document.querySelectorAll('.audio-play-btn').forEach(btn => {
-                    btn.textContent = 'Play';
-                    btn.classList.remove('btn-danger');
-                    btn.classList.add('btn-primary');
-                });
-            }
         }
 
         // Download audio
