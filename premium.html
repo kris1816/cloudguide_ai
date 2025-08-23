@@ -502,20 +502,22 @@
                         <div class="form-group" style="margin: 0;">
                             <label for="numStops">Number of Stops</label>
                             <select id="numStops" class="form-element">
+                                <option value="3">3 Stops</option>
+                                <option value="4" selected>4 Stops (Best for rate limit)</option>
                                 <option value="5">5 Stops</option>
-                                <option value="10" selected>10 Stops</option>
+                                <option value="8">8 Stops</option>
+                                <option value="10">10 Stops</option>
                                 <option value="15">15 Stops</option>
-                                <option value="20">20 Stops</option>
-                                <option value="30">30 Stops</option>
                             </select>
                         </div>
                         <div class="form-group" style="margin: 0;">
                             <label for="stopLength">Words per Stop</label>
                             <select id="stopLength" class="form-element">
                                 <option value="500">~500 words</option>
-                                <option value="750" selected>~750 words</option>
+                                <option value="750">~750 words</option>
+                                <option value="900" selected>~900 words (Optimal)</option>
                                 <option value="1000">~1000 words</option>
-                                <option value="1500">~1500 words</option>
+                                <option value="1200">~1200 words</option>
                             </select>
                         </div>
                     </div>
@@ -669,7 +671,7 @@
             selectedVoice = voice;
         }
 
-        // Generate content with Claude
+        // Generate content with Claude (with rate limit handling)
         async function generateWithClaude() {
             console.log('generateWithClaude called');
             
@@ -729,6 +731,29 @@
                 if (!response.ok) {
                     const errorData = await response.json();
                     console.error('API error:', errorData);
+                    
+                    // Check if it's a rate limit error
+                    if (errorData.error && errorData.error.includes('rate limit')) {
+                        console.log('Rate limit detected, showing retry option...');
+                        updateProgress('claude', 30, 'Rate limit reached. Waiting 60 seconds...');
+                        showMessage('Rate limit reached. Will retry in 60 seconds...', 'info');
+                        
+                        // Show countdown
+                        let countdown = 60;
+                        const countdownInterval = setInterval(() => {
+                            countdown--;
+                            updateProgress('claude', 30 + (30 - countdown/2), `Retrying in ${countdown} seconds...`);
+                            
+                            if (countdown <= 0) {
+                                clearInterval(countdownInterval);
+                                // Retry the request
+                                generateWithClaude();
+                            }
+                        }, 1000);
+                        
+                        return;
+                    }
+                    
                     throw new Error(errorData.error || `API error: ${response.status}`);
                 }
 
@@ -741,6 +766,10 @@
 
                 updateProgress('claude', 100, 'Content generated successfully!');
                 showMessage('Content generated successfully!', 'success');
+                
+                // Show quality info
+                const wordCount = generatedContent.split(/\s+/).length;
+                showMessage(`Generated ${numStops} stops with ~${Math.round(wordCount/numStops)} words per stop`, 'info');
 
                 setTimeout(() => {
                     document.getElementById('claudeProgress').classList.remove('active');
