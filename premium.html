@@ -521,7 +521,7 @@
                     </div>
                 </div>
 
-                <button class="btn btn-primary" style="width: 100%; margin-top: 20px;" onclick="generateWithClaude()">
+                <button class="btn btn-primary" style="width: 100%; margin-top: 20px;" onclick="console.log('Button clicked'); generateWithClaude()">
                     Generate Content
                 </button>
 
@@ -640,12 +640,26 @@
         let audioUrl = null;
         let currentAudio = null;
 
+        console.log('Script loaded');
+
         // Initialize on load
         window.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded');
+            
             // Update speed display
-            document.getElementById('speechSpeed').addEventListener('input', function() {
-                document.getElementById('speedValue').textContent = this.value + 'x';
-            });
+            const speedSlider = document.getElementById('speechSpeed');
+            if (speedSlider) {
+                speedSlider.addEventListener('input', function() {
+                    document.getElementById('speedValue').textContent = this.value + 'x';
+                });
+                console.log('Speed slider initialized');
+            } else {
+                console.error('Speed slider not found');
+            }
+            
+            // Test if buttons are accessible
+            const testButton = document.querySelector('[onclick*="generateWithClaude"]');
+            console.log('Generate button found:', !!testButton);
         });
 
         // Select voice
@@ -657,8 +671,13 @@
 
         // Generate content with Claude
         async function generateWithClaude() {
+            console.log('generateWithClaude called');
+            
             const destination = document.getElementById('destination').value;
+            console.log('Destination:', destination);
+            
             if (!destination) {
+                console.log('No destination entered');
                 showMessage('Please enter a destination or topic', 'error');
                 return;
             }
@@ -916,6 +935,16 @@
                 messageDiv.remove();
             }, 4000);
         }
+        // Make functions globally accessible
+        window.generateWithClaude = generateWithClaude;
+        window.generateWithSpeechify = generateWithSpeechify;
+        window.selectVoice = selectVoice;
+        window.togglePlayback = togglePlayback;
+        window.downloadAudio = downloadAudio;
+        window.downloadScript = downloadScript;
+        window.saveToLibrary = saveToLibrary;
+        
+        console.log('Functions registered to window');
     </script>
 </body>
 </html>
