@@ -689,38 +689,51 @@
             const numStops = document.getElementById('numStops').value;
             const stopLength = document.getElementById('stopLength').value;
 
+            console.log('Form values collected:', {
+                destination, guideType, audience, style, numStops, stopLength
+            });
+
             // Show progress
+            console.log('Showing progress...');
             document.getElementById('claudeProgress').classList.add('active');
             updateProgress('claude', 10, 'Connecting to AI...');
 
             try {
+                console.log('Starting API call...');
                 updateProgress('claude', 30, 'Generating content...');
 
                 // Call Claude API through backend
+                const requestBody = {
+                    destination: destination,
+                    guideType: guideType,
+                    audience: audience,
+                    style: style,
+                    customPrompt: customPrompt,
+                    numStops: parseInt(numStops),
+                    stopLength: parseInt(stopLength)
+                };
+                
+                console.log('Request body:', requestBody);
+                console.log('Fetching /api/claude...');
+
                 const response = await fetch('/api/claude', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({
-                        destination: destination,
-                        guideType: guideType,
-                        audience: audience,
-                        style: style,
-                        customPrompt: customPrompt,
-                        numStops: parseInt(numStops),
-                        stopLength: parseInt(stopLength)
-                    })
+                    body: JSON.stringify(requestBody)
                 });
 
                 console.log('API response status:', response.status);
 
                 if (!response.ok) {
                     const errorData = await response.json();
+                    console.error('API error:', errorData);
                     throw new Error(errorData.error || `API error: ${response.status}`);
                 }
 
                 const data = await response.json();
+                console.log('API response data:', data);
                 updateProgress('claude', 90, 'Processing response...');
 
                 generatedContent = data.rawContent || data.content;
@@ -735,6 +748,7 @@
 
             } catch (error) {
                 console.error('API Error:', error);
+                console.error('Error stack:', error.stack);
                 showMessage('Error: ' + error.message, 'error');
                 document.getElementById('claudeProgress').classList.remove('active');
             }
