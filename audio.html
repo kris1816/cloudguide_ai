@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta property="og:title" content="CloudGuide Audio Generation" />
     <meta property="og:description" content="Convert your audioguides to professional audio files in multiple languages" />
-    <title>CloudGuide - Multi-Language Audio Generation</title>
+    <title>CloudGuide - Audio Generation</title>
     
     <!-- Font -->
     <link href="https://fonts.googleapis.com/css?family=Nunito+Sans:300,400,400i,600,700&display=swap" rel="stylesheet">
@@ -84,8 +84,6 @@
             border-radius: 8px;
             text-align: center;
             margin-bottom: 25px;
-            position: relative;
-            overflow: hidden;
         }
 
         .hero-title {
@@ -94,7 +92,6 @@
             font-weight: 600;
             margin-bottom: 12px;
             letter-spacing: -0.5px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
 
         .hero-subtitle {
@@ -113,50 +110,82 @@
             padding: 35px;
         }
 
-        /* Load Section */
-        .load-section {
-            background: #f7fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 25px;
-            margin-bottom: 30px;
-            text-align: center;
-        }
-
-        .load-buttons {
+        /* Tabs */
+        .tabs {
             display: flex;
-            gap: 15px;
-            justify-content: center;
-        }
-
-        .load-btn {
-            padding: 12px 25px;
-            background: white;
-            border: 2px solid #48bb78;
-            color: #48bb78;
+            gap: 2px;
+            margin-bottom: 25px;
+            background: #e2e8f0;
             border-radius: 6px;
+            padding: 4px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            background: transparent;
+            border: none;
+            border-radius: 4px;
             cursor: pointer;
+            font-size: 13px;
             font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
             transition: all 0.3s;
+            color: #718096;
         }
 
-        .load-btn:hover {
-            background: #48bb78;
-            color: white;
+        .tab-btn.active {
+            background: white;
+            color: #48bb78;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
-        /* Chapter Section */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Text Input Section */
+        .text-input-section {
+            margin-bottom: 30px;
+        }
+
+        .text-input {
+            width: 100%;
+            min-height: 300px;
+            padding: 15px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+            background: #f7fafc;
+            resize: vertical;
+        }
+
+        .text-input:focus {
+            outline: none;
+            border-color: #48bb78;
+            box-shadow: 0 0 0 3px rgba(72, 187, 120, 0.15);
+            background: white;
+        }
+
+        .input-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        /* Chapters Section */
         .chapters-section {
             border: 1px solid #e2e8f0;
             border-radius: 8px;
             padding: 25px;
             background: #f7fafc;
             margin-bottom: 30px;
-            display: none;
-        }
-
-        .chapters-section.active {
-            display: block;
         }
 
         .section-title {
@@ -166,42 +195,6 @@
             margin-bottom: 15px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-        }
-
-        .chapter-controls {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-
-        .btn-small {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 5px;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .btn-primary {
-            background: #48bb78;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #38a169;
-        }
-
-        .btn-secondary {
-            background: #e2e8f0;
-            color: #4a5568;
-        }
-
-        .btn-secondary:hover {
-            background: #cbd5e0;
         }
 
         .chapter-list {
@@ -265,25 +258,19 @@
             color: #718096;
         }
 
-        .status-processing {
-            background: #fef3c7;
-            color: #92400e;
-        }
-
         .status-completed {
             background: #d1fae5;
             color: #065f46;
         }
 
-        /* Two Column Layout */
-        .two-column {
+        /* Settings Grid */
+        .settings-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 30px;
             margin-bottom: 30px;
         }
 
-        /* Settings Section */
         .settings-section {
             border: 1px solid #e2e8f0;
             border-radius: 8px;
@@ -311,7 +298,6 @@
             border: 1px solid #e2e8f0;
             border-radius: 6px;
             font-size: 14px;
-            font-family: 'Nunito Sans', sans-serif;
             background: white;
             color: #2d3748;
         }
@@ -319,34 +305,7 @@
         .form-element:focus {
             outline: none;
             border-color: #48bb78;
-            background: white;
             box-shadow: 0 0 0 3px rgba(72, 187, 120, 0.15);
-        }
-
-        /* Notice Boxes */
-        .notice {
-            padding: 12px;
-            border-radius: 6px;
-            margin-bottom: 15px;
-            font-size: 13px;
-        }
-
-        .notice-warning {
-            background: #fef3c7;
-            border: 1px solid #f59e0b;
-            color: #92400e;
-        }
-
-        .notice-info {
-            background: #dbeafe;
-            border: 1px solid #3b82f6;
-            color: #1e40af;
-        }
-
-        .notice-success {
-            background: #d1fae5;
-            border: 1px solid #10b981;
-            color: #065f46;
         }
 
         /* Voice Grid */
@@ -377,27 +336,46 @@
             background: #f0fff4;
         }
 
-        .voice-icon {
-            font-size: 2em;
-            margin-bottom: 8px;
-        }
-
-        .voice-name {
+        /* Buttons */
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
             font-weight: 600;
-            color: #2d3748;
-            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all 0.3s;
         }
 
-        .voice-desc {
-            font-size: 0.85em;
-            color: #718096;
+        .btn-primary {
+            background: #48bb78;
+            color: white;
         }
 
-        /* Action Buttons */
-        .action-buttons {
+        .btn-primary:hover {
+            background: #38a169;
+        }
+
+        .btn-primary:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e0;
+        }
+
+        .generate-section {
             display: flex;
             gap: 15px;
-            margin-top: 25px;
+            margin-top: 30px;
         }
 
         .generate-btn {
@@ -427,106 +405,11 @@
             transform: none;
         }
 
-        .batch-btn {
-            flex: 1;
-            padding: 16px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1.2px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .batch-btn:hover {
-            background: #5a67d8;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-        }
-
-        /* Progress Section */
-        .progress-section {
-            background: #f7fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 25px;
-            margin-top: 30px;
-            display: none;
-        }
-
-        .progress-section.active {
-            display: block;
-        }
-
-        .progress-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 12px;
-        }
-
-        .progress-title {
-            font-weight: 600;
-            color: #4a5568;
-            font-size: 14px;
-        }
-
-        .progress-percentage {
-            color: #48bb78;
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        .progress-bar-bg {
-            width: 100%;
-            height: 8px;
-            background: #e2e8f0;
-            border-radius: 4px;
-            overflow: hidden;
-        }
-
-        .progress-bar-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #48bb78 0%, #38a169 100%);
-            width: 0%;
-            transition: width 0.5s ease;
-            border-radius: 4px;
-        }
-
-        .chapter-progress-list {
-            display: grid;
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .chapter-progress-item {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            padding: 12px;
-            background: white;
-            border-radius: 6px;
-            border: 1px solid #e2e8f0;
-        }
-
         /* Files Section */
         .files-section {
             margin-top: 30px;
             padding-top: 30px;
             border-top: 1px solid #e2e8f0;
-            display: none;
-        }
-
-        .files-section.active {
-            display: block;
-        }
-
-        .file-list {
-            display: grid;
-            gap: 15px;
         }
 
         .file-item {
@@ -537,6 +420,7 @@
             background: #f7fafc;
             border: 1px solid #e2e8f0;
             border-radius: 6px;
+            margin-bottom: 15px;
         }
 
         .file-info {
@@ -545,27 +429,57 @@
             gap: 15px;
         }
 
-        .file-details {
-            flex: 1;
-        }
-
-        .file-name {
-            font-weight: 600;
-            color: #2d3748;
-            margin-bottom: 3px;
-        }
-
-        .file-meta {
-            font-size: 0.85em;
-            color: #718096;
-        }
-
         .file-actions {
             display: flex;
             gap: 10px;
         }
 
-        /* Notification */
+        /* Alert */
+        .alert {
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .alert-warning {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            color: #92400e;
+        }
+
+        .alert-info {
+            background: #dbeafe;
+            border: 1px solid #3b82f6;
+            color: #1e40af;
+        }
+
+        /* Loading */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 3px solid #e2e8f0;
+            border-top: 3px solid #48bb78;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         @keyframes slideIn {
             from {
                 transform: translateX(100%);
@@ -577,103 +491,6 @@
             }
         }
 
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 15px 20px;
-            border-radius: 6px;
-            z-index: 1000;
-            animation: slideIn 0.3s ease-out;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-
-        .notification-success {
-            background: #48bb78;
-            color: white;
-        }
-
-        .notification-error {
-            background: #e53e3e;
-            color: white;
-        }
-
-        .notification-warning {
-            background: #f59e0b;
-            color: white;
-        }
-
-        /* Library Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-        }
-
-        .modal-content {
-            background-color: white;
-            margin: 5% auto;
-            padding: 30px;
-            border-radius: 10px;
-            width: 80%;
-            max-width: 800px;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #e2e8f0;
-        }
-
-        .modal-title {
-            font-size: 1.5em;
-            font-weight: 600;
-            color: #2d3748;
-        }
-
-        .close-modal {
-            background: none;
-            border: none;
-            font-size: 1.5em;
-            cursor: pointer;
-            color: #718096;
-            padding: 5px;
-        }
-
-        .close-modal:hover {
-            color: #e53e3e;
-        }
-
-        .library-item {
-            background: #f7fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            padding: 20px;
-            margin-bottom: 15px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .library-item:hover {
-            background: white;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
-        .library-item.selected {
-            border-color: #48bb78;
-            background: #f0fff4;
-        }
-
         /* Footer */
         .footer-section {
             margin-top: 40px;
@@ -682,38 +499,14 @@
             text-align: center;
         }
 
-        .funding-text {
-            font-size: 12px;
-            color: #718096;
-            margin-bottom: 20px;
-            line-height: 1.6;
-        }
-
-        .funding-logos {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 40px;
-        }
-
-        .funding-logo {
-            height: 45px;
-            opacity: 0.6;
-            transition: opacity 0.3s;
-            filter: grayscale(20%);
-        }
-
         @media (max-width: 768px) {
-            .two-column {
+            .settings-grid {
                 grid-template-columns: 1fr;
             }
             .voice-grid {
                 grid-template-columns: 1fr;
             }
-            .action-buttons {
-                flex-direction: column;
-            }
-            .load-buttons {
+            .generate-section {
                 flex-direction: column;
             }
             .nav-links {
@@ -746,47 +539,82 @@
 
         <!-- Hero Section -->
         <section class="hero-section">
-            <h1 class="hero-title">Multi-Language Audio Generation</h1>
-            <p class="hero-subtitle">Generate Professional Audio for Each Chapter in Multiple Languages</p>
+            <h1 class="hero-title">Audio Generation</h1>
+            <p class="hero-subtitle">Convert Your Audioguides to Professional Audio Files</p>
         </section>
 
         <!-- Main Content -->
         <div class="main-container">
-            <!-- Load Content Section -->
-            <div class="load-section">
-                <h3 class="section-title">📚 Load Your Audioguide</h3>
-                <div class="load-buttons">
-                    <button class="load-btn" onclick="openLibraryModal()">Load from Library</button>
-                    <button class="load-btn" onclick="loadSampleContent()">Use Sample Content</button>
-                    <button class="load-btn" onclick="document.getElementById('textFileInput').click()">Upload Text File</button>
-                    <input type="file" id="textFileInput" accept=".txt" style="display: none;" onchange="handleFileUpload(event)">
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('text')">Direct Text Input</button>
+                <button class="tab-btn" onclick="switchTab('library')">Load from Library</button>
+            </div>
+
+            <!-- Direct Text Input Tab -->
+            <div id="textTab" class="tab-content active">
+                <div class="text-input-section">
+                    <label>Paste Your Audioguide Text</label>
+                    <textarea id="textInput" class="text-input" placeholder="Paste your audioguide text here...
+
+Format example:
+STOP 1: INTRODUCTION
+------------------------------
+Your introduction text here...
+
+STOP 2: HISTORY
+------------------------------
+Your history text here...
+
+STOP 3: MAIN ATTRACTION
+------------------------------
+Your attraction text here...">STOP 1: INTRODUCTION
+------------------------------
+Welcome to this remarkable destination. This audioguide will take you on a journey through history, culture, and architectural wonders that have captivated visitors for centuries.
+
+STOP 2: HISTORY
+------------------------------
+The history of this location spans centuries of human civilization. From its earliest foundations to the present day, this site has witnessed the rise and fall of empires.
+
+STOP 3: MAIN ATTRACTION
+------------------------------
+Before you stands one of the most magnificent examples of architectural achievement. Notice the intricate details that have been carefully preserved.</textarea>
+                    
+                    <div class="input-actions">
+                        <button class="btn btn-primary" onclick="parseChapters()">Parse Chapters</button>
+                        <button class="btn btn-secondary" onclick="clearText()">Clear</button>
+                        <button class="btn btn-secondary" onclick="loadSample()">Load Sample</button>
+                    </div>
                 </div>
+            </div>
+
+            <!-- Library Tab -->
+            <div id="libraryTab" class="tab-content">
+                <div class="alert alert-info">
+                    Select an audioguide from your library to generate audio.
+                </div>
+                <div id="libraryList"></div>
             </div>
 
             <!-- Chapters Section -->
-            <div class="chapters-section" id="chaptersSection">
+            <div class="chapters-section" id="chaptersSection" style="display: none;">
                 <h3 class="section-title">📖 Select Chapters to Generate</h3>
-                <div class="chapter-controls">
-                    <button class="btn-small btn-primary" onclick="selectAllChapters()">Select All</button>
-                    <button class="btn-small btn-secondary" onclick="deselectAllChapters()">Deselect All</button>
-                    <span style="margin-left: auto; color: #718096; font-size: 13px;">
-                        <span id="selectedCount">0</span> of <span id="totalCount">0</span> selected
-                    </span>
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <button class="btn btn-secondary" onclick="selectAll()">Select All</button>
+                    <button class="btn btn-secondary" onclick="selectNone()">Select None</button>
                 </div>
-                <div class="chapter-list" id="chapterList">
-                    <!-- Chapters will be loaded here -->
-                </div>
+                <div class="chapter-list" id="chapterList"></div>
             </div>
 
             <!-- Settings Grid -->
-            <div class="two-column">
+            <div class="settings-grid">
                 <!-- Language Settings -->
                 <div class="settings-section">
                     <h3 class="section-title">🌍 Language Settings</h3>
                     
                     <div class="form-group">
                         <label for="audioLanguage">Audio Language</label>
-                        <select id="audioLanguage" class="form-element" onchange="updateLanguageSettings()">
+                        <select id="audioLanguage" class="form-element" onchange="updateLanguageInfo()">
                             <option value="en-US">English (US)</option>
                             <option value="en-GB">English (UK)</option>
                             <option value="es-ES">Spanish (Spain)</option>
@@ -800,31 +628,20 @@
                             <option value="ja-JP">Japanese</option>
                             <option value="ko-KR">Korean</option>
                             <option value="ru-RU">Russian</option>
-                            <option value="ar-SA">Arabic</option>
+                            <option value="ar-XA">Arabic</option>
                             <option value="hi-IN">Hindi</option>
                         </select>
                     </div>
 
-                    <div id="languageNotice" class="notice notice-warning" style="display: none;">
-                        ⚠️ Non-English languages will use OpenAI with English accent. For native pronunciation, configure Google Cloud TTS in your environment variables.
-                    </div>
-
-                    <div id="googleNotice" class="notice notice-success" style="display: none;">
-                        ✅ Google Cloud TTS available! Will use native voice for this language.
+                    <div id="languageAlert" class="alert alert-warning" style="display: none;">
+                        ⚠️ Non-English languages will use English accent. Configure Google Cloud TTS for native pronunciation.
                     </div>
 
                     <div class="form-group">
-                        <label>Text Processing Options</label>
-                        <div style="display: flex; flex-direction: column; gap: 10px;">
-                            <label style="display: flex; align-items: center; gap: 10px; font-weight: normal; text-transform: none;">
-                                <input type="checkbox" id="skipTitles" checked style="width: 20px; height: 20px;">
-                                Skip chapter titles (only narrate content)
-                            </label>
-                            <label style="display: flex; align-items: center; gap: 10px; font-weight: normal; text-transform: none;">
-                                <input type="checkbox" id="skipDashes" checked style="width: 20px; height: 20px;">
-                                Remove separator lines (-----)
-                            </label>
-                        </div>
+                        <label>
+                            <input type="checkbox" id="skipTitles" checked> 
+                            Skip chapter titles (narrate content only)
+                        </label>
                     </div>
                 </div>
 
@@ -833,281 +650,166 @@
                     <h3 class="section-title">🎙️ Voice Settings</h3>
                     
                     <div class="form-group">
-                        <label>Select Voice (OpenAI)</label>
-                        <div class="voice-grid" id="voiceGrid">
+                        <label>Select Voice</label>
+                        <div class="voice-grid">
                             <div class="voice-card selected" onclick="selectVoice(this, 'alloy')">
-                                <div class="voice-icon">🎭</div>
-                                <div class="voice-name">Alloy</div>
-                                <div class="voice-desc">Neutral</div>
+                                <div style="font-size: 2em;">🎭</div>
+                                <div style="font-weight: 600;">Alloy</div>
+                                <div style="font-size: 0.85em; color: #718096;">Neutral</div>
                             </div>
                             <div class="voice-card" onclick="selectVoice(this, 'nova')">
-                                <div class="voice-icon">👩</div>
-                                <div class="voice-name">Nova</div>
-                                <div class="voice-desc">Female</div>
+                                <div style="font-size: 2em;">👩</div>
+                                <div style="font-weight: 600;">Nova</div>
+                                <div style="font-size: 0.85em; color: #718096;">Female</div>
                             </div>
                             <div class="voice-card" onclick="selectVoice(this, 'echo')">
-                                <div class="voice-icon">🎤</div>
-                                <div class="voice-name">Echo</div>
-                                <div class="voice-desc">Male</div>
+                                <div style="font-size: 2em;">🎤</div>
+                                <div style="font-weight: 600;">Echo</div>
+                                <div style="font-size: 0.85em; color: #718096;">Male</div>
                             </div>
                             <div class="voice-card" onclick="selectVoice(this, 'fable')">
-                                <div class="voice-icon">📖</div>
-                                <div class="voice-name">Fable</div>
-                                <div class="voice-desc">British</div>
+                                <div style="font-size: 2em;">📖</div>
+                                <div style="font-weight: 600;">Fable</div>
+                                <div style="font-size: 0.85em; color: #718096;">British</div>
                             </div>
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label for="model">Model Quality</label>
-                        <select id="model" class="form-element">
-                            <option value="tts-1">Standard (Faster)</option>
-                            <option value="tts-1-hd">HD (Higher Quality)</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="speed">Speaking Speed: <span id="speedValue">1.0x</span></label>
-                        <input type="range" min="0.5" max="1.5" value="1.0" step="0.1" id="speed" class="form-element" oninput="updateSpeedDisplay()">
+                        <label for="speed">Speed: <span id="speedValue">1.0x</span></label>
+                        <input type="range" min="0.5" max="1.5" value="1.0" step="0.1" id="speed" class="form-element" oninput="updateSpeed()">
                     </div>
                 </div>
             </div>
 
-            <!-- Action Buttons -->
-            <div class="action-buttons" id="actionButtons" style="display: none;">
-                <button class="generate-btn" id="generateSingleBtn" onclick="generateSelectedChapter()">
+            <!-- Generate Buttons -->
+            <div class="generate-section" id="generateSection" style="display: none;">
+                <button class="generate-btn" id="generateSingle" onclick="generateSingle()">
                     🎙️ Generate Selected Chapter
                 </button>
-                <button class="batch-btn" id="generateBatchBtn" onclick="generateAllChapters()">
+                <button class="generate-btn" id="generateAll" onclick="generateAll()" style="background: #667eea;">
                     🎬 Generate All Selected Chapters
                 </button>
             </div>
 
-            <!-- Progress Section -->
-            <div class="progress-section" id="progressSection">
-                <div class="overall-progress">
-                    <div class="progress-header">
-                        <div class="progress-title">Overall Progress</div>
-                        <div class="progress-percentage" id="overallPercentage">0%</div>
-                    </div>
-                    <div class="progress-bar-bg">
-                        <div class="progress-bar-fill" id="overallProgress"></div>
-                    </div>
-                </div>
-                <div class="chapter-progress-list" id="chapterProgressList"></div>
+            <!-- Loading -->
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <div>Generating audio... Please wait...</div>
             </div>
 
-            <!-- Generated Files Section -->
-            <div class="files-section" id="filesSection">
+            <!-- Generated Files -->
+            <div class="files-section" id="filesSection" style="display: none;">
                 <h3 class="section-title">🎵 Generated Audio Files</h3>
-                <div class="file-list" id="fileList"></div>
+                <div id="fileList"></div>
             </div>
         </div>
 
-        <!-- Library Modal -->
-        <div id="libraryModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2 class="modal-title">Select Audioguide from Library</h2>
-                    <button class="close-modal" onclick="closeLibraryModal()">&times;</button>
-                </div>
-                <div id="libraryList"></div>
-                <div style="display: flex; gap: 15px; margin-top: 20px; justify-content: flex-end;">
-                    <button class="btn-secondary btn-small" onclick="closeLibraryModal()">Cancel</button>
-                    <button class="btn-primary btn-small" onclick="loadSelectedAudioguide()" id="loadSelectedBtn" disabled>Load Selected</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Footer Section -->
+        <!-- Footer -->
         <div class="footer-section">
-            <p class="funding-text">
+            <p style="font-size: 12px; color: #718096; margin-bottom: 20px;">
                 Financiado por la Unión Europea – Next Generation EU<br>
                 a través del Ministerio de Industria y Turismo
             </p>
-            <div class="funding-logos">
+            <div style="display: flex; justify-content: center; gap: 40px;">
                 <img src="https://s.cloudguide.me/m/files/d3e690c8-b10a-49e3-8cda-ac3335896b69.png" 
-                     alt="EU" class="funding-logo">
+                     alt="EU" style="height: 45px; opacity: 0.6;">
                 <img src="https://s.cloudguide.me/m/files/f1eabdef-d522-457d-90fe-fa00b513ac3c.png" 
-                     alt="Spain" class="funding-logo">
+                     alt="Spain" style="height: 45px; opacity: 0.6;">
             </div>
         </div>
     </div>
 
     <script>
-        // Global variables
         let chapters = [];
         let selectedVoice = 'alloy';
         let generatedFiles = [];
-        let currentAudioguide = null;
-        let selectedLibraryItem = null;
-        let hasGoogleAPI = false;
 
-        // Initialize on load
-        window.addEventListener('DOMContentLoaded', function() {
-            checkApiConfiguration();
-            updateSpeedDisplay();
-            checkUrlParams();
-        });
-
-        // Check API configuration
-        async function checkApiConfiguration() {
-            try {
-                // Check if Google API is configured by testing the endpoint
-                const response = await fetch('/api/multilingual-tts', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        text: 'test',
-                        language: 'es-ES',
-                        provider: 'google'
-                    })
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    hasGoogleAPI = data.provider === 'google';
-                }
-            } catch (error) {
-                console.log('Multilingual TTS not configured, using OpenAI only');
+        // Switch tabs
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            if (tab === 'text') {
+                document.querySelector('.tab-btn:nth-child(1)').classList.add('active');
+                document.getElementById('textTab').classList.add('active');
+            } else {
+                document.querySelector('.tab-btn:nth-child(2)').classList.add('active');
+                document.getElementById('libraryTab').classList.add('active');
+                loadLibrary();
             }
         }
 
-        // Check URL parameters
-        function checkUrlParams() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const id = urlParams.get('id');
-            if (id) {
-                loadAudioguideById(id);
+        // Parse chapters from text
+        function parseChapters() {
+            const text = document.getElementById('textInput').value.trim();
+            if (!text) {
+                alert('Please enter some text first');
+                return;
             }
-        }
 
-        // Load sample content
-        function loadSampleContent() {
-            const sampleContent = `AUDIOGUIDE: SAMPLE MUSEUM
-==================================================
-
-Language: English
-Tour Type: comprehensive
-Total Stops: 3
-AI Model: Sample
-Source: Demo
-
-==================================================
-
-STOP 1: INTRODUCTION
-------------------------------
-
-Welcome to this remarkable destination. This audioguide will take you on a journey through history, culture, and architectural wonders that have captivated visitors for centuries. As you stand at the entrance, take a moment to appreciate the grandeur of what lies before you.
-
-STOP 2: HISTORY
-------------------------------
-
-The history of this location spans centuries of human civilization. From its earliest foundations to the present day, this site has witnessed the rise and fall of empires, the creation of masterpieces, and the preservation of cultural heritage that continues to inspire visitors from around the world.
-
-STOP 3: MAIN ATTRACTION
-------------------------------
-
-Before you stands one of the most magnificent examples of architectural achievement. Notice the intricate details that have been carefully preserved through centuries of careful restoration. The craftsmanship visible in every corner tells the story of skilled artisans who dedicated their lives to creating this masterpiece.
-
-==================================================
-© CloudGuide - www.cloudguide.me`;
-
-            parseAndLoadContent(sampleContent, 'Sample Museum Tour');
-            showNotification('Sample content loaded', 'success');
-        }
-
-        // Handle file upload
-        function handleFileUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const content = e.target.result;
-                parseAndLoadContent(content, file.name);
-                showNotification(`Loaded: ${file.name}`, 'success');
-            };
-            reader.readAsText(file);
-        }
-
-        // Parse audioguide content into chapters
-        function parseAndLoadContent(content, title) {
-            const lines = content.split('\n');
-            const parsedChapters = [];
+            chapters = [];
+            const lines = text.split('\n');
             let currentChapter = null;
             let contentBuffer = [];
 
             for (let line of lines) {
-                // Check if this is a chapter header (STOP X: TITLE)
-                if (line.match(/^STOP \d+:/)) {
-                    // Save previous chapter if exists
+                if (line.match(/^STOP \d+:/i)) {
                     if (currentChapter) {
                         currentChapter.content = contentBuffer.join('\n').trim();
-                        currentChapter.content = currentChapter.content.replace(/^-+\n?/gm, '').trim();
                         if (currentChapter.content) {
-                            parsedChapters.push(currentChapter);
+                            chapters.push(currentChapter);
                         }
                     }
-                    
-                    // Start new chapter
                     currentChapter = {
-                        id: parsedChapters.length + 1,
+                        id: chapters.length + 1,
                         title: line.trim(),
                         content: '',
                         selected: false,
                         status: 'pending'
                     };
                     contentBuffer = [];
-                } else if (currentChapter && !line.match(/^={3,}$/)) {
-                    // Add non-separator lines to content
-                    if (!line.match(/^-{3,}$/)) {
-                        contentBuffer.push(line);
-                    }
+                } else if (currentChapter && !line.match(/^-+$/)) {
+                    contentBuffer.push(line);
                 }
             }
 
-            // Save last chapter
-            if (currentChapter && contentBuffer.length > 0) {
+            if (currentChapter) {
                 currentChapter.content = contentBuffer.join('\n').trim();
-                parsedChapters.push(currentChapter);
+                if (currentChapter.content) {
+                    chapters.push(currentChapter);
+                }
             }
 
-            if (parsedChapters.length > 0) {
-                chapters = parsedChapters;
-                currentAudioguide = { title: title, content: content };
-                renderChapters();
-                document.getElementById('chaptersSection').classList.add('active');
-                document.getElementById('actionButtons').style.display = 'flex';
-            } else {
-                showNotification('No chapters found in the content. Please check the format.', 'error');
+            if (chapters.length === 0) {
+                // If no chapters found, treat entire text as one chapter
+                chapters = [{
+                    id: 1,
+                    title: 'Full Text',
+                    content: text,
+                    selected: true,
+                    status: 'pending'
+                }];
             }
+
+            renderChapters();
+            document.getElementById('chaptersSection').style.display = 'block';
+            document.getElementById('generateSection').style.display = 'flex';
         }
 
         // Render chapters
         function renderChapters() {
-            const chapterList = document.getElementById('chapterList');
-            chapterList.innerHTML = chapters.map((chapter, index) => {
-                const wordCount = chapter.content.split(' ').filter(w => w).length;
-                const estimatedMinutes = Math.ceil(wordCount / 150);
-                
-                return `
-                    <div class="chapter-item ${chapter.selected ? 'selected' : ''}" onclick="toggleChapter(${index})">
-                        <input type="checkbox" class="chapter-checkbox" 
-                               ${chapter.selected ? 'checked' : ''} 
-                               onclick="event.stopPropagation(); toggleChapter(${index})">
-                        <div class="chapter-info">
-                            <div class="chapter-title">${chapter.title}</div>
-                            <div class="chapter-meta">
-                                ${wordCount} words • ~${estimatedMinutes} min audio
-                            </div>
-                        </div>
-                        <div class="chapter-status status-${chapter.status}">${chapter.status}</div>
+            const list = document.getElementById('chapterList');
+            list.innerHTML = chapters.map((ch, i) => `
+                <div class="chapter-item ${ch.selected ? 'selected' : ''}" onclick="toggleChapter(${i})">
+                    <input type="checkbox" class="chapter-checkbox" ${ch.selected ? 'checked' : ''}>
+                    <div class="chapter-info">
+                        <div class="chapter-title">${ch.title}</div>
+                        <div class="chapter-meta">${ch.content.split(' ').length} words</div>
                     </div>
-                `;
-            }).join('');
-            
-            updateSelectionCount();
+                    <div class="chapter-status status-${ch.status}">${ch.status}</div>
+                </div>
+            `).join('');
         }
 
         // Toggle chapter selection
@@ -1116,324 +818,262 @@ Before you stands one of the most magnificent examples of architectural achievem
             renderChapters();
         }
 
-        // Select all chapters
-        function selectAllChapters() {
+        // Select all/none
+        function selectAll() {
             chapters.forEach(ch => ch.selected = true);
             renderChapters();
         }
 
-        // Deselect all chapters
-        function deselectAllChapters() {
+        function selectNone() {
             chapters.forEach(ch => ch.selected = false);
             renderChapters();
         }
 
-        // Update selection count
-        function updateSelectionCount() {
-            const selected = chapters.filter(ch => ch.selected).length;
-            document.getElementById('selectedCount').textContent = selected;
-            document.getElementById('totalCount').textContent = chapters.length;
+        // Clear text
+        function clearText() {
+            document.getElementById('textInput').value = '';
+            chapters = [];
+            document.getElementById('chaptersSection').style.display = 'none';
+            document.getElementById('generateSection').style.display = 'none';
         }
 
-        // Update language settings
-        function updateLanguageSettings() {
-            const language = document.getElementById('audioLanguage').value;
-            const languageNotice = document.getElementById('languageNotice');
-            const googleNotice = document.getElementById('googleNotice');
-            
-            if (!language.startsWith('en-')) {
-                if (hasGoogleAPI) {
-                    languageNotice.style.display = 'none';
-                    googleNotice.style.display = 'block';
-                } else {
-                    languageNotice.style.display = 'block';
-                    googleNotice.style.display = 'none';
-                }
-            } else {
-                languageNotice.style.display = 'none';
-                googleNotice.style.display = 'none';
-            }
+        // Load sample
+        function loadSample() {
+            document.getElementById('textInput').value = `STOP 1: INTRODUCTION
+------------------------------
+Welcome to the Louvre Museum, one of the world's most visited and celebrated cultural institutions. This magnificent palace turned museum houses over 35,000 works of art spanning thousands of years of human creativity.
+
+STOP 2: HISTORY
+------------------------------
+The Louvre's history begins in the 12th century as a fortress built by King Philip II. Over centuries, it transformed from a medieval fortress to a Renaissance palace, and finally to the world's largest art museum in 1793.
+
+STOP 3: MONA LISA
+------------------------------
+Before you stands Leonardo da Vinci's Mona Lisa, perhaps the most famous painting in the world. Notice her enigmatic smile and the revolutionary painting techniques da Vinci employed.`;
+            parseChapters();
         }
 
         // Select voice
         function selectVoice(element, voice) {
-            document.querySelectorAll('.voice-card').forEach(card => {
-                card.classList.remove('selected');
-            });
+            document.querySelectorAll('.voice-card').forEach(card => card.classList.remove('selected'));
             element.classList.add('selected');
             selectedVoice = voice;
         }
 
         // Update speed display
-        function updateSpeedDisplay() {
-            const speed = document.getElementById('speed').value;
-            document.getElementById('speedValue').textContent = speed + 'x';
+        function updateSpeed() {
+            document.getElementById('speedValue').textContent = document.getElementById('speed').value + 'x';
         }
 
-        // Extract content for audio
-        function extractContentForAudio(chapter) {
-            const skipTitles = document.getElementById('skipTitles').checked;
-            const skipDashes = document.getElementById('skipDashes').checked;
+        // Update language info
+        async function updateLanguageInfo() {
+            const lang = document.getElementById('audioLanguage').value;
+            const alert = document.getElementById('languageAlert');
             
-            let content = chapter.content;
-            
-            if (skipDashes) {
-                content = content.replace(/^-+$/gm, '').trim();
+            if (!lang.startsWith('en-')) {
+                // Check if Google is configured by making a test call
+                try {
+                    const testResponse = await fetch('/api/multilingual-tts', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            text: 'test',
+                            language: lang,
+                            voice: 'alloy',
+                            speed: 1.0
+                        })
+                    });
+                    
+                    if (testResponse.ok) {
+                        const testData = await testResponse.json();
+                        if (testData.provider === 'google') {
+                            alert.style.display = 'none';
+                            showMessage('✅ Google Cloud TTS available for native ' + lang + ' pronunciation', 'success');
+                        } else if (testData.warning) {
+                            alert.style.display = 'block';
+                        }
+                    }
+                } catch (e) {
+                    alert.style.display = 'block';
+                }
+            } else {
+                alert.style.display = 'none';
             }
-            
-            if (!skipTitles) {
-                content = chapter.title + '\n\n' + content;
-            }
-            
-            return content.trim();
         }
 
-        // Generate selected chapter
-        async function generateSelectedChapter() {
+        // Generate single chapter
+        async function generateSingle() {
             const selected = chapters.filter(ch => ch.selected);
             if (selected.length === 0) {
-                showNotification('Please select at least one chapter', 'warning');
+                alert('Please select a chapter');
                 return;
             }
             if (selected.length > 1) {
-                showNotification('Please select only one chapter for single generation', 'warning');
+                alert('Please select only one chapter for single generation');
                 return;
             }
-
-            await generateAudioForChapter(selected[0]);
+            
+            await generateAudio(selected[0]);
         }
 
-        // Generate all selected chapters
-        async function generateAllChapters() {
+        // Generate all selected
+        async function generateAll() {
             const selected = chapters.filter(ch => ch.selected);
             if (selected.length === 0) {
-                showNotification('Please select at least one chapter', 'warning');
+                alert('Please select at least one chapter');
                 return;
             }
-
-            // Show progress section
-            document.getElementById('progressSection').classList.add('active');
-            document.getElementById('filesSection').classList.add('active');
             
-            // Initialize progress
-            const totalChapters = selected.length;
-            let completedChapters = 0;
-            
-            // Clear and create progress items
-            document.getElementById('chapterProgressList').innerHTML = '';
-            selected.forEach(chapter => {
-                const progressItem = document.createElement('div');
-                progressItem.className = 'chapter-progress-item';
-                progressItem.id = `progress-${chapter.id}`;
-                progressItem.innerHTML = `
-                    <div style="font-size: 1.5em;">⏳</div>
-                    <div style="flex: 1;">
-                        <div style="font-weight: 600; color: #2d3748;">${chapter.title}</div>
-                        <div style="font-size: 12px; color: #718096;">Waiting...</div>
-                    </div>
-                `;
-                document.getElementById('chapterProgressList').appendChild(progressItem);
-            });
-
-            // Generate audio for each chapter
             for (let chapter of selected) {
-                const progressItem = document.getElementById(`progress-${chapter.id}`);
-                progressItem.querySelector('div').textContent = '⚙️';
-                progressItem.querySelector('div:last-child').textContent = 'Generating audio...';
-                
-                try {
-                    await generateAudioForChapter(chapter);
-                    progressItem.querySelector('div').textContent = '✅';
-                    progressItem.querySelector('div:last-child').textContent = 'Completed';
-                    completedChapters++;
-                } catch (error) {
-                    progressItem.querySelector('div').textContent = '❌';
-                    progressItem.querySelector('div:last-child').textContent = 'Failed: ' + error.message;
-                }
-                
-                // Update overall progress
-                const progress = (completedChapters / totalChapters) * 100;
-                document.getElementById('overallProgress').style.width = progress + '%';
-                document.getElementById('overallPercentage').textContent = Math.round(progress) + '%';
+                await generateAudio(chapter);
             }
-            
-            showNotification(`Batch completed: ${completedChapters}/${totalChapters} chapters`, 'success');
         }
 
-        // Generate audio for a single chapter
-        async function generateAudioForChapter(chapter) {
+        // Generate audio for a chapter
+        async function generateAudio(chapter) {
             const language = document.getElementById('audioLanguage').value;
-            const model = document.getElementById('model').value;
             const speed = parseFloat(document.getElementById('speed').value);
-            const textToGenerate = extractContentForAudio(chapter);
+            const skipTitles = document.getElementById('skipTitles').checked;
             
-            // Disable buttons during generation
-            document.getElementById('generateSingleBtn').disabled = true;
-            document.getElementById('generateBatchBtn').disabled = true;
-
+            let textToGenerate = chapter.content;
+            if (!skipTitles && chapter.title !== 'Full Text') {
+                textToGenerate = chapter.title + '\n\n' + chapter.content;
+            }
+            
+            // Show loading
+            document.getElementById('loading').classList.add('active');
+            document.getElementById('generateSingle').disabled = true;
+            document.getElementById('generateAll').disabled = true;
+            
             try {
-                // Try multilingual endpoint first, fallback to OpenAI
-                let response = await fetch('/api/multilingual-tts', {
+                console.log('Generating audio for language:', language);
+                console.log('Text length:', textToGenerate.length);
+                
+                // Use multilingual endpoint
+                const response = await fetch('/api/multilingual-tts', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         text: textToGenerate,
                         language: language,
                         voice: selectedVoice,
-                        speed: speed,
-                        provider: 'auto' // Let the API decide
+                        speed: speed
                     })
                 });
 
-                // Fallback to OpenAI endpoint if multilingual not available
-                if (!response.ok) {
-                    response = await fetch('/api/openai-tts', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            text: textToGenerate,
-                            voice: selectedVoice,
-                            speed: speed,
-                            model: model
-                        })
-                    });
-                }
+                console.log('Response status:', response.status);
 
                 if (response.ok) {
                     const data = await response.json();
+                    console.log('Response data:', data);
+                    
+                    // Check for audioUrl in response (not requiring 'success' field)
                     if (data.audioUrl) {
-                        // Add to generated files
-                        const file = {
-                            id: Date.now(),
-                            name: `${chapter.title.replace(/[^a-z0-9]/gi, '_')}_${language}.mp3`,
-                            chapter: chapter.title,
-                            language: language,
-                            provider: data.provider || 'openai',
-                            url: data.audioUrl,
-                            duration: `~${Math.ceil(textToGenerate.split(' ').length / 150)} min`
-                        };
-                        
-                        generatedFiles.push(file);
-                        renderGeneratedFiles();
-                        
                         // Update chapter status
                         chapter.status = 'completed';
                         renderChapters();
                         
+                        // Add to files
+                        const file = {
+                            name: `${chapter.title.replace(/[^a-z0-9]/gi, '_')}_${language}.mp3`,
+                            chapter: chapter.title,
+                            language: language,
+                            url: data.audioUrl,
+                            provider: data.provider || 'openai'
+                        };
+                        generatedFiles.push(file);
+                        renderFiles();
+                        
+                        // Show success message
+                        showMessage(`Audio generated successfully using ${data.provider}`, 'success');
+                        
                         // Show warning if applicable
                         if (data.warning) {
-                            showNotification(data.warning, 'warning');
+                            showMessage(data.warning, 'warning');
                         }
+                    } else {
+                        throw new Error('No audio URL in response');
                     }
                 } else {
-                    throw new Error('Failed to generate audio');
+                    const errorData = await response.json();
+                    console.error('API Error:', errorData);
+                    
+                    let errorMessage = errorData.error || 'Failed to generate audio';
+                    if (errorData.message) {
+                        errorMessage += ': ' + errorData.message;
+                    }
+                    
+                    showMessage(errorMessage, 'error');
                 }
             } catch (error) {
-                console.error('Audio generation error:', error);
-                throw error;
+                console.error('Error:', error);
+                showMessage('Error generating audio: ' + error.message, 'error');
             } finally {
-                document.getElementById('generateSingleBtn').disabled = false;
-                document.getElementById('generateBatchBtn').disabled = false;
+                document.getElementById('loading').classList.remove('active');
+                document.getElementById('generateSingle').disabled = false;
+                document.getElementById('generateAll').disabled = false;
             }
         }
 
-        // Render generated files
-        function renderGeneratedFiles() {
-            const fileList = document.getElementById('fileList');
+        // Show message function
+        function showMessage(message, type) {
+            // Create message element
+            const messageDiv = document.createElement('div');
+            messageDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 20px;
+                border-radius: 6px;
+                z-index: 10000;
+                max-width: 400px;
+                animation: slideIn 0.3s ease-out;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            `;
             
-            if (generatedFiles.length === 0) {
-                fileList.innerHTML = '<p style="text-align: center; color: #a0aec0;">No files generated yet</p>';
-                return;
+            // Set color based on type
+            if (type === 'success') {
+                messageDiv.style.background = '#48bb78';
+                messageDiv.style.color = 'white';
+            } else if (type === 'warning') {
+                messageDiv.style.background = '#f59e0b';
+                messageDiv.style.color = 'white';
+            } else {
+                messageDiv.style.background = '#e53e3e';
+                messageDiv.style.color = 'white';
             }
             
-            fileList.innerHTML = generatedFiles.map(file => `
+            messageDiv.textContent = message;
+            document.body.appendChild(messageDiv);
+            
+            // Remove after 5 seconds
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 5000);
+        }
+
+        // Render files
+        function renderFiles() {
+            if (generatedFiles.length === 0) return;
+            
+            document.getElementById('filesSection').style.display = 'block';
+            document.getElementById('fileList').innerHTML = generatedFiles.map(file => `
                 <div class="file-item">
                     <div class="file-info">
                         <div style="font-size: 1.5em;">🎵</div>
-                        <div class="file-details">
-                            <div class="file-name">${file.name}</div>
-                            <div class="file-meta">
-                                ${file.chapter} • ${file.language} • ${file.duration} • ${file.provider}
+                        <div>
+                            <div style="font-weight: 600;">${file.name}</div>
+                            <div style="font-size: 0.85em; color: #718096;">
+                                ${file.chapter} • ${file.language} • ${file.provider}
                             </div>
                         </div>
                     </div>
                     <div class="file-actions">
-                        <button class="btn-small btn-primary" onclick="playAudio('${file.url}')">Play</button>
-                        <button class="btn-small btn-secondary" onclick="downloadFile('${file.url}', '${file.name}')">Download</button>
+                        <button class="btn btn-primary" onclick="playAudio('${file.url}')">Play</button>
+                        <button class="btn btn-secondary" onclick="downloadAudio('${file.url}', '${file.name}')">Download</button>
                     </div>
                 </div>
             `).join('');
-        }
-
-        // Library Modal Functions
-        function openLibraryModal() {
-            document.getElementById('libraryModal').style.display = 'block';
-            loadLibraryItems();
-        }
-
-        function closeLibraryModal() {
-            document.getElementById('libraryModal').style.display = 'none';
-            selectedLibraryItem = null;
-            document.getElementById('loadSelectedBtn').disabled = true;
-        }
-
-        function loadLibraryItems() {
-            const audioguides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
-            const libraryList = document.getElementById('libraryList');
-            
-            if (audioguides.length === 0) {
-                libraryList.innerHTML = `
-                    <div style="text-align: center; padding: 40px; color: #a0aec0;">
-                        <p>No audioguides found in library.</p>
-                        <p><a href="index.html" style="color: #48bb78;">Generate some audioguides first!</a></p>
-                    </div>
-                `;
-                return;
-            }
-
-            libraryList.innerHTML = audioguides.map((guide, index) => `
-                <div class="library-item" onclick="selectLibraryItem(${index}, '${guide.id}')">
-                    <div style="font-weight: 600; color: #2d3748; margin-bottom: 8px;">${guide.title}</div>
-                    <div style="font-size: 12px; color: #718096; display: flex; gap: 15px;">
-                        <span>📍 ${guide.location}</span>
-                        <span>🗣️ ${guide.language}</span>
-                        <span>🎯 ${guide.stops} stops</span>
-                        <span>📅 ${new Date(guide.date).toLocaleDateString()}</span>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function selectLibraryItem(index, id) {
-            document.querySelectorAll('.library-item').forEach(item => {
-                item.classList.remove('selected');
-            });
-            event.target.closest('.library-item').classList.add('selected');
-            selectedLibraryItem = index;
-            document.getElementById('loadSelectedBtn').disabled = false;
-        }
-
-        function loadSelectedAudioguide() {
-            if (selectedLibraryItem === null) return;
-            
-            const audioguides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
-            const guide = audioguides[selectedLibraryItem];
-            
-            if (guide && guide.content) {
-                parseAndLoadContent(guide.content, guide.title);
-                closeLibraryModal();
-                showNotification(`Loaded: ${guide.title}`, 'success');
-            }
-        }
-
-        function loadAudioguideById(id) {
-            const audioguides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
-            const guide = audioguides.find(g => g.id == id);
-            
-            if (guide && guide.content) {
-                parseAndLoadContent(guide.content, guide.title);
-                showNotification(`Loaded: ${guide.title}`, 'success');
-            }
         }
 
         // Play audio
@@ -1442,8 +1082,8 @@ Before you stands one of the most magnificent examples of architectural achievem
             audio.play();
         }
 
-        // Download file
-        function downloadFile(url, filename) {
+        // Download audio
+        function downloadAudio(url, filename) {
             const a = document.createElement('a');
             a.href = url;
             a.download = filename;
@@ -1452,25 +1092,51 @@ Before you stands one of the most magnificent examples of architectural achievem
             document.body.removeChild(a);
         }
 
-        // Show notification
-        function showNotification(message, type = 'success') {
-            const notification = document.createElement('div');
-            notification.className = `notification notification-${type}`;
-            notification.textContent = message;
-            document.body.appendChild(notification);
+        // Load library
+        function loadLibrary() {
+            const audioguides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
+            const list = document.getElementById('libraryList');
             
-            setTimeout(() => {
-                notification.remove();
-            }, 5000);
+            if (audioguides.length === 0) {
+                list.innerHTML = '<p style="text-align: center; padding: 40px; color: #718096;">No audioguides in library. <a href="index.html">Generate one first</a>.</p>';
+                return;
+            }
+            
+            list.innerHTML = audioguides.map(guide => `
+                <div style="padding: 20px; background: #f7fafc; border-radius: 6px; margin-bottom: 15px; cursor: pointer;"
+                     onclick="loadFromLibrary('${guide.id}')">
+                    <div style="font-weight: 600; margin-bottom: 8px;">${guide.title}</div>
+                    <div style="font-size: 0.85em; color: #718096;">
+                        ${guide.location} • ${guide.language} • ${guide.stops} stops
+                    </div>
+                </div>
+            `).join('');
         }
 
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            const modal = document.getElementById('libraryModal');
-            if (event.target == modal) {
-                closeLibraryModal();
+        // Load from library
+        function loadFromLibrary(id) {
+            const audioguides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
+            const guide = audioguides.find(g => g.id == id);
+            
+            if (guide && guide.content) {
+                switchTab('text');
+                document.getElementById('textInput').value = guide.content;
+                parseChapters();
             }
         }
+
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', function() {
+            updateSpeed();
+            updateLanguageInfo();
+            
+            // Check URL params
+            const urlParams = new URLSearchParams(window.location.search);
+            const id = urlParams.get('id');
+            if (id) {
+                loadFromLibrary(id);
+            }
+        });
     </script>
 </body>
 </html>
