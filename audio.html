@@ -1458,24 +1458,68 @@ Leonardo da Vinci's masterpiece from the 16th century. The painting measures 77c
             return new Blob([arrayBuffer], { type: 'audio/wav' });
         }
 
-        // Function to split text into chunks
+        // Global audio player reference
+        let currentAudioPlayer = null;
+
+        // Function to split text into chunks at word boundaries
         function splitTextIntoChunks(text, maxChunkSize = 3000) {
             const chunks = [];
             const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
             let currentChunk = '';
             
             for (const sentence of sentences) {
+                // If adding this sentence would exceed the limit
                 if ((currentChunk + sentence).length > maxChunkSize && currentChunk.length > 0) {
-                    chunks.push(currentChunk.trim());
+                    // Make sure we end at a word boundary
+                    let finalChunk = currentChunk.trim();
+                    
+                    // If the chunk is still too long, split by words
+                    if (finalChunk.length > maxChunkSize) {
+                        const words = finalChunk.split(/\s+/);
+                        let tempChunk = '';
+                        for (const word of words) {
+                            if ((tempChunk + ' ' + word).length <= maxChunkSize) {
+                                tempChunk += (tempChunk ? ' ' : '') + word;
+                            } else {
+                                if (tempChunk) chunks.push(tempChunk);
+                                tempChunk = word;
+                            }
+                        }
+                        if (tempChunk) chunks.push(tempChunk);
+                    } else {
+                        chunks.push(finalChunk);
+                    }
                     currentChunk = sentence;
                 } else {
                     currentChunk += sentence;
                 }
             }
             
+            // Add the last chunk, ensuring word boundaries
             if (currentChunk.trim()) {
-                chunks.push(currentChunk.trim());
+                const finalChunk = currentChunk.trim();
+                if (finalChunk.length > maxChunkSize) {
+                    // Split by words if still too long
+                    const words = finalChunk.split(/\s+/);
+                    let tempChunk = '';
+                    for (const word of words) {
+                        if ((tempChunk + ' ' + word).length <= maxChunkSize) {
+                            tempChunk += (tempChunk ? ' ' : '') + word;
+                        } else {
+                            if (tempChunk) chunks.push(tempChunk);
+                            tempChunk = word;
+                        }
+                    }
+                    if (tempChunk) chunks.push(tempChunk);
+                } else {
+                    chunks.push(finalChunk);
+                }
             }
+            
+            // Log chunk info for debugging
+            chunks.forEach((chunk, i) => {
+                console.log(`Chunk ${i + 1}: ${chunk.length} chars, ends with: "${chunk.slice(-50)}"`);
+            });
             
             return chunks;
         }
@@ -1667,7 +1711,7 @@ Leonardo da Vinci's masterpiece from the 16th century. The painting measures 77c
             if (generatedFiles.length === 0) return;
             
             document.getElementById('filesSection').style.display = 'block';
-            document.getElementById('fileList').innerHTML = generatedFiles.map(file => `
+            document.getElementById('fileList').innerHTML = generatedFiles.map((file, index) => `
                 <div class="file-item">
                     <div class="file-info">
                         <div style="font-size: 1.5em;">🎵</div>
@@ -1675,21 +1719,84 @@ Leonardo da Vinci's masterpiece from the 16th century. The painting measures 77c
                             <div style="font-weight: 600;">${file.name}</div>
                             <div style="font-size: 0.85em; color: #718096;">
                                 ${file.chapter} • ${file.language} • ${file.provider}
+                                ${file.combined ? ' • Combined from multiple parts' : ''}
                             </div>
                         </div>
                     </div>
                     <div class="file-actions">
-                        <button class="btn btn-primary" onclick="playAudio('${file.url}')">Play</button>
+                        <button class="btn btn-primary audio-play-btn" onclick="playAudio('${file.url}')">Play</button>
                         <button class="btn btn-secondary" onclick="downloadAudio('${file.url}', '${file.name}')">Download</button>
                     </div>
                 </div>
             `).join('');
         }
 
-        // Play audio
+        // Play audio with controls
         function playAudio(url) {
-            const audio = new Audio(url);
-            audio.play();
+            // Stop any currently playing audio
+            if (currentAudioPlayer) {
+                currentAudioPlayer.pause();
+                currentAudioPlayer = null;
+                
+                // Reset all play buttons
+                document.querySelectorAll('.audio-play-btn').forEach(btn => {
+                    btn.textContent = 'Play';
+                    btn.classList.remove('btn-danger');
+                    btn.classList.add('btn-primary');
+                });
+            }
+            
+            // Find the button that was clicked
+            const button = event.target;
+            
+            // Create new audio player
+            currentAudioPlayer = new Audio(url);
+            
+            // Update button to show playing state
+            button.textContent = 'Stop';
+            button.classList.remove('btn-primary');
+            button.classList.add('btn-danger');
+            
+            // Add event listeners
+            currentAudioPlayer.onended = () => {
+                button.textContent = 'Play';
+                button.classList.remove('btn-danger');
+                button.classList.add('btn-primary');
+                currentAudioPlayer = null;
+            };
+            
+            currentAudioPlayer.onerror = () => {
+                showMessage('Error playing audio', 'error');
+                button.textContent = 'Play';
+                button.classList.remove('btn-danger');
+                button.classList.add('btn-primary');
+                currentAudioPlayer = null;
+            };
+            
+            // Start playing
+            currentAudioPlayer.play().catch(error => {
+                console.error('Play error:', error);
+                showMessage('Failed to play audio: ' + error.message, 'error');
+                button.textContent = 'Play';
+                button.classList.remove('btn-danger');
+                button.classList.add('btn-primary');
+                currentAudioPlayer = null;
+            });
+        }
+
+        // Stop audio playback
+        function stopAudio() {
+            if (currentAudioPlayer) {
+                currentAudioPlayer.pause();
+                currentAudioPlayer = null;
+                
+                // Reset all play buttons
+                document.querySelectorAll('.audio-play-btn').forEach(btn => {
+                    btn.textContent = 'Play';
+                    btn.classList.remove('btn-danger');
+                    btn.classList.add('btn-primary');
+                });
+            }
         }
 
         // Download audio
