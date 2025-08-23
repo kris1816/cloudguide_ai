@@ -1014,26 +1014,46 @@ Your history text here..."></textarea>
             let contentBuffer = [];
             let chapterType = 'unknown';
 
-            // Detect format type
-            const hasFiles = text.includes('FILE ') && text.includes(':');
-            const hasStops = text.includes('STOP ') && text.includes(':');
+            console.log('Starting parse, total lines:', lines.length);
             
             for (let i = 0; i < lines.length; i++) {
                 const line = lines[i];
                 
-                // Check for FILE format (e.g., "FILE 01: INTRODUCTION" or "## FILE 01: INTRODUCTION TO CRETE")
-                const fileMatch = line.match(/^(?:#{1,3}\s*)?FILE\s+(\d+):\s*(.+)/i);
-                
-                // Check for STOP format (e.g., "STOP 1: INTRODUCTION")
+                // More flexible FILE format detection
+                // Matches: "FILE 01:", "## FILE 01:", "4. Heraklion:", numbered sections with location names
+                const fileMatch = line.match(/^(?:#{1,3}\s*)?(?:FILE\s+)?(\d+)[\.:]\s*(.+)/i);
                 const stopMatch = line.match(/^STOP\s+(\d+):\s*(.+)/i);
                 
-                if (fileMatch) {
+                // Also check for numbered sections with descriptive titles (like your Crete guide)
+                const numberedSectionMatch = line.match(/^(\d+)\.\s+(?:\*\*)?(?:\[)?([^\]]+?)(?:\])?(?:\*\*)?(?:\.|:)?/);
+                
+                // Check if this looks like a chapter heading (has location-related keywords)
+                const isLikelyChapter = line.match(/^(\d+)\.\s+.*(?:Heraklion|Chania|Lasithi|Matala|Rethymno|Eastern Crete|FILE|STOP)/i);
+                
+                if ((fileMatch && line.includes('FILE')) || (numberedSectionMatch && isLikelyChapter)) {
                     // Save previous chapter if exists
                     if (currentChapter) {
                         currentChapter.content = contentBuffer.join('\n').trim();
                         if (currentChapter.content) {
                             chapters.push(currentChapter);
                         }
+                    }
+                    
+                    // Extract chapter number and title
+                    let chapterNum, chapterTitle;
+                    
+                    if (fileMatch && line.includes('FILE')) {
+                        chapterNum = fileMatch[1];
+                        chapterTitle = fileMatch[2].trim();
+                    } else if (numberedSectionMatch) {
+                        chapterNum = numberedSectionMatch[1];
+                        // Clean up the title - remove formatting characters
+                        chapterTitle = numberedSectionMatch[2]
+                            .replace(/\*\*/g, '')
+                            .replace(/\[/g, '')
+                            .replace(/\]/g, '')
+                            .replace(/:$/g, '')
+                            .trim();
                     }
                     
                     // Extract duration if present
@@ -1048,17 +1068,19 @@ Your history text here..."></textarea>
                     
                     currentChapter = {
                         id: chapters.length + 1,
-                        fileNumber: fileMatch[1],
-                        title: `FILE ${fileMatch[1]}: ${fileMatch[2].trim()}`,
-                        shortTitle: fileMatch[2].trim(),
+                        fileNumber: chapterNum,
+                        title: `Section ${chapterNum}: ${chapterTitle}`,
+                        shortTitle: chapterTitle,
                         content: '',
                         selected: false,
                         status: 'pending',
-                        type: 'file',
+                        type: 'section',
                         duration: duration
                     };
                     contentBuffer = [];
-                    chapterType = 'file';
+                    chapterType = 'section';
+                    
+                    console.log('Found chapter:', currentChapter.title);
                     
                 } else if (stopMatch) {
                     // Save previous chapter if exists
@@ -1098,7 +1120,47 @@ Your history text here..."></textarea>
                 }
             }
 
-            // If no chapters were found, treat entire text as one chapter
+            console.log('Total chapters found:', chapters.length);
+
+            // If no chapters were found, try alternative parsing for numbered sections
+            if (chapters.length === 0) {
+                console.log('No chapters found with primary method, trying alternative parsing...');
+                
+                // Try to find any numbered sections
+                const numberedLines = [];
+                lines.forEach((line, index) => {
+                    if (line.match(/^\d+\.\s+/)) {
+                        numberedLines.push({ line, index });
+                    }
+                });
+                
+                if (numberedLines.length > 1) {
+                    console.log('Found', numberedLines.length, 'numbered sections');
+                    
+                    numberedLines.forEach((item, idx) => {
+                        const match = item.line.match(/^(\d+)\.\s+(.+)/);
+                        if (match) {
+                            const startIdx = item.index;
+                            const endIdx = idx < numberedLines.length - 1 ? numberedLines[idx + 1].index : lines.length;
+                            
+                            const content = lines.slice(startIdx + 1, endIdx).join('\n').trim();
+                            
+                            chapters.push({
+                                id: chapters.length + 1,
+                                fileNumber: match[1],
+                                title: `Section ${match[1]}: ${match[2].trim()}`,
+                                shortTitle: match[2].trim(),
+                                content: content,
+                                selected: false,
+                                status: 'pending',
+                                type: 'section'
+                            });
+                        }
+                    });
+                }
+            }
+
+            // If still no chapters found, treat as single text
             if (chapters.length === 0) {
                 chapters = [{
                     id: 1,
