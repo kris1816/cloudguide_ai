@@ -179,6 +179,37 @@
             margin-top: 15px;
         }
 
+        /* Format Info Box */
+        .format-info {
+            background: #f0fff4;
+            border: 1px solid #48bb78;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            color: #2d3748;
+        }
+
+        .format-info strong {
+            color: #48bb78;
+        }
+
+        /* TTS Optimization Info */
+        .tts-optimization-info {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            color: #92400e;
+        }
+
+        .tts-optimization-info h4 {
+            margin-bottom: 10px;
+            color: #f59e0b;
+        }
+
         /* Chapters Section */
         .chapters-section {
             border: 1px solid #e2e8f0;
@@ -243,6 +274,28 @@
         .chapter-meta {
             font-size: 12px;
             color: #718096;
+        }
+
+        .chapter-type {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            background: #e2e8f0;
+            color: #4a5568;
+            margin-right: 5px;
+        }
+
+        .chapter-type.file {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .chapter-type.stop {
+            background: #fef3c7;
+            color: #92400e;
         }
 
         .chapter-status {
@@ -554,36 +607,62 @@
             <!-- Direct Text Input Tab -->
             <div id="textTab" class="tab-content active">
                 <div class="text-input-section">
+                    <div class="format-info">
+                        <strong>📝 Supported Formats:</strong><br>
+                        • <strong>Multi-File Format:</strong> FILE 01: Title → FILE 02: Title<br>
+                        • <strong>Stop Format:</strong> STOP 1: Title → STOP 2: Title<br>
+                        • <strong>Mixed Format:</strong> Combination of both formats<br>
+                        • <strong>Plain Text:</strong> Will be treated as a single chapter
+                    </div>
+
+                    <div class="tts-optimization-info">
+                        <h4>🎙️ TTS Optimization Enabled</h4>
+                        <strong>Automatic text preprocessing includes:</strong><br>
+                        • Roman numerals conversion (II → the second, XIV → the fourteenth)<br>
+                        • Decades formatting (90s → nineties, 1960s → nineteen sixties)<br>
+                        • Century formatting (21st → twenty-first century)<br>
+                        • Pronunciation hints for foreign terms<br>
+                        • Symbol conversion (% → percent, °C → degrees Celsius)<br>
+                        • Eastern European phonetics (Č → ch, Š → sh, Ž → zh)<br>
+                        • Time format standardization (3:30 PM → three thirty P M)<br>
+                        • Currency symbols ($100 → one hundred dollars)
+                    </div>
+                    
                     <label>Paste Your Audioguide Text</label>
                     <textarea id="textInput" class="text-input" placeholder="Paste your audioguide text here...
 
-Format example:
+Supported formats:
+
+FORMAT 1 - Multi-File Structure:
+FILE 01: INTRODUCTION
+*Duration: 5 minutes*
+Your introduction text here...
+
+FILE 02: HISTORY
+*Duration: 8 minutes*
+Your history text here...
+
+FORMAT 2 - Stop Structure:
 STOP 1: INTRODUCTION
 ------------------------------
 Your introduction text here...
 
 STOP 2: HISTORY
 ------------------------------
-Your history text here...
-
-STOP 3: MAIN ATTRACTION
-------------------------------
-Your attraction text here...">STOP 1: INTRODUCTION
-------------------------------
-Welcome to this remarkable destination. This audioguide will take you on a journey through history, culture, and architectural wonders that have captivated visitors for centuries.
-
-STOP 2: HISTORY
-------------------------------
-The history of this location spans centuries of human civilization. From its earliest foundations to the present day, this site has witnessed the rise and fall of empires.
-
-STOP 3: MAIN ATTRACTION
-------------------------------
-Before you stands one of the most magnificent examples of architectural achievement. Notice the intricate details that have been carefully preserved.</textarea>
+Your history text here..."></textarea>
                     
                     <div class="input-actions">
                         <button class="btn btn-primary" onclick="parseChapters()">Parse Chapters</button>
                         <button class="btn btn-secondary" onclick="clearText()">Clear</button>
-                        <button class="btn btn-secondary" onclick="loadSample()">Load Sample</button>
+                        <button class="btn btn-secondary" onclick="loadSampleMultiFile()">Load Multi-File Sample</button>
+                        <button class="btn btn-secondary" onclick="loadSampleStops()">Load Stops Sample</button>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 20px;">
+                        <label>
+                            <input type="checkbox" id="enableTTSOptimization" checked> 
+                            Enable TTS Optimization (preprocesses text for better pronunciation)
+                        </label>
                     </div>
                 </div>
             </div>
@@ -602,6 +681,9 @@ Before you stands one of the most magnificent examples of architectural achievem
                 <div style="display: flex; gap: 10px; margin-bottom: 15px;">
                     <button class="btn btn-secondary" onclick="selectAll()">Select All</button>
                     <button class="btn btn-secondary" onclick="selectNone()">Select None</button>
+                    <span style="margin-left: auto; font-size: 13px; color: #718096;">
+                        <span id="selectedCount">0</span> of <span id="totalCount">0</span> selected
+                    </span>
                 </div>
                 <div class="chapter-list" id="chapterList"></div>
             </div>
@@ -725,6 +807,184 @@ Before you stands one of the most magnificent examples of architectural achievem
         let selectedVoice = 'alloy';
         let generatedFiles = [];
 
+        // TTS Text Preprocessing Function
+        function preprocessTextForTTS(text, language = 'en-US') {
+            if (!document.getElementById('enableTTSOptimization').checked) {
+                return text;
+            }
+
+            let processed = text;
+
+            // Roman Numerals Conversion
+            const romanNumerals = {
+                'I': '1', 'II': '2', 'III': '3', 'IV': '4', 'V': '5',
+                'VI': '6', 'VII': '7', 'VIII': '8', 'IX': '9', 'X': '10',
+                'XI': '11', 'XII': '12', 'XIII': '13', 'XIV': '14', 'XV': '15',
+                'XVI': '16', 'XVII': '17', 'XVIII': '18', 'XIX': '19', 'XX': '20',
+                'XXI': '21'
+            };
+
+            // Convert Roman numerals for monarchs and wars
+            processed = processed.replace(/\b([IVX]+)\b(?=\s*(century|Century|king|King|queen|Queen|Pope|pope|Emperor|emperor))/g, 
+                (match, numeral) => {
+                    const number = romanNumerals[numeral];
+                    if (number) {
+                        const ordinal = getOrdinal(parseInt(number));
+                        return ordinal;
+                    }
+                    return match;
+                });
+
+            // World War conversions
+            processed = processed.replace(/World War II\b/gi, 'World War Two');
+            processed = processed.replace(/World War I\b/gi, 'World War One');
+            processed = processed.replace(/WWII\b/gi, 'World War Two');
+            processed = processed.replace(/WWI\b/gi, 'World War One');
+
+            // Decades conversion (90s → nineties, 1960s → nineteen sixties)
+            processed = processed.replace(/\b(\d{2})s\b/g, (match, decade) => {
+                const decadeWords = {
+                    '20': 'twenties', '30': 'thirties', '40': 'forties',
+                    '50': 'fifties', '60': 'sixties', '70': 'seventies',
+                    '80': 'eighties', '90': 'nineties'
+                };
+                return decadeWords[decade] || match;
+            });
+
+            processed = processed.replace(/\b(1\d{2}0)s\b/g, (match, year) => {
+                const yearNum = parseInt(year);
+                const century = Math.floor(yearNum / 100);
+                const decade = yearNum % 100;
+                const centuryWords = ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 'eighteen', 'nineteen', 'twenty'];
+                const decadeWords = {
+                    '0': 'hundreds', '10': 'tens', '20': 'twenties', '30': 'thirties',
+                    '40': 'forties', '50': 'fifties', '60': 'sixties', '70': 'seventies',
+                    '80': 'eighties', '90': 'nineties'
+                };
+                if (centuryWords[century] && decadeWords[decade]) {
+                    return `${centuryWords[century]} ${decadeWords[decade]}`;
+                }
+                return match;
+            });
+
+            // Century formatting (21st → twenty-first century)
+            processed = processed.replace(/\b(\d{1,2})(st|nd|rd|th)\s+century\b/gi, (match, num) => {
+                const ordinal = getOrdinalWord(parseInt(num));
+                return `${ordinal} century`;
+            });
+
+            // Percentage sign
+            processed = processed.replace(/(\d+)%/g, '$1 percent');
+
+            // Currency symbols
+            processed = processed.replace(/\$(\d+)/g, '$1 dollars');
+            processed = processed.replace(/€(\d+)/g, '$1 euros');
+            processed = processed.replace(/£(\d+)/g, '$1 pounds');
+            processed = processed.replace(/¥(\d+)/g, '$1 yen');
+
+            // Temperature symbols
+            processed = processed.replace(/(\d+)°C\b/g, '$1 degrees Celsius');
+            processed = processed.replace(/(\d+)°F\b/g, '$1 degrees Fahrenheit');
+            processed = processed.replace(/(\d+)°/g, '$1 degrees');
+
+            // Time formatting (3:30 PM → three thirty P M)
+            processed = processed.replace(/\b(\d{1,2}):(\d{2})\s*(AM|PM|am|pm)\b/g, (match, hour, minute, period) => {
+                const h = parseInt(hour);
+                const m = parseInt(minute);
+                const hourWord = getNumberWord(h);
+                const minuteWord = m === 0 ? '' : (m < 10 ? 'oh ' + getNumberWord(m) : getNumberWord(m));
+                return `${hourWord} ${minuteWord} ${period.toUpperCase().split('').join(' ')}`;
+            });
+
+            // Eastern European letter replacements
+            const letterReplacements = {
+                'Č': 'Ch', 'č': 'ch',
+                'Ć': 'Ch', 'ć': 'ch',
+                'Dž': 'J', 'dž': 'j',
+                'Đ': 'J', 'đ': 'j',
+                'Š': 'Sh', 'š': 'sh',
+                'Ś': 'Sh', 'ś': 'sh',
+                'Ž': 'Zh', 'ž': 'zh',
+                'Ź': 'Zh', 'ź': 'zh',
+                'ç': 's', 'Ç': 'S'
+            };
+
+            for (const [original, replacement] of Object.entries(letterReplacements)) {
+                processed = processed.replace(new RegExp(original, 'g'), replacement);
+            }
+
+            // Handle parenthetical translations (jamón (ham) → jamón, which means ham)
+            processed = processed.replace(/\b(\w+)\s*\(([^)]+)\)/g, (match, word, translation) => {
+                // Only apply to non-numeric content
+                if (!/^\d/.test(translation)) {
+                    return `${word}, which means ${translation},`;
+                }
+                return match;
+            });
+
+            // Handle dashes with spaces for better pauses
+            processed = processed.replace(/\s*–\s*/g, ', ');
+            processed = processed.replace(/\s*—\s*/g, ', ');
+
+            // Add pauses after abbreviations
+            processed = processed.replace(/\b(Dr|Mr|Mrs|Ms|Prof|St)\./g, '$1');
+
+            // Fix common mispronunciations based on language
+            if (language.startsWith('en-')) {
+                // English-specific fixes
+                processed = processed.replace(/\bÉ/g, 'E');
+                processed = processed.replace(/\bé/g, 'e');
+                processed = processed.replace(/\bà/g, 'a');
+                processed = processed.replace(/\bè/g, 'e');
+            }
+
+            return processed;
+        }
+
+        // Helper function to get ordinal number
+        function getOrdinal(num) {
+            const ordinals = {
+                1: 'first', 2: 'second', 3: 'third', 4: 'fourth', 5: 'fifth',
+                6: 'sixth', 7: 'seventh', 8: 'eighth', 9: 'ninth', 10: 'tenth',
+                11: 'eleventh', 12: 'twelfth', 13: 'thirteenth', 14: 'fourteenth',
+                15: 'fifteenth', 16: 'sixteenth', 17: 'seventeenth', 18: 'eighteenth',
+                19: 'nineteenth', 20: 'twentieth', 21: 'twenty-first'
+            };
+            return ordinals[num] || `${num}th`;
+        }
+
+        // Helper function to get ordinal word
+        function getOrdinalWord(num) {
+            const ordinals = {
+                1: 'first', 2: 'second', 3: 'third', 4: 'fourth', 5: 'fifth',
+                6: 'sixth', 7: 'seventh', 8: 'eighth', 9: 'ninth', 10: 'tenth',
+                11: 'eleventh', 12: 'twelfth', 13: 'thirteenth', 14: 'fourteenth',
+                15: 'fifteenth', 16: 'sixteenth', 17: 'seventeenth', 18: 'eighteenth',
+                19: 'nineteenth', 20: 'twentieth', 21: 'twenty-first'
+            };
+            return ordinals[num] || `${num}th`;
+        }
+
+        // Helper function to convert numbers to words
+        function getNumberWord(num) {
+            const words = {
+                0: 'zero', 1: 'one', 2: 'two', 3: 'three', 4: 'four',
+                5: 'five', 6: 'six', 7: 'seven', 8: 'eight', 9: 'nine',
+                10: 'ten', 11: 'eleven', 12: 'twelve', 13: 'thirteen',
+                14: 'fourteen', 15: 'fifteen', 16: 'sixteen', 17: 'seventeen',
+                18: 'eighteen', 19: 'nineteen', 20: 'twenty', 30: 'thirty',
+                40: 'forty', 50: 'fifty'
+            };
+            
+            if (words[num]) return words[num];
+            if (num < 60) {
+                const tens = Math.floor(num / 10) * 10;
+                const ones = num % 10;
+                return words[tens] + (ones > 0 ? ' ' + words[ones] : '');
+            }
+            return num.toString();
+        }
+
         // Switch tabs
         function switchTab(tab) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -740,7 +1000,7 @@ Before you stands one of the most magnificent examples of architectural achievem
             }
         }
 
-        // Parse chapters from text
+        // Enhanced chapter parser that handles multiple formats
         function parseChapters() {
             const text = document.getElementById('textInput').value.trim();
             if (!text) {
@@ -752,28 +1012,85 @@ Before you stands one of the most magnificent examples of architectural achievem
             const lines = text.split('\n');
             let currentChapter = null;
             let contentBuffer = [];
+            let chapterType = 'unknown';
 
-            for (let line of lines) {
-                if (line.match(/^STOP \d+:/i)) {
+            // Detect format type
+            const hasFiles = text.includes('FILE ') && text.includes(':');
+            const hasStops = text.includes('STOP ') && text.includes(':');
+            
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
+                
+                // Check for FILE format (e.g., "FILE 01: INTRODUCTION" or "## FILE 01: INTRODUCTION TO CRETE")
+                const fileMatch = line.match(/^(?:#{1,3}\s*)?FILE\s+(\d+):\s*(.+)/i);
+                
+                // Check for STOP format (e.g., "STOP 1: INTRODUCTION")
+                const stopMatch = line.match(/^STOP\s+(\d+):\s*(.+)/i);
+                
+                if (fileMatch) {
+                    // Save previous chapter if exists
                     if (currentChapter) {
                         currentChapter.content = contentBuffer.join('\n').trim();
                         if (currentChapter.content) {
                             chapters.push(currentChapter);
                         }
                     }
+                    
+                    // Extract duration if present
+                    let duration = null;
+                    if (i + 1 < lines.length && lines[i + 1].includes('Duration:')) {
+                        const durationMatch = lines[i + 1].match(/Duration:\s*(.+)/i);
+                        if (durationMatch) {
+                            duration = durationMatch[1].replace(/[*_]/g, '').trim();
+                            i++; // Skip the duration line
+                        }
+                    }
+                    
                     currentChapter = {
                         id: chapters.length + 1,
-                        title: line.trim(),
+                        fileNumber: fileMatch[1],
+                        title: `FILE ${fileMatch[1]}: ${fileMatch[2].trim()}`,
+                        shortTitle: fileMatch[2].trim(),
                         content: '',
                         selected: false,
-                        status: 'pending'
+                        status: 'pending',
+                        type: 'file',
+                        duration: duration
                     };
                     contentBuffer = [];
-                } else if (currentChapter && !line.match(/^-+$/)) {
-                    contentBuffer.push(line);
+                    chapterType = 'file';
+                    
+                } else if (stopMatch) {
+                    // Save previous chapter if exists
+                    if (currentChapter) {
+                        currentChapter.content = contentBuffer.join('\n').trim();
+                        if (currentChapter.content) {
+                            chapters.push(currentChapter);
+                        }
+                    }
+                    
+                    currentChapter = {
+                        id: chapters.length + 1,
+                        stopNumber: stopMatch[1],
+                        title: `STOP ${stopMatch[1]}: ${stopMatch[2].trim()}`,
+                        shortTitle: stopMatch[2].trim(),
+                        content: '',
+                        selected: false,
+                        status: 'pending',
+                        type: 'stop'
+                    };
+                    contentBuffer = [];
+                    chapterType = 'stop';
+                    
+                } else if (currentChapter && !line.match(/^-+$/) && !line.match(/^=+$/) && !line.match(/^#{1,3}\s*$/)) {
+                    // Skip separator lines and empty headers
+                    if (line.trim() || contentBuffer.length > 0) {
+                        contentBuffer.push(line);
+                    }
                 }
             }
 
+            // Save the last chapter
             if (currentChapter) {
                 currentChapter.content = contentBuffer.join('\n').trim();
                 if (currentChapter.content) {
@@ -781,52 +1098,80 @@ Before you stands one of the most magnificent examples of architectural achievem
                 }
             }
 
+            // If no chapters were found, treat entire text as one chapter
             if (chapters.length === 0) {
-                // If no chapters found, treat entire text as one chapter
                 chapters = [{
                     id: 1,
                     title: 'Full Text',
+                    shortTitle: 'Full Audio Guide',
                     content: text,
                     selected: true,
-                    status: 'pending'
+                    status: 'pending',
+                    type: 'full'
                 }];
             }
+
+            // Auto-select first few chapters for convenience
+            chapters.slice(0, 3).forEach(ch => ch.selected = true);
 
             renderChapters();
             document.getElementById('chaptersSection').style.display = 'block';
             document.getElementById('generateSection').style.display = 'flex';
+            updateSelectedCount();
         }
 
-        // Render chapters
+        // Render chapters with enhanced display
         function renderChapters() {
             const list = document.getElementById('chapterList');
-            list.innerHTML = chapters.map((ch, i) => `
-                <div class="chapter-item ${ch.selected ? 'selected' : ''}" onclick="toggleChapter(${i})">
-                    <input type="checkbox" class="chapter-checkbox" ${ch.selected ? 'checked' : ''}>
-                    <div class="chapter-info">
-                        <div class="chapter-title">${ch.title}</div>
-                        <div class="chapter-meta">${ch.content.split(' ').length} words</div>
+            list.innerHTML = chapters.map((ch, i) => {
+                const wordCount = ch.content.split(/\s+/).filter(word => word.length > 0).length;
+                const estimatedDuration = Math.ceil(wordCount / 150); // ~150 words per minute
+                
+                return `
+                    <div class="chapter-item ${ch.selected ? 'selected' : ''}" onclick="toggleChapter(${i})">
+                        <input type="checkbox" class="chapter-checkbox" ${ch.selected ? 'checked' : ''}>
+                        <div class="chapter-info">
+                            <div class="chapter-title">
+                                <span class="chapter-type ${ch.type}">${ch.type.toUpperCase()}</span>
+                                ${ch.shortTitle || ch.title}
+                            </div>
+                            <div class="chapter-meta">
+                                ${wordCount} words • ~${estimatedDuration} min
+                                ${ch.duration ? ` • ${ch.duration}` : ''}
+                            </div>
+                        </div>
+                        <div class="chapter-status status-${ch.status}">${ch.status}</div>
                     </div>
-                    <div class="chapter-status status-${ch.status}">${ch.status}</div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
+            
+            document.getElementById('totalCount').textContent = chapters.length;
+        }
+
+        // Update selected count
+        function updateSelectedCount() {
+            const selected = chapters.filter(ch => ch.selected).length;
+            document.getElementById('selectedCount').textContent = selected;
         }
 
         // Toggle chapter selection
         function toggleChapter(index) {
             chapters[index].selected = !chapters[index].selected;
             renderChapters();
+            updateSelectedCount();
         }
 
         // Select all/none
         function selectAll() {
             chapters.forEach(ch => ch.selected = true);
             renderChapters();
+            updateSelectedCount();
         }
 
         function selectNone() {
             chapters.forEach(ch => ch.selected = false);
             renderChapters();
+            updateSelectedCount();
         }
 
         // Clear text
@@ -837,19 +1182,55 @@ Before you stands one of the most magnificent examples of architectural achievem
             document.getElementById('generateSection').style.display = 'none';
         }
 
-        // Load sample
-        function loadSample() {
+        // Load multi-file sample
+        function loadSampleMultiFile() {
+            document.getElementById('textInput').value = `# CRETE AUDIO GUIDE
+## Complete Structured Tour with 38 Stops
+
+---
+
+## FILE 01: INTRODUCTION TO CRETE
+*Duration: 5 minutes*
+
+### Opening
+Close your eyes for a moment and imagine an island where Zeus was born in a mountain cave, where Europe's first civilization built palaces without fortification walls. In the 21st century, this island still maintains traditions from the 1960s.
+
+### The Great Island
+This isn't just Greece's largest island; it's home to 15% of the country's archaeological sites, with temperatures reaching 40°C in summer. King Minos III ruled here in 1500 BCE.
+
+---
+
+## FILE 02: HISTORY OF CRETE
+*Duration: 8 minutes*
+
+### Ancient Origins
+To understand Crete, you must first grasp that this island has been prized for over 4,000 years. World War II saw fierce battles here, and the 90s brought modern tourism.
+
+### The Minoan Civilization
+Our story begins around 3000 BCE, when the Minoans created Europe's first advanced civilization. The palace had rooms at 22°C year-round.
+
+---
+
+## FILE 03: PRACTICAL TIPS
+*Duration: 3 minutes*
+
+Before visiting, know that entry costs €15 ($18). The site opens at 8:00 AM. In the 1st century CE, Romans built here. Temperature can reach 35°C, so bring water.`;
+            parseChapters();
+        }
+
+        // Load stops sample
+        function loadSampleStops() {
             document.getElementById('textInput').value = `STOP 1: INTRODUCTION
 ------------------------------
-Welcome to the Louvre Museum, one of the world's most visited and celebrated cultural institutions. This magnificent palace turned museum houses over 35,000 works of art spanning thousands of years of human creativity.
+Welcome to the Louvre Museum, built in the 12th century by King Philip II. The museum houses 35,000 works, with 65% from European artists. Napoleon III expanded it in the 1850s.
 
 STOP 2: HISTORY
 ------------------------------
-The Louvre's history begins in the 12th century as a fortress built by King Philip II. Over centuries, it transformed from a medieval fortress to a Renaissance palace, and finally to the world's largest art museum in 1793.
+The Louvre began as a fortress in 1190 CE. During World War II, artworks were hidden. The pyramid entrance was added in the 20th century, specifically in 1989.
 
 STOP 3: MONA LISA
 ------------------------------
-Before you stands Leonardo da Vinci's Mona Lisa, perhaps the most famous painting in the world. Notice her enigmatic smile and the revolutionary painting techniques da Vinci employed.`;
+Leonardo da Vinci's masterpiece from the 16th century. The painting measures 77cm × 53cm. It survived theft in the early 20th century. Room temperature is maintained at 21°C with 50% humidity.`;
             parseChapters();
         }
 
@@ -871,31 +1252,7 @@ Before you stands Leonardo da Vinci's Mona Lisa, perhaps the most famous paintin
             const alert = document.getElementById('languageAlert');
             
             if (!lang.startsWith('en-')) {
-                // Check if Google is configured by making a test call
-                try {
-                    const testResponse = await fetch('/api/multilingual-tts', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            text: 'test',
-                            language: lang,
-                            voice: 'alloy',
-                            speed: 1.0
-                        })
-                    });
-                    
-                    if (testResponse.ok) {
-                        const testData = await testResponse.json();
-                        if (testData.provider === 'google') {
-                            alert.style.display = 'none';
-                            showMessage('✅ Google Cloud TTS available for native ' + lang + ' pronunciation', 'success');
-                        } else if (testData.warning) {
-                            alert.style.display = 'block';
-                        }
-                    }
-                } catch (e) {
-                    alert.style.display = 'block';
-                }
+                alert.style.display = 'block';
             } else {
                 alert.style.display = 'none';
             }
@@ -937,7 +1294,13 @@ Before you stands Leonardo da Vinci's Mona Lisa, perhaps the most famous paintin
             
             let textToGenerate = chapter.content;
             if (!skipTitles && chapter.title !== 'Full Text') {
-                textToGenerate = chapter.title + '\n\n' + chapter.content;
+                textToGenerate = chapter.shortTitle + '\n\n' + chapter.content;
+            }
+            
+            // Apply TTS preprocessing if enabled
+            if (document.getElementById('enableTTSOptimization').checked) {
+                textToGenerate = preprocessTextForTTS(textToGenerate, language);
+                console.log('Text preprocessed for TTS');
             }
             
             // Show loading
@@ -946,8 +1309,9 @@ Before you stands Leonardo da Vinci's Mona Lisa, perhaps the most famous paintin
             document.getElementById('generateAll').disabled = true;
             
             try {
-                console.log('Generating audio for language:', language);
+                console.log('Generating audio for:', chapter.title);
                 console.log('Text length:', textToGenerate.length);
+                console.log('First 200 chars of processed text:', textToGenerate.substring(0, 200));
                 
                 // Use multilingual endpoint
                 const response = await fetch('/api/multilingual-tts', {
@@ -967,7 +1331,6 @@ Before you stands Leonardo da Vinci's Mona Lisa, perhaps the most famous paintin
                     const data = await response.json();
                     console.log('Response data:', data);
                     
-                    // Check for audioUrl in response (not requiring 'success' field)
                     if (data.audioUrl) {
                         // Update chapter status
                         chapter.status = 'completed';
@@ -975,7 +1338,7 @@ Before you stands Leonardo da Vinci's Mona Lisa, perhaps the most famous paintin
                         
                         // Add to files
                         const file = {
-                            name: `${chapter.title.replace(/[^a-z0-9]/gi, '_')}_${language}.mp3`,
+                            name: `${chapter.shortTitle || chapter.title}`.replace(/[^a-z0-9]/gi, '_') + `_${language}.mp3`,
                             chapter: chapter.title,
                             language: language,
                             url: data.audioUrl,
@@ -985,7 +1348,7 @@ Before you stands Leonardo da Vinci's Mona Lisa, perhaps the most famous paintin
                         renderFiles();
                         
                         // Show success message
-                        showMessage(`Audio generated successfully using ${data.provider}`, 'success');
+                        showMessage(`✅ Audio generated for "${chapter.shortTitle || chapter.title}"`, 'success');
                         
                         // Show warning if applicable
                         if (data.warning) {
@@ -997,13 +1360,7 @@ Before you stands Leonardo da Vinci's Mona Lisa, perhaps the most famous paintin
                 } else {
                     const errorData = await response.json();
                     console.error('API Error:', errorData);
-                    
-                    let errorMessage = errorData.error || 'Failed to generate audio';
-                    if (errorData.message) {
-                        errorMessage += ': ' + errorData.message;
-                    }
-                    
-                    showMessage(errorMessage, 'error');
+                    throw new Error(errorData.error || 'Failed to generate audio');
                 }
             } catch (error) {
                 console.error('Error:', error);
@@ -1017,7 +1374,6 @@ Before you stands Leonardo da Vinci's Mona Lisa, perhaps the most famous paintin
 
         // Show message function
         function showMessage(message, type) {
-            // Create message element
             const messageDiv = document.createElement('div');
             messageDiv.style.cssText = `
                 position: fixed;
@@ -1031,7 +1387,6 @@ Before you stands Leonardo da Vinci's Mona Lisa, perhaps the most famous paintin
                 box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             `;
             
-            // Set color based on type
             if (type === 'success') {
                 messageDiv.style.background = '#48bb78';
                 messageDiv.style.color = 'white';
@@ -1046,7 +1401,6 @@ Before you stands Leonardo da Vinci's Mona Lisa, perhaps the most famous paintin
             messageDiv.textContent = message;
             document.body.appendChild(messageDiv);
             
-            // Remove after 5 seconds
             setTimeout(() => {
                 messageDiv.remove();
             }, 5000);
