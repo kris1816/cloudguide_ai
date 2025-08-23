@@ -1,4 +1,4 @@
-// api/claude.js - Claude API endpoint for Vercel
+// api/claude.js - Claude API endpoint with Claude 4 models
 export default async function handler(req, res) {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -37,6 +37,7 @@ export default async function handler(req, res) {
     const CLAUDE_API_KEY = process.env.CLAUDE_API_KEY;
     
     if (!CLAUDE_API_KEY) {
+      console.error('Claude API key not found in environment variables');
       return res.status(500).json({ 
         error: 'Claude API key not configured in environment variables',
         solution: 'Add CLAUDE_API_KEY to your Vercel environment variables'
@@ -92,53 +93,153 @@ STOP [number]: [Descriptive Title] ${includeCoordinates ? '[GPS: latitude, longi
 
 Generate all ${numStops} stops now:`;
 
-    // Call Claude API
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': CLAUDE_API_KEY,
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify({
-        model: 'claude-3-sonnet-20241022', // Using Sonnet for balance of quality and cost
-        max_tokens: 8192,
-        temperature: 0.7,
-        messages: [{
-          role: 'user',
-          content: prompt
-        }]
-      })
-    });
+    // Claude 4 models (as of January 2025)
+    // Priority order: most efficient for content generation first
+    const modelOptions = [
+      'claude-sonnet-4-20250514',      // Claude Sonnet 4 - Best balance for content generation
+      'claude-opus-4-1-20250805',       // Claude Opus 4.1 - Most capable but slower
+      'claude-opus-4-20250805',         // Claude Opus 4 - Previous flagship
+      // Fallback to Claude 3.7 if needed
+      'claude-3-7-sonnet-20250219',    // Claude 3.7 Sonnet as fallback
+    ];
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Claude API error:', response.status, errorText);
-      
-      let errorMessage = 'Claude API error';
+    let successfulResponse = null;
+    let lastError = null;
+    let modelUsed = '';
+
+    // Try each model until one works
+    for (const model of modelOptions) {
       try {
-        const errorData = JSON.parse(errorText);
-        errorMessage = errorData.error?.message || errorMessage;
-      } catch (e) {
-        errorMessage = errorText || errorMessage;
+        console.log(`Attempting with model: ${model}`);
+        
+        const response = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': CLAUDE_API_KEY,
+            'anthropic-version': '2023-06-01'
+          },
+          body: JSON.stringify({
+            model: model,
+            max_tokens: 8192,
+            temperature: 0.7,
+            messages: [{
+              role: 'user',
+              content: prompt
+            }]
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          
+          // Check for refusal stop reason (new in Claude 4)
+          if (data.stop_reason === 'refusal') {
+            console.log(`Model ${model} refused to generate content`);
+            lastError = {
+              status: 400,
+              message: 'Claude refused to generate this content for safety reasons. Please modify your request.'
+            };
+            continue;
+          }
+          
+          successfulResponse = data;
+          modelUsed = model;
+          console.log(`Success with model: ${model}`);
+          break;
+        } else {
+          const errorText = await response.text();
+          console.log(`Model ${model} failed:`, errorText);
+          
+          // If it's not a model error, stop trying other models
+          if (!errorText.includes('model') && response.status !== 404) {
+            lastError = {
+              status: response.status,
+              message: errorText
+            };
+            break;
+          }
+          
+          lastError = {
+            status: response.status,
+            message: errorText
+          };
+        }
+      } catch (error) {
+        console.error(`Error with model ${model}:`, error);
+        lastError = {
+          status: 500,
+          message: error.message
+        };
+      }
+    }
+
+    // Check if we got a successful response
+    if (!successfulResponse) {
+      console.error('All Claude models failed. Last error:', lastError);
+      
+      let errorMessage = 'Failed to generate content with Claude API';
+      let errorDetails = {};
+      
+      if (lastError) {
+        try {
+          const errorData = typeof lastError.message === 'string' 
+            ? JSON.parse(lastError.message) 
+            : lastError.message;
+          
+          if (errorData.error?.message) {
+            errorMessage = errorData.error.message;
+          } else if (errorData.message) {
+            errorMessage = errorData.message;
+          } else if (typeof lastError.message === 'string') {
+            errorMessage = lastError.message;
+          }
+          
+          // Provide helpful context
+          if (lastError.status === 401) {
+            errorMessage = 'Invalid Claude API key';
+            errorDetails.suggestion = 'Check your CLAUDE_API_KEY in Vercel environment variables';
+          } else if (lastError.status === 429) {
+            errorMessage = 'Rate limit exceeded';
+            errorDetails.suggestion = 'Please wait a moment and try again';
+          } else if (lastError.status === 400 && errorMessage.includes('refusal')) {
+            errorDetails.suggestion = 'Try modifying your request or using different parameters';
+          } else if (errorMessage.includes('model')) {
+            errorDetails.suggestion = 'The model name may be incorrect. Trying fallback models.';
+            errorDetails.triedModels = modelOptions;
+          }
+        } catch (e) {
+          errorMessage = lastError.message || errorMessage;
+        }
       }
       
       return res.status(500).json({ 
         error: errorMessage,
-        status: response.status
+        ...errorDetails
       });
     }
 
-    const data = await response.json();
-    
     // Extract the generated content
-    const generatedContent = data.content[0].text;
+    const generatedContent = successfulResponse.content[0].text;
+    
+    // Determine model family for display
+    let modelFamily = 'Claude';
+    if (modelUsed.includes('opus-4-1')) {
+      modelFamily = 'Claude Opus 4.1 (Latest & Most Capable)';
+    } else if (modelUsed.includes('opus-4')) {
+      modelFamily = 'Claude Opus 4';
+    } else if (modelUsed.includes('sonnet-4')) {
+      modelFamily = 'Claude Sonnet 4 (Fast & Efficient)';
+    } else if (modelUsed.includes('3-7')) {
+      modelFamily = 'Claude 3.7 Sonnet (Fallback)';
+    }
     
     // Format the response
     const formattedContent = `AUDIOGUIDE: ${destination.toUpperCase()}
 ===================================================
 
-Generated with: Claude AI (Premium)
+Generated with: ${modelFamily}
+Model: ${modelUsed}
 Guide Type: ${guideType}
 Style: ${style}
 Total Stops: ${numStops}
@@ -158,15 +259,31 @@ ${generatedContent}
       rawContent: generatedContent, // For audio generation without formatting
       destination: destination,
       stops: numStops,
-      model: 'Claude Sonnet'
+      model: modelFamily,
+      modelVersion: modelUsed
     });
 
   } catch (error) {
     console.error('Claude handler error:', error);
     
+    // Provide more detailed error information
+    let errorMessage = 'Internal server error';
+    let errorDetails = {};
+    
+    if (error.message) {
+      errorMessage = error.message;
+      
+      // Add helpful context based on error type
+      if (error.message.includes('fetch')) {
+        errorDetails.suggestion = 'Network error connecting to Claude API';
+      } else if (error.message.includes('JSON')) {
+        errorDetails.suggestion = 'Invalid response format from Claude API';
+      }
+    }
+    
     return res.status(500).json({ 
-      error: 'Internal server error',
-      message: error.message,
+      error: errorMessage,
+      ...errorDetails,
       stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
