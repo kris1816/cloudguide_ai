@@ -1348,6 +1348,138 @@ Leonardo da Vinci's masterpiece from the 16th century. The painting measures 77c
             }
         }
 
+        // Function to concatenate audio files using Web Audio API
+        async function concatenateAudioUrls(audioUrls) {
+            console.log(`Concatenating ${audioUrls.length} audio parts...`);
+            
+            try {
+                // Create audio context
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const audioBuffers = [];
+                
+                // Load all audio files
+                for (let i = 0; i < audioUrls.length; i++) {
+                    console.log(`Loading audio part ${i + 1}/${audioUrls.length}`);
+                    
+                    // Update loading message
+                    const loadingDiv = document.getElementById('loading');
+                    const loadingText = loadingDiv.querySelector('div:last-child');
+                    if (loadingText) {
+                        loadingText.textContent = `Combining audio parts... ${i + 1} of ${audioUrls.length}`;
+                    }
+                    
+                    // Fetch the audio data
+                    const response = await fetch(audioUrls[i]);
+                    const arrayBuffer = await response.arrayBuffer();
+                    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+                    audioBuffers.push(audioBuffer);
+                }
+                
+                // Calculate total length
+                const totalLength = audioBuffers.reduce((acc, buffer) => acc + buffer.length, 0);
+                const numberOfChannels = audioBuffers[0].numberOfChannels;
+                const sampleRate = audioBuffers[0].sampleRate;
+                
+                // Create output buffer
+                const outputBuffer = audioContext.createBuffer(numberOfChannels, totalLength, sampleRate);
+                
+                // Copy all buffers into the output
+                let offset = 0;
+                for (const buffer of audioBuffers) {
+                    for (let channel = 0; channel < numberOfChannels; channel++) {
+                        outputBuffer.copyToChannel(buffer.getChannelData(channel), channel, offset);
+                    }
+                    offset += buffer.length;
+                }
+                
+                // Convert to WAV format (or we could use a library for MP3)
+                const wavBlob = await audioBufferToWav(outputBuffer);
+                const url = URL.createObjectURL(wavBlob);
+                
+                console.log('Audio concatenation complete');
+                return url;
+                
+            } catch (error) {
+                console.error('Error concatenating audio:', error);
+                throw error;
+            }
+        }
+        
+        // Convert AudioBuffer to WAV blob
+        function audioBufferToWav(buffer) {
+            const numberOfChannels = buffer.numberOfChannels;
+            const sampleRate = buffer.sampleRate;
+            const format = 1; // PCM
+            const bitDepth = 16;
+            
+            const bytesPerSample = bitDepth / 8;
+            const blockAlign = numberOfChannels * bytesPerSample;
+            
+            const data = [];
+            for (let channel = 0; channel < numberOfChannels; channel++) {
+                data.push(buffer.getChannelData(channel));
+            }
+            
+            const length = buffer.length;
+            const arrayBuffer = new ArrayBuffer(44 + length * numberOfChannels * bytesPerSample);
+            const view = new DataView(arrayBuffer);
+            
+            // WAV header
+            const writeString = (offset, string) => {
+                for (let i = 0; i < string.length; i++) {
+                    view.setUint8(offset + i, string.charCodeAt(i));
+                }
+            };
+            
+            writeString(0, 'RIFF');
+            view.setUint32(4, 36 + length * numberOfChannels * bytesPerSample, true);
+            writeString(8, 'WAVE');
+            writeString(12, 'fmt ');
+            view.setUint32(16, 16, true);
+            view.setUint16(20, format, true);
+            view.setUint16(22, numberOfChannels, true);
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, sampleRate * blockAlign, true);
+            view.setUint16(32, blockAlign, true);
+            view.setUint16(34, bitDepth, true);
+            writeString(36, 'data');
+            view.setUint32(40, length * numberOfChannels * bytesPerSample, true);
+            
+            // Interleave channels and convert to 16-bit PCM
+            let offset = 44;
+            for (let i = 0; i < length; i++) {
+                for (let channel = 0; channel < numberOfChannels; channel++) {
+                    const sample = Math.max(-1, Math.min(1, data[channel][i]));
+                    view.setInt16(offset, sample * 0x7FFF, true);
+                    offset += 2;
+                }
+            }
+            
+            return new Blob([arrayBuffer], { type: 'audio/wav' });
+        }
+
+        // Function to split text into chunks
+        function splitTextIntoChunks(text, maxChunkSize = 3000) {
+            const chunks = [];
+            const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
+            let currentChunk = '';
+            
+            for (const sentence of sentences) {
+                if ((currentChunk + sentence).length > maxChunkSize && currentChunk.length > 0) {
+                    chunks.push(currentChunk.trim());
+                    currentChunk = sentence;
+                } else {
+                    currentChunk += sentence;
+                }
+            }
+            
+            if (currentChunk.trim()) {
+                chunks.push(currentChunk.trim());
+            }
+            
+            return chunks;
+        }
+
         // Generate audio for a chapter
         async function generateAudio(chapter) {
             const language = document.getElementById('audioLanguage').value;
@@ -1365,65 +1497,121 @@ Leonardo da Vinci's masterpiece from the 16th century. The painting measures 77c
                 console.log('Text preprocessed for TTS');
             }
             
+            // Check if text is too long and needs chunking
+            const MAX_TTS_LENGTH = 3000; // Safe limit for TTS API
+            const textChunks = textToGenerate.length > MAX_TTS_LENGTH 
+                ? splitTextIntoChunks(textToGenerate, MAX_TTS_LENGTH)
+                : [textToGenerate];
+            
+            console.log(`Text length: ${textToGenerate.length}, Split into ${textChunks.length} chunks`);
+            
             // Show loading
             document.getElementById('loading').classList.add('active');
             document.getElementById('generateSingle').disabled = true;
             document.getElementById('generateAll').disabled = true;
             
+            const audioUrls = [];
+            
             try {
-                console.log('Generating audio for:', chapter.title);
-                console.log('Text length:', textToGenerate.length);
-                console.log('First 200 chars of processed text:', textToGenerate.substring(0, 200));
-                
-                // Use multilingual endpoint
-                const response = await fetch('/api/multilingual-tts', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        text: textToGenerate,
-                        language: language,
-                        voice: selectedVoice,
-                        speed: speed
-                    })
-                });
-
-                console.log('Response status:', response.status);
-
-                if (response.ok) {
-                    const data = await response.json();
-                    console.log('Response data:', data);
+                // Generate audio for each chunk
+                for (let i = 0; i < textChunks.length; i++) {
+                    const chunk = textChunks[i];
+                    console.log(`Generating chunk ${i + 1}/${textChunks.length}, length: ${chunk.length}`);
                     
-                    if (data.audioUrl) {
-                        // Update chapter status
-                        chapter.status = 'completed';
-                        renderChapters();
-                        
-                        // Add to files
-                        const file = {
-                            name: `${chapter.shortTitle || chapter.title}`.replace(/[^a-z0-9]/gi, '_') + `_${language}.mp3`,
-                            chapter: chapter.title,
+                    // Show progress for multi-chunk generation
+                    const loadingDiv = document.getElementById('loading');
+                    const loadingText = loadingDiv.querySelector('div:last-child');
+                    if (loadingText) {
+                        loadingText.textContent = `Generating audio... Part ${i + 1} of ${textChunks.length}`;
+                    }
+                    
+                    const response = await fetch('/api/multilingual-tts', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            text: chunk,
                             language: language,
-                            url: data.audioUrl,
-                            provider: data.provider || 'openai'
-                        };
-                        generatedFiles.push(file);
-                        renderFiles();
-                        
-                        // Show success message
-                        showMessage(`✅ Audio generated for "${chapter.shortTitle || chapter.title}"`, 'success');
-                        
-                        // Show warning if applicable
-                        if (data.warning) {
-                            showMessage(data.warning, 'warning');
+                            voice: selectedVoice,
+                            speed: speed
+                        })
+                    });
+
+                    console.log(`Chunk ${i + 1} response status:`, response.status);
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.audioUrl) {
+                            audioUrls.push(data.audioUrl);
+                        } else {
+                            throw new Error(`No audio URL in response for chunk ${i + 1}`);
                         }
                     } else {
-                        throw new Error('No audio URL in response');
+                        const errorData = await response.json().catch(() => ({}));
+                        console.error(`API Error for chunk ${i + 1}:`, errorData);
+                        throw new Error(errorData.error || errorData.message || `Failed to generate audio for part ${i + 1}`);
+                    }
+                    
+                    // Small delay between chunks to avoid rate limiting
+                    if (i < textChunks.length - 1) {
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                    }
+                }
+                
+                // If we have multiple chunks, concatenate them
+                let finalAudioUrl;
+                if (audioUrls.length > 1) {
+                    console.log('Multiple audio parts generated, concatenating...');
+                    showMessage('🔄 Combining audio parts into single file...', 'info');
+                    
+                    try {
+                        finalAudioUrl = await concatenateAudioUrls(audioUrls);
+                        showMessage('✅ Audio parts successfully combined!', 'success');
+                    } catch (concatError) {
+                        console.error('Failed to concatenate audio files:', concatError);
+                        showMessage('⚠️ Could not combine audio parts. Saving as separate files.', 'warning');
+                        
+                        // Fall back to saving separate parts
+                        audioUrls.forEach((url, index) => {
+                            const file = {
+                                name: `${chapter.shortTitle || chapter.title}`.replace(/[^a-z0-9]/gi, '_') + `_part${index + 1}_${language}.mp3`,
+                                chapter: chapter.title + ` (Part ${index + 1}/${audioUrls.length})`,
+                                language: language,
+                                url: url,
+                                provider: 'openai'
+                            };
+                            generatedFiles.push(file);
+                        });
+                        
+                        renderFiles();
+                        return;
                     }
                 } else {
-                    const errorData = await response.json();
-                    console.error('API Error:', errorData);
-                    throw new Error(errorData.error || 'Failed to generate audio');
+                    finalAudioUrl = audioUrls[0];
                 }
+                
+                // Update chapter status
+                chapter.status = 'completed';
+                renderChapters();
+                
+                // Add the final combined file
+                const file = {
+                    name: `${chapter.shortTitle || chapter.title}`.replace(/[^a-z0-9]/gi, '_') + `_${language}.${finalAudioUrl.includes('wav') ? 'wav' : 'mp3'}`,
+                    chapter: chapter.title,
+                    language: language,
+                    url: finalAudioUrl,
+                    provider: 'openai',
+                    combined: audioUrls.length > 1
+                };
+                generatedFiles.push(file);
+                renderFiles();
+                
+                // Show success message
+                if (audioUrls.length > 1) {
+                    showMessage(`✅ Audio generated and combined for "${chapter.shortTitle || chapter.title}" (${audioUrls.length} parts merged)`, 'success');
+                } else {
+                    showMessage(`✅ Audio generated for "${chapter.shortTitle || chapter.title}"`, 'success');
+                }
+                
             } catch (error) {
                 console.error('Error:', error);
                 showMessage('Error generating audio: ' + error.message, 'error');
@@ -1431,6 +1619,12 @@ Leonardo da Vinci's masterpiece from the 16th century. The painting measures 77c
                 document.getElementById('loading').classList.remove('active');
                 document.getElementById('generateSingle').disabled = false;
                 document.getElementById('generateAll').disabled = false;
+                // Reset loading text
+                const loadingDiv = document.getElementById('loading');
+                const loadingText = loadingDiv.querySelector('div:last-child');
+                if (loadingText) {
+                    loadingText.textContent = 'Generating audio... Please wait...';
+                }
             }
         }
 
