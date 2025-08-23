@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Claude Test</title>
+</head>
+<body style="font-family: Arial; padding: 20px; max-width: 600px; margin: 0 auto;">
+    <h1>Simple Claude API Test</h1>
+    
+    <p>Enter your API key and click test:</p>
+    <input type="password" id="key" placeholder="sk-ant-api..." style="width: 100%; padding: 10px; margin: 10px 0;">
+    
+    <button onclick="testAPI()" style="background: green; color: white; padding: 10px 20px; border: none; cursor: pointer;">
+        Test API
+    </button>
+    
+    <button onclick="alert('JavaScript is working!')" style="background: blue; color: white; padding: 10px 20px; border: none; margin-left: 10px; cursor: pointer;">
+        Test JavaScript
+    </button>
+    
+    <div id="result" style="margin-top: 20px; padding: 20px; background: #f0f0f0; min-height: 100px; white-space: pre-wrap;">
+        Results will appear here...
+    </div>
+    
+    <script>
+        function testAPI() {
+            const resultDiv = document.getElementById('result');
+            const apiKey = document.getElementById('key').value;
+            
+            resultDiv.textContent = 'Testing...\n';
+            
+            if (!apiKey) {
+                resultDiv.textContent = 'Please enter an API key!';
+                return;
+            }
+            
+            resultDiv.textContent += 'API Key: ' + apiKey.substring(0, 15) + '...\n';
+            resultDiv.textContent += 'Making request...\n';
+            
+            fetch('https://api.anthropic.com/v1/messages', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-api-key': apiKey,
+                    'anthropic-version': '2023-06-01'
+                },
+                body: JSON.stringify({
+                    model: 'claude-3-haiku-20240307',
+                    max_tokens: 50,
+                    messages: [{
+                        role: 'user',
+                        content: 'Say hello'
+                    }]
+                })
+            })
+            .then(response => {
+                resultDiv.textContent += 'Status: ' + response.status + '\n';
+                return response.text();
+            })
+            .then(text => {
+                resultDiv.textContent += 'Response: ' + text + '\n';
+            })
+            .catch(error => {
+                resultDiv.textContent += 'Error: ' + error + '\n';
+            });
+        }
+    </script>
+</body>
+</html>
