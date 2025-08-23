@@ -1,16 +1,14 @@
-// api/claude.js - Claude API endpoint with Claude 4 models
+// api/claude.js - Updated for Claude 4 models
 export default async function handler(req, res) {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  // Handle OPTIONS request
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
 
-  // Only accept POST
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -18,89 +16,61 @@ export default async function handler(req, res) {
   try {
     const { 
       destination, 
-      guideType, 
-      audience, 
-      style, 
-      customPrompt,
-      numStops, 
-      stopLength, 
-      includeCoordinates,
-      websiteRefs 
+      guideType = 'museum', 
+      audience = 'general', 
+      style = 'storytelling', 
+      customPrompt = '',
+      numStops = 10, 
+      stopLength = 750, 
+      includeCoordinates = false,
+      websiteRefs = []
     } = req.body;
 
-    // Validate required fields
     if (!destination) {
       return res.status(400).json({ error: 'Destination is required' });
     }
 
-    // Get API key from environment variable
     const CLAUDE_API_KEY = process.env.CLAUDE_API_KEY;
     
     if (!CLAUDE_API_KEY) {
-      console.error('Claude API key not found in environment variables');
       return res.status(500).json({ 
-        error: 'Claude API key not configured in environment variables',
+        error: 'Claude API key not configured',
         solution: 'Add CLAUDE_API_KEY to your Vercel environment variables'
       });
     }
 
-    console.log(`Generating ${numStops} stops for ${destination} using Claude`);
+    console.log(`Generating ${numStops} stops for ${destination}`);
 
-    // Build the prompt based on guide type
-    let mandatoryStops = '';
-    
-    if (guideType === 'museum') {
-      mandatoryStops = `
-MANDATORY STOPS:
-1. INTRODUCTION - Welcome and overview
-2. HISTORY - Museum and building history
-3-${numStops-1}. KEY COLLECTIONS - Major exhibitions
-${numStops}. PRACTICAL TIPS - Visitor information`;
-    } else if (guideType === 'city') {
-      mandatoryStops = `
-MANDATORY STOPS:
-1. INTRODUCTION - Welcome to ${destination}
-2. HISTORY - Historical overview
-3-7. TOP ATTRACTIONS - Must-see landmarks
-8. LOCAL CUISINE & FOOD - Traditional dishes and restaurants
-9-12. HIDDEN GEMS - Lesser-known spots
-13-14. DAY TRIPS - Nearby destinations
-${numStops}. PRACTICAL TIPS - Transportation and customs`;
-    } else if (guideType === 'trail') {
-      mandatoryStops = `
-MANDATORY STOPS:
-1. TRAILHEAD - Starting point overview
-2. NATURAL HISTORY - Geology and ecology
-3-${numStops-1}. VIEWPOINTS - Scenic spots
-${numStops}. SAFETY TIPS - Preparation and gear`;
-    }
-
+    // Build the prompt
     const prompt = `Create a professional ${numStops}-stop audioguide for ${destination}.
 
 Guide Type: ${guideType}
 Style: ${style}
 Audience: ${audience}
-Words per stop: ${stopLength}
+Words per stop: approximately ${stopLength}
 ${includeCoordinates ? 'Include GPS coordinates [GPS: lat, long] for each stop' : ''}
 ${websiteRefs?.length > 0 ? `Reference these websites: ${websiteRefs.join(', ')}` : ''}
 ${customPrompt ? `Special requirements: ${customPrompt}` : ''}
 
-${mandatoryStops}
+Create exactly ${numStops} stops. Each stop should have:
+- A clear, descriptive title
+- Engaging, informative content of approximately ${stopLength} words
+- Natural, conversational tone suitable for audio narration
 
 Format each stop as:
-STOP [number]: [Descriptive Title] ${includeCoordinates ? '[GPS: latitude, longitude]' : ''}
-[Exactly ${stopLength} words of engaging content]
+STOP [number]: [Title]
+[Content - approximately ${stopLength} words]
 
 Generate all ${numStops} stops now:`;
 
-    // Claude 4 models (as of January 2025)
-    // Priority order: most efficient for content generation first
+    // Claude 4 models - Based on the migration guide you showed
+    // Priority order: newest and most efficient first
     const modelOptions = [
-      'claude-sonnet-4-20250514',      // Claude Sonnet 4 - Best balance for content generation
-      'claude-opus-4-1-20250805',       // Claude Opus 4.1 - Most capable but slower
-      'claude-opus-4-20250805',         // Claude Opus 4 - Previous flagship
-      // Fallback to Claude 3.7 if needed
-      'claude-3-7-sonnet-20250219',    // Claude 3.7 Sonnet as fallback
+      'claude-opus-4-1-20250805',      // Claude Opus 4.1 - Latest and most capable
+      'claude-sonnet-4-20250514',      // Claude Sonnet 4 - Fast and efficient
+      'claude-opus-4-20250805',        // Claude Opus 4 - Previous flagship
+      // Fallback to Claude 3.5 if Claude 4 not available
+      'claude-3-5-sonnet-20241022',    // Claude 3.5 Sonnet as fallback
     ];
 
     let successfulResponse = null;
@@ -130,40 +100,55 @@ Generate all ${numStops} stops now:`;
           })
         });
 
+        const responseText = await response.text();
+        console.log(`Response status for ${model}: ${response.status}`);
+
         if (response.ok) {
-          const data = await response.json();
-          
-          // Check for refusal stop reason (new in Claude 4)
-          if (data.stop_reason === 'refusal') {
-            console.log(`Model ${model} refused to generate content`);
-            lastError = {
-              status: 400,
-              message: 'Claude refused to generate this content for safety reasons. Please modify your request.'
-            };
-            continue;
-          }
-          
-          successfulResponse = data;
-          modelUsed = model;
-          console.log(`Success with model: ${model}`);
-          break;
-        } else {
-          const errorText = await response.text();
-          console.log(`Model ${model} failed:`, errorText);
-          
-          // If it's not a model error, stop trying other models
-          if (!errorText.includes('model') && response.status !== 404) {
+          try {
+            const data = JSON.parse(responseText);
+            
+            // Check for Claude 4's new refusal stop reason
+            if (data.stop_reason === 'refusal') {
+              console.log(`Model ${model} refused to generate content`);
+              lastError = {
+                status: 400,
+                message: 'Claude refused to generate this content for safety reasons. Please modify your request.'
+              };
+              continue;
+            }
+            
+            successfulResponse = data;
+            modelUsed = model;
+            console.log(`Success with model: ${model}`);
+            break;
+          } catch (parseError) {
+            console.error(`Failed to parse response for ${model}:`, parseError);
             lastError = {
               status: response.status,
-              message: errorText
+              message: 'Invalid JSON response from API'
             };
-            break;
           }
+        } else {
+          console.log(`Model ${model} failed:`, responseText.substring(0, 200));
           
-          lastError = {
-            status: response.status,
-            message: errorText
-          };
+          // Parse error response
+          try {
+            const errorData = JSON.parse(responseText);
+            lastError = {
+              status: response.status,
+              message: errorData.error?.message || errorData.message || responseText
+            };
+            
+            // If it's not a model-specific error, don't try other models
+            if (response.status === 401 || response.status === 429) {
+              break;
+            }
+          } catch (e) {
+            lastError = {
+              status: response.status,
+              message: responseText
+            };
+          }
         }
       } catch (error) {
         console.error(`Error with model ${model}:`, error);
@@ -182,34 +167,17 @@ Generate all ${numStops} stops now:`;
       let errorDetails = {};
       
       if (lastError) {
-        try {
-          const errorData = typeof lastError.message === 'string' 
-            ? JSON.parse(lastError.message) 
-            : lastError.message;
-          
-          if (errorData.error?.message) {
-            errorMessage = errorData.error.message;
-          } else if (errorData.message) {
-            errorMessage = errorData.message;
-          } else if (typeof lastError.message === 'string') {
-            errorMessage = lastError.message;
-          }
-          
-          // Provide helpful context
-          if (lastError.status === 401) {
-            errorMessage = 'Invalid Claude API key';
-            errorDetails.suggestion = 'Check your CLAUDE_API_KEY in Vercel environment variables';
-          } else if (lastError.status === 429) {
-            errorMessage = 'Rate limit exceeded';
-            errorDetails.suggestion = 'Please wait a moment and try again';
-          } else if (lastError.status === 400 && errorMessage.includes('refusal')) {
-            errorDetails.suggestion = 'Try modifying your request or using different parameters';
-          } else if (errorMessage.includes('model')) {
-            errorDetails.suggestion = 'The model name may be incorrect. Trying fallback models.';
-            errorDetails.triedModels = modelOptions;
-          }
-        } catch (e) {
-          errorMessage = lastError.message || errorMessage;
+        errorMessage = lastError.message || errorMessage;
+        
+        // Provide helpful context based on error
+        if (lastError.status === 401) {
+          errorDetails.suggestion = 'Check your CLAUDE_API_KEY in Vercel environment variables';
+        } else if (lastError.status === 429) {
+          errorDetails.suggestion = 'Rate limit exceeded. Please wait a moment and try again';
+        } else if (errorMessage.includes('model')) {
+          errorDetails.suggestion = 'Model not found. Tried: ' + modelOptions.join(', ');
+        } else if (lastError.status === 400 && errorMessage.includes('refusal')) {
+          errorDetails.suggestion = 'Try modifying your request or using different parameters';
         }
       }
       
@@ -222,23 +190,23 @@ Generate all ${numStops} stops now:`;
     // Extract the generated content
     const generatedContent = successfulResponse.content[0].text;
     
-    // Determine model family for display
-    let modelFamily = 'Claude';
+    // Determine model display name for Claude 4
+    let modelDisplayName = 'Claude';
     if (modelUsed.includes('opus-4-1')) {
-      modelFamily = 'Claude Opus 4.1 (Latest & Most Capable)';
-    } else if (modelUsed.includes('opus-4')) {
-      modelFamily = 'Claude Opus 4';
+      modelDisplayName = 'Claude Opus 4.1 (Latest & Most Capable)';
     } else if (modelUsed.includes('sonnet-4')) {
-      modelFamily = 'Claude Sonnet 4 (Fast & Efficient)';
-    } else if (modelUsed.includes('3-7')) {
-      modelFamily = 'Claude 3.7 Sonnet (Fallback)';
+      modelDisplayName = 'Claude Sonnet 4 (Fast & Efficient)';
+    } else if (modelUsed.includes('opus-4')) {
+      modelDisplayName = 'Claude Opus 4';
+    } else if (modelUsed.includes('3-5-sonnet')) {
+      modelDisplayName = 'Claude 3.5 Sonnet (Fallback)';
     }
     
     // Format the response
     const formattedContent = `AUDIOGUIDE: ${destination.toUpperCase()}
 ===================================================
 
-Generated with: ${modelFamily}
+Generated with: ${modelDisplayName}
 Model: ${modelUsed}
 Guide Type: ${guideType}
 Style: ${style}
@@ -256,34 +224,19 @@ ${generatedContent}
     return res.status(200).json({
       success: true,
       content: formattedContent,
-      rawContent: generatedContent, // For audio generation without formatting
+      rawContent: generatedContent,
       destination: destination,
       stops: numStops,
-      model: modelFamily,
-      modelVersion: modelUsed
+      model: modelDisplayName,
+      modelVersion: modelUsed,
+      claudeVersion: modelUsed.includes('opus-4') || modelUsed.includes('sonnet-4') ? '4' : '3.5'
     });
 
   } catch (error) {
-    console.error('Claude handler error:', error);
-    
-    // Provide more detailed error information
-    let errorMessage = 'Internal server error';
-    let errorDetails = {};
-    
-    if (error.message) {
-      errorMessage = error.message;
-      
-      // Add helpful context based on error type
-      if (error.message.includes('fetch')) {
-        errorDetails.suggestion = 'Network error connecting to Claude API';
-      } else if (error.message.includes('JSON')) {
-        errorDetails.suggestion = 'Invalid response format from Claude API';
-      }
-    }
+    console.error('Handler error:', error);
     
     return res.status(500).json({ 
-      error: errorMessage,
-      ...errorDetails,
+      error: error.message || 'Internal server error',
       stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
