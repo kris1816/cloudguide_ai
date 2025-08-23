@@ -93,7 +93,7 @@
             padding: 40px 0;
         }
 
-        /* Hero Section - Matching style */
+        /* Hero Section */
         .hero-section {
             text-align: center;
             margin-bottom: 50px;
@@ -114,90 +114,18 @@
             margin: 0 auto 30px;
         }
 
-        /* AI Providers Display */
-        .providers-display {
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-            margin-bottom: 40px;
-        }
-
-        .provider-badge {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 12px 20px;
-            background: white;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-
-        .provider-icon {
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-        }
-
-        .provider-info {
-            text-align: left;
-        }
-
-        .provider-name {
-            font-weight: 600;
-            color: #2d3748;
-            font-size: 14px;
-        }
-
-        .provider-desc {
-            font-size: 11px;
-            color: #a0aec0;
-        }
-
-        /* API Configuration Section */
-        .api-config {
-            background: #fef5e7;
-            border: 1px solid #f9d71c;
+        /* Info Box */
+        .info-box {
+            background: #e6fffa;
+            border: 1px solid #48bb78;
             border-radius: 12px;
             padding: 25px;
             margin-bottom: 40px;
         }
 
-        .api-config h3 {
-            color: #795548;
-            font-size: 1.1em;
+        .info-box h3 {
+            color: #22543d;
             margin-bottom: 15px;
-            font-weight: 600;
-        }
-
-        .api-config p {
-            font-size: 14px;
-            color: #8d6e63;
-            margin-bottom: 20px;
-        }
-
-        .api-input-row {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-
-        .api-links {
-            font-size: 12px;
-            color: #a0aec0;
-            margin-top: 15px;
-        }
-
-        .api-links a {
-            color: #667eea;
-            text-decoration: none;
-        }
-
-        .api-links a:hover {
-            text-decoration: underline;
         }
 
         /* Main Layout Grid */
@@ -208,7 +136,7 @@
             margin-bottom: 40px;
         }
 
-        /* Card Style matching other pages */
+        /* Card Style */
         .card {
             background: white;
             border-radius: 12px;
@@ -225,10 +153,6 @@
             display: flex;
             align-items: center;
             gap: 10px;
-        }
-
-        .card-icon {
-            font-size: 1.2em;
         }
 
         /* Form Elements */
@@ -268,66 +192,6 @@
         .form-textarea {
             min-height: 120px;
             resize: vertical;
-        }
-
-        /* Voice Selection Grid */
-        .voice-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-
-        .voice-option {
-            padding: 15px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-            background: white;
-        }
-
-        .voice-option:hover {
-            border-color: #cbd5e0;
-            background: #f7fafc;
-        }
-
-        .voice-option.selected {
-            border-color: #48bb78;
-            background: #f0fff4;
-        }
-
-        .voice-name {
-            font-weight: 600;
-            font-size: 14px;
-            color: #2d3748;
-            margin-bottom: 4px;
-        }
-
-        .voice-details {
-            font-size: 12px;
-            color: #a0aec0;
-        }
-
-        /* Advanced Settings */
-        .advanced-settings {
-            background: #f7fafc;
-            border-radius: 8px;
-            padding: 20px;
-            margin-top: 20px;
-        }
-
-        .settings-title {
-            font-size: 14px;
-            font-weight: 600;
-            color: #4a5568;
-            margin-bottom: 15px;
-        }
-
-        .settings-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
         }
 
         /* Buttons */
@@ -373,6 +237,74 @@
             width: 100%;
         }
 
+        /* Website References */
+        .website-input-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        /* Voice Selection */
+        .voice-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .voice-option {
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+            text-align: center;
+        }
+
+        .voice-option:hover {
+            border-color: #cbd5e0;
+            background: #f7fafc;
+        }
+
+        .voice-option.selected {
+            border-color: #48bb78;
+            background: #f0fff4;
+        }
+
+        .voice-name {
+            font-weight: 600;
+            font-size: 14px;
+            color: #2d3748;
+            margin-bottom: 4px;
+        }
+
+        .voice-details {
+            font-size: 12px;
+            color: #a0aec0;
+        }
+
+        /* Advanced Settings */
+        .advanced-settings {
+            background: #f7fafc;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .settings-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 15px;
+        }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
         /* Content Display */
         .content-display {
             background: #f7fafc;
@@ -384,12 +316,15 @@
             overflow-y: auto;
             font-size: 14px;
             line-height: 1.8;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
         }
 
         .content-display:empty::before {
             content: 'Generated content will appear here...';
             color: #a0aec0;
             font-style: italic;
+            font-family: 'Nunito Sans', sans-serif;
         }
 
         /* Progress Section */
@@ -469,86 +404,10 @@
             transform: scale(1.05);
         }
 
-        .audio-progress-container {
-            flex: 1;
-        }
-
-        .audio-time-display {
-            display: flex;
-            justify-content: space-between;
-            font-size: 12px;
-            color: #718096;
-            margin-top: 5px;
-        }
-
         .player-actions {
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
-        }
-
-        /* Range Slider Custom Styling */
-        input[type="range"] {
-            -webkit-appearance: none;
-            appearance: none;
-            background: transparent;
-            cursor: pointer;
-        }
-
-        input[type="range"]::-webkit-slider-track {
-            background: #e2e8f0;
-            height: 6px;
-            border-radius: 3px;
-        }
-
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            background: #48bb78;
-            height: 18px;
-            width: 18px;
-            border-radius: 50%;
-            margin-top: -6px;
-        }
-
-        input[type="range"]::-moz-range-track {
-            background: #e2e8f0;
-            height: 6px;
-            border-radius: 3px;
-        }
-
-        input[type="range"]::-moz-range-thumb {
-            background: #48bb78;
-            height: 18px;
-            width: 18px;
-            border-radius: 50%;
-            border: none;
-        }
-
-        /* Speed Control */
-        .speed-control {
-            margin-top: 15px;
-        }
-
-        .speed-display {
-            display: flex;
-            justify-content: space-between;
-            font-size: 12px;
-            color: #718096;
-            margin-top: 5px;
-        }
-
-        /* Checkbox Custom */
-        .checkbox-group {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .checkbox-group input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
         }
 
         /* Toast Messages */
@@ -590,7 +449,7 @@
             color: white;
         }
 
-        /* Mobile Responsive */
+        /* Responsive */
         @media (max-width: 768px) {
             .nav-menu {
                 display: none;
@@ -610,11 +469,6 @@
 
             .page-title {
                 font-size: 1.8em;
-            }
-
-            .providers-display {
-                flex-direction: column;
-                align-items: center;
             }
 
             .card {
@@ -655,39 +509,20 @@
                 <h1 class="page-title">Premium AI Audioguide Studio</h1>
                 <p class="page-subtitle">
                     Create professional audioguides with Claude AI's advanced content generation 
-                    and Speechify's natural-sounding premium voices
+                    and premium text-to-speech voices
                 </p>
             </section>
 
-
-
-            <!-- API Configuration -->
-            <div class="api-config">
-                <h3>🔐 API Configuration - Secure Local Storage</h3>
-                <p><strong>Privacy Notice:</strong> Your API keys are stored ONLY on your device using browser localStorage. They never leave your computer and are not sent to any server. Keys remain encrypted in your browser until you clear your browser data.</p>
-                
-                <div class="api-input-row">
-                    <input type="password" 
-                           id="claudeApiKey" 
-                           class="form-input" 
-                           placeholder="Claude API Key (sk-ant-api...)"
-                           style="flex: 1;">
-                    <button class="btn btn-primary" onclick="saveApiKeys()">Save Keys Locally</button>
-                </div>
-                
-                <div class="api-input-row">
-                    <input type="password" 
-                           id="speechifyApiKey" 
-                           class="form-input" 
-                           placeholder="Speechify API Key (optional for audio)"
-                           style="flex: 1;">
-                </div>
-                
-                <div class="api-links">
-                    <strong>How it works:</strong> Once you add your API keys here, your browser makes direct calls to Claude/Speechify APIs. No backend server needed - everything runs in your browser for maximum privacy and security.<br><br>
-                    Get Claude API key from <a href="https://console.anthropic.com" target="_blank">Anthropic Console</a> | 
-                    Get Speechify API from <a href="https://speechify.com/api" target="_blank">Speechify Developer</a>
-                </div>
+            <!-- Info Box -->
+            <div class="info-box">
+                <h3>ℹ️ How It Works</h3>
+                <p><strong>Server-Side Processing:</strong> All API calls are made securely through your Vercel backend. Your API keys are stored as environment variables in Vercel, never exposed to the browser.</p>
+                <p style="margin-top: 10px;">
+                    <strong>Setup Required:</strong><br>
+                    1. Add <code>CLAUDE_API_KEY</code> to your Vercel environment variables<br>
+                    2. Add <code>SPEECHIFY_API_KEY</code> for premium voices (optional - falls back to OpenAI TTS)<br>
+                    3. Deploy the API endpoints (/api/claude.js and /api/speechify.js)
+                </p>
             </div>
 
             <!-- Generation Grid -->
@@ -695,7 +530,7 @@
                 <!-- Claude AI Panel -->
                 <div class="card">
                     <h2 class="card-title">
-                        <span class="card-icon">🤖</span>
+                        <span>🤖</span>
                         Claude AI Content Generation
                     </h2>
 
@@ -704,7 +539,7 @@
                         <input type="text" 
                                id="destination" 
                                class="form-input" 
-                               placeholder="e.g., Louvre Museum, Ancient Rome, Yosemite National Park...">
+                               placeholder="e.g., Louvre Museum, Hong Kong, Yosemite National Park...">
                     </div>
 
                     <div class="form-group">
@@ -719,23 +554,23 @@
                     <div class="form-group" id="coordinatesOption" style="display: none;">
                         <label class="form-label">
                             <input type="checkbox" id="includeCoordinates" checked> 
-                            Include GPS coordinates for each stop (will not be narrated in audio)
+                            Include GPS coordinates for each stop (will not be narrated)
                         </label>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Reference Websites (Optional)</label>
                         <div id="websiteReferences">
-                            <div class="website-input-row" style="display: flex; gap: 10px; margin-bottom: 10px;">
+                            <div class="website-input-row">
                                 <input type="url" 
                                        class="form-input website-ref" 
-                                       placeholder="https://example.com/article-about-destination"
+                                       placeholder="https://example.com/article"
                                        style="flex: 1;">
-                                <button type="button" class="btn btn-secondary" onclick="addWebsiteField()" style="padding: 10px 20px;">+ Add</button>
+                                <button type="button" class="btn btn-secondary" onclick="addWebsiteField()">+ Add</button>
                             </div>
                         </div>
                         <small style="color: #a0aec0; display: block; margin-top: 8px; font-size: 12px;">
-                            Add up to 5 reference websites. Claude will analyze these pages to create more accurate and detailed content.
+                            Add up to 5 reference websites for more accurate content.
                         </small>
                     </div>
 
@@ -767,7 +602,7 @@
                         <label class="form-label">Custom Instructions (Optional)</label>
                         <textarea id="customPrompt" 
                                   class="form-textarea" 
-                                  placeholder="Add specific requirements, focus areas, or special instructions..."></textarea>
+                                  placeholder="Add specific requirements or focus areas..."></textarea>
                     </div>
 
                     <div class="advanced-settings">
@@ -798,10 +633,6 @@
                     <button class="btn btn-primary btn-full" onclick="generateWithClaude()" style="margin-top: 20px;">
                         Generate with Claude AI
                     </button>
-                    
-                    <button class="btn btn-secondary btn-full" onclick="testClaudeAPI()" style="margin-top: 10px;">
-                        Test API Connection
-                    </button>
 
                     <div class="progress-section" id="claudeProgress">
                         <div class="progress-text">Generating content with Claude AI...</div>
@@ -814,31 +645,61 @@
                     <div class="content-display" id="generatedContent"></div>
                 </div>
 
-                <!-- Speechify Panel -->
+                <!-- Audio Generation Panel -->
                 <div class="card">
                     <h2 class="card-title">
-                        <span class="card-icon">🎙️</span>
-                        Speechify Premium Voices
+                        <span>🎙️</span>
+                        Premium Audio Generation
                     </h2>
 
                     <div class="form-group">
+                        <label class="form-label">Select Voice Provider</label>
+                        <select id="voiceProvider" class="form-select" onchange="updateVoiceOptions()">
+                            <option value="openai">OpenAI TTS (Reliable)</option>
+                            <option value="speechify">Speechify Premium (if configured)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="openaiVoices">
+                        <label class="form-label">Select Voice</label>
+                        <div class="voice-grid">
+                            <div class="voice-option selected" onclick="selectVoice(this, 'alloy')">
+                                <div class="voice-name">Alloy</div>
+                                <div class="voice-details">Neutral</div>
+                            </div>
+                            <div class="voice-option" onclick="selectVoice(this, 'nova')">
+                                <div class="voice-name">Nova</div>
+                                <div class="voice-details">Female</div>
+                            </div>
+                            <div class="voice-option" onclick="selectVoice(this, 'echo')">
+                                <div class="voice-name">Echo</div>
+                                <div class="voice-details">Male</div>
+                            </div>
+                            <div class="voice-option" onclick="selectVoice(this, 'fable')">
+                                <div class="voice-name">Fable</div>
+                                <div class="voice-details">British</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="speechifyVoices" style="display: none;">
                         <label class="form-label">Select Premium Voice</label>
                         <div class="voice-grid">
                             <div class="voice-option selected" onclick="selectVoice(this, 'snoop')">
                                 <div class="voice-name">Snoop Dogg</div>
-                                <div class="voice-details">Celebrity • English</div>
+                                <div class="voice-details">Celebrity</div>
                             </div>
                             <div class="voice-option" onclick="selectVoice(this, 'gwyneth')">
                                 <div class="voice-name">Gwyneth Paltrow</div>
-                                <div class="voice-details">Celebrity • English</div>
+                                <div class="voice-details">Celebrity</div>
                             </div>
                             <div class="voice-option" onclick="selectVoice(this, 'david')">
                                 <div class="voice-name">David Attenborough</div>
-                                <div class="voice-details">Documentary • English</div>
+                                <div class="voice-details">Documentary</div>
                             </div>
                             <div class="voice-option" onclick="selectVoice(this, 'james')">
                                 <div class="voice-name">James Earl Jones</div>
-                                <div class="voice-details">Narrator • Deep</div>
+                                <div class="voice-details">Narrator</div>
                             </div>
                         </div>
                     </div>
@@ -858,8 +719,8 @@
                         </select>
                     </div>
 
-                    <div class="form-group speed-control">
-                        <label class="form-label">Speech Speed</label>
+                    <div class="form-group">
+                        <label class="form-label">Speech Speed: <span id="speedValue">1.0x</span></label>
                         <input type="range" 
                                id="speechSpeed" 
                                class="form-input" 
@@ -867,42 +728,18 @@
                                max="1.5" 
                                value="1.0" 
                                step="0.1">
-                        <div class="speed-display">
-                            <span>Slow (0.5x)</span>
-                            <span id="speedValue">1.0x</span>
-                            <span>Fast (1.5x)</span>
-                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <div class="checkbox-group">
-                            <input type="checkbox" id="enhanceAudio" checked>
-                            <label for="enhanceAudio" class="form-label" style="margin: 0;">
-                                Enable Audio Enhancement & TTS Optimization
-                            </label>
-                        </div>
-                        <div style="background: #fef5e7; border: 1px solid #f9d71c; border-radius: 6px; padding: 12px; margin-top: 10px; font-size: 12px;">
-                            <strong>TTS Optimization includes:</strong><br>
-                            • Roman numerals conversion (XIV → fourteenth)<br>
-                            • Decades formatting (90s → nineties)<br>
-                            • Century formatting (21st → twenty-first century)<br>
-                            • Currency symbols ($100 → one hundred dollars)<br>
-                            • Temperature (20°C → twenty degrees Celsius)<br>
-                            • Eastern European phonetics (Š → sh, Č → ch)<br>
-                            • Time format (3:30 PM → three thirty P M)
-                        </div>
-                    </div>
-
-                    <button class="btn btn-primary btn-full" onclick="generateWithSpeechify()" style="margin-top: 20px;">
-                        Generate Audio with Speechify
+                    <button class="btn btn-primary btn-full" onclick="generateAudio()" style="margin-top: 20px;">
+                        Generate Audio
                     </button>
 
-                    <div class="progress-section" id="speechifyProgress">
-                        <div class="progress-text">Generating premium audio...</div>
+                    <div class="progress-section" id="audioProgress">
+                        <div class="progress-text">Generating audio...</div>
                         <div class="progress-bar">
-                            <div class="progress-fill" id="speechifyProgressBar"></div>
+                            <div class="progress-fill" id="audioProgressBar"></div>
                         </div>
-                        <div class="progress-text" id="speechifyStatus">Processing...</div>
+                        <div class="progress-text" id="audioStatus">Processing...</div>
                     </div>
                 </div>
             </div>
@@ -910,24 +747,13 @@
             <!-- Audio Player -->
             <div class="audio-player-card" id="audioPlayerSection">
                 <h2 class="card-title">
-                    <span class="card-icon">🎵</span>
+                    <span>🎵</span>
                     Premium Audio Player
                 </h2>
                 
                 <div class="player-controls">
                     <button class="play-button" id="playBtn" onclick="togglePlayback()">▶️</button>
-                    <div class="audio-progress-container">
-                        <input type="range" 
-                               id="audioProgress" 
-                               class="form-input" 
-                               min="0" 
-                               max="100" 
-                               value="0">
-                        <div class="audio-time-display">
-                            <span id="currentTime">0:00</span>
-                            <span id="totalTime">0:00</span>
-                        </div>
-                    </div>
+                    <audio id="audioPlayer" controls style="flex: 1;"></audio>
                 </div>
 
                 <div class="player-actions">
@@ -941,11 +767,30 @@
 
     <script>
         // Global variables
-        let selectedVoice = 'snoop';
+        let selectedVoice = 'alloy';
         let generatedContent = '';
         let audioUrl = null;
-        let currentAudio = null;
         let websiteCount = 1;
+
+        // Initialize
+        window.addEventListener('DOMContentLoaded', function() {
+            // Update speed display
+            document.getElementById('speechSpeed').addEventListener('input', function() {
+                document.getElementById('speedValue').textContent = this.value + 'x';
+            });
+        });
+
+        // Toggle guide options based on type
+        function toggleGuideOptions() {
+            const guideType = document.getElementById('guideType').value;
+            const coordOption = document.getElementById('coordinatesOption');
+            
+            if (guideType === 'city' || guideType === 'trail') {
+                coordOption.style.display = 'block';
+            } else {
+                coordOption.style.display = 'none';
+            }
+        }
 
         // Add website field
         function addWebsiteField() {
@@ -957,13 +802,12 @@
             const container = document.getElementById('websiteReferences');
             const newRow = document.createElement('div');
             newRow.className = 'website-input-row';
-            newRow.style.cssText = 'display: flex; gap: 10px; margin-bottom: 10px;';
             newRow.innerHTML = `
                 <input type="url" 
                        class="form-input website-ref" 
-                       placeholder="https://example.com/reference-article"
+                       placeholder="https://example.com/reference"
                        style="flex: 1;">
-                <button type="button" class="btn btn-secondary" onclick="removeWebsiteField(this)" style="padding: 10px 20px; background: #f56565;">Remove</button>
+                <button type="button" class="btn btn-secondary" onclick="removeWebsiteField(this)" style="background: #f56565;">Remove</button>
             `;
             container.appendChild(newRow);
             websiteCount++;
@@ -975,124 +819,103 @@
             websiteCount--;
         }
 
-        // Toggle guide options based on type
-        function toggleGuideOptions() {
-            const guideType = document.getElementById('guideType').value;
-            const coordOption = document.getElementById('coordinatesOption');
-            
-            // Show coordinates option for city and trail guides (outdoor)
-            if (guideType === 'city' || guideType === 'trail') {
-                coordOption.style.display = 'block';
-            } else {
-                coordOption.style.display = 'none';
-            }
-        }
-
-        // Load API keys from localStorage
-        window.addEventListener('DOMContentLoaded', function() {
-            const savedClaudeKey = localStorage.getItem('claude_api_key');
-            const savedSpeechifyKey = localStorage.getItem('speechify_api_key');
-            
-            if (savedClaudeKey) {
-                document.getElementById('claudeApiKey').value = savedClaudeKey;
-            }
-            if (savedSpeechifyKey) {
-                document.getElementById('speechifyApiKey').value = savedSpeechifyKey;
-            }
-
-            // Update speed display
-            document.getElementById('speechSpeed').addEventListener('input', function() {
-                document.getElementById('speedValue').textContent = this.value + 'x';
-            });
-        });
-
-        // Save API keys
-        function saveApiKeys() {
-            const claudeKey = document.getElementById('claudeApiKey').value;
-            const speechifyKey = document.getElementById('speechifyApiKey').value;
-            
-            if (claudeKey) {
-                localStorage.setItem('claude_api_key', claudeKey);
-            }
-            if (speechifyKey) {
-                localStorage.setItem('speechify_api_key', speechifyKey);
-            }
-            
-            showToast('✅ API keys saved securely to your browser localStorage!', 'success');
-        }
-
         // Select voice
         function selectVoice(element, voice) {
-            document.querySelectorAll('.voice-option').forEach(card => {
+            const provider = document.getElementById('voiceProvider').value;
+            const selector = provider === 'openai' ? '#openaiVoices' : '#speechifyVoices';
+            
+            document.querySelectorAll(selector + ' .voice-option').forEach(card => {
                 card.classList.remove('selected');
             });
             element.classList.add('selected');
             selectedVoice = voice;
         }
 
+        // Update voice options based on provider
+        function updateVoiceOptions() {
+            const provider = document.getElementById('voiceProvider').value;
+            
+            if (provider === 'openai') {
+                document.getElementById('openaiVoices').style.display = 'block';
+                document.getElementById('speechifyVoices').style.display = 'none';
+                selectedVoice = 'alloy';
+            } else {
+                document.getElementById('openaiVoices').style.display = 'none';
+                document.getElementById('speechifyVoices').style.display = 'block';
+                selectedVoice = 'snoop';
+            }
+        }
+
         // Generate content with Claude AI
         async function generateWithClaude() {
-            const claudeKey = localStorage.getItem('claude_api_key');
-            if (!claudeKey) {
-                showToast('Please add your Claude API key first', 'error');
-                return;
-            }
-
             const destination = document.getElementById('destination').value;
             if (!destination) {
                 showToast('Please enter a destination or topic', 'error');
                 return;
             }
 
+            const guideType = document.getElementById('guideType').value;
             const audience = document.getElementById('audienceType').value;
             const style = document.getElementById('contentStyle').value;
             const customPrompt = document.getElementById('customPrompt').value;
-            const numStops = document.getElementById('numStops').value;
-            const stopLength = document.getElementById('stopLength').value;
+            const numStops = parseInt(document.getElementById('numStops').value);
+            const stopLength = parseInt(document.getElementById('stopLength').value);
+            const includeCoordinates = (guideType === 'city' || guideType === 'trail') && 
+                                      document.getElementById('includeCoordinates').checked;
+
+            // Collect reference websites
+            const websiteRefs = [];
+            document.querySelectorAll('.website-ref').forEach(input => {
+                if (input.value.trim()) {
+                    websiteRefs.push(input.value.trim());
+                }
+            });
+
+            // Clear previous content
+            document.getElementById('generatedContent').textContent = '';
 
             // Show progress
             document.getElementById('claudeProgress').classList.add('active');
             updateProgress('claude', 10, 'Connecting to Claude AI...');
 
             try {
-                // Create comprehensive prompt
-                const prompt = `Create a professional audioguide for ${destination} with ${numStops} stops.
-
-Target Audience: ${audience}
-Style: ${style}
-Length per stop: approximately ${stopLength} words
-
-${customPrompt ? `Additional Instructions: ${customPrompt}` : ''}
-
-Requirements:
-1. Create exactly ${numStops} stops, each focusing on different aspects
-2. Each stop should be engaging and immersive
-3. Use the ${style} tone throughout
-4. Include specific details, stories, and interesting facts
-5. Format each stop with a clear title
-
-Please structure the output as:
-STOP 1: [Title]
-[Content]
-
-STOP 2: [Title]
-[Content]
-
-Continue for all ${numStops} stops.`;
-
                 updateProgress('claude', 30, 'Generating content...');
 
-                // Call Claude API (simulated for demo)
-                // In production, replace with actual API call
-                const response = await simulateClaudeAPI(prompt);
-                
+                // Call the API endpoint
+                const response = await fetch('/api/claude', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        destination,
+                        guideType,
+                        audience,
+                        style,
+                        customPrompt,
+                        numStops,
+                        stopLength,
+                        includeCoordinates,
+                        websiteRefs
+                    })
+                });
+
+                console.log('Claude API response status:', response.status);
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `API error: ${response.status}`);
+                }
+
+                const data = await response.json();
                 updateProgress('claude', 90, 'Processing response...');
 
-                generatedContent = response;
-                document.getElementById('generatedContent').textContent = generatedContent;
+                // Store and display the content
+                generatedContent = data.rawContent || data.content;
+                document.getElementById('generatedContent').textContent = data.content;
 
                 updateProgress('claude', 100, 'Content generated successfully!');
-                showToast('Content generated with Claude AI!', 'success');
+                showToast(`✅ Generated ${numStops} stops for ${destination}!`, 'success');
 
                 setTimeout(() => {
                     document.getElementById('claudeProgress').classList.remove('active');
@@ -1102,351 +925,81 @@ Continue for all ${numStops} stops.`;
                 console.error('Claude API Error:', error);
                 showToast('Error: ' + error.message, 'error');
                 document.getElementById('claudeProgress').classList.remove('active');
-            }
-        }
-
-        // Simulate Claude API for demo
-        async function simulateClaudeAPI(prompt) {
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            return `STOP 1: Welcome to ${document.getElementById('destination').value}
-Welcome to one of the world's most remarkable destinations. As you stand here, you're about to embark on a journey through history, culture, and extraordinary human achievement...
-
-STOP 2: The Historical Foundation
-Let's travel back in time to understand how this place came to be. The story begins centuries ago, when the first foundations were laid...
-
-[Additional stops would be generated by the actual Claude API]`;
-        }
-
-        // TTS Text Preprocessing Function (from audio.html)
-        function preprocessTextForTTS(text, language = 'en-US') {
-            if (!document.getElementById('enhanceAudio').checked) {
-                return text;
-            }
-
-            let processed = text;
-
-            // Roman Numerals Conversion
-            const romanNumerals = {
-                'I': '1', 'II': '2', 'III': '3', 'IV': '4', 'V': '5',
-                'VI': '6', 'VII': '7', 'VIII': '8', 'IX': '9', 'X': '10',
-                'XI': '11', 'XII': '12', 'XIII': '13', 'XIV': '14', 'XV': '15',
-                'XVI': '16', 'XVII': '17', 'XVIII': '18', 'XIX': '19', 'XX': '20',
-                'XXI': '21'
-            };
-
-            // Convert Roman numerals for monarchs and wars
-            processed = processed.replace(/\b([IVX]+)\b(?=\s*(century|Century|king|King|queen|Queen|Pope|pope|Emperor|emperor))/g, 
-                (match, numeral) => {
-                    const number = romanNumerals[numeral];
-                    if (number) {
-                        const ordinal = getOrdinal(parseInt(number));
-                        return ordinal;
-                    }
-                    return match;
-                });
-
-            // World War conversions
-            processed = processed.replace(/World War II\b/gi, 'World War Two');
-            processed = processed.replace(/World War I\b/gi, 'World War One');
-            processed = processed.replace(/WWII\b/gi, 'World War Two');
-            processed = processed.replace(/WWI\b/gi, 'World War One');
-
-            // Decades conversion
-            processed = processed.replace(/\b(\d{2})s\b/g, (match, decade) => {
-                const decadeWords = {
-                    '20': 'twenties', '30': 'thirties', '40': 'forties',
-                    '50': 'fifties', '60': 'sixties', '70': 'seventies',
-                    '80': 'eighties', '90': 'nineties'
-                };
-                return decadeWords[decade] || match;
-            });
-
-            // Century formatting
-            processed = processed.replace(/\b(\d{1,2})(st|nd|rd|th)\s+century\b/gi, (match, num) => {
-                const ordinal = getOrdinalWord(parseInt(num));
-                return `${ordinal} century`;
-            });
-
-            // Percentage sign
-            processed = processed.replace(/(\d+)%/g, '$1 percent');
-
-            // Currency symbols
-            processed = processed.replace(/\$(\d+)/g, '$1 dollars');
-            processed = processed.replace(/€(\d+)/g, '$1 euros');
-            processed = processed.replace(/£(\d+)/g, '$1 pounds');
-
-            // Temperature symbols
-            processed = processed.replace(/(\d+)°C\b/g, '$1 degrees Celsius');
-            processed = processed.replace(/(\d+)°F\b/g, '$1 degrees Fahrenheit');
-
-            // Eastern European letter replacements
-            const letterReplacements = {
-                'Č': 'Ch', 'č': 'ch', 'Ć': 'Ch', 'ć': 'ch',
-                'Š': 'Sh', 'š': 'sh', 'Ž': 'Zh', 'ž': 'zh'
-            };
-
-            for (const [original, replacement] of Object.entries(letterReplacements)) {
-                processed = processed.replace(new RegExp(original, 'g'), replacement);
-            }
-
-            return processed;
-        }
-
-        // Helper functions for TTS preprocessing
-        function getOrdinal(num) {
-            const ordinals = {
-                1: 'first', 2: 'second', 3: 'third', 4: 'fourth', 5: 'fifth',
-                6: 'sixth', 7: 'seventh', 8: 'eighth', 9: 'ninth', 10: 'tenth',
-                11: 'eleventh', 12: 'twelfth', 13: 'thirteenth', 14: 'fourteenth',
-                15: 'fifteenth', 16: 'sixteenth', 17: 'seventeenth', 18: 'eighteenth',
-                19: 'nineteenth', 20: 'twentieth', 21: 'twenty-first'
-            };
-            return ordinals[num] || `${num}th`;
-        }
-
-        function getOrdinalWord(num) {
-            const ordinals = {
-                1: 'first', 2: 'second', 3: 'third', 4: 'fourth', 5: 'fifth',
-                6: 'sixth', 7: 'seventh', 8: 'eighth', 9: 'ninth', 10: 'tenth',
-                11: 'eleventh', 12: 'twelfth', 13: 'thirteenth', 14: 'fourteenth',
-                15: 'fifteenth', 16: 'sixteenth', 17: 'seventeenth', 18: 'eighteenth',
-                19: 'nineteenth', 20: 'twentieth', 21: 'twenty-first'
-            };
-            return ordinals[num] || `${num}th`;
-        }
-
-        // Function to split text into chunks at word boundaries
-        function splitTextIntoChunks(text, maxChunkSize = 3000) {
-            const chunks = [];
-            const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
-            let currentChunk = '';
-            
-            for (const sentence of sentences) {
-                if ((currentChunk + sentence).length > maxChunkSize && currentChunk.length > 0) {
-                    chunks.push(currentChunk.trim());
-                    currentChunk = sentence;
-                } else {
-                    currentChunk += sentence;
-                }
-            }
-            
-            if (currentChunk.trim()) {
-                chunks.push(currentChunk.trim());
-            }
-            
-            return chunks;
-        }
-
-        // Function to concatenate audio files using Web Audio API
-        async function concatenateAudioUrls(audioUrls) {
-            console.log(`Concatenating ${audioUrls.length} audio parts...`);
-            
-            try {
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                const audioBuffers = [];
                 
-                for (let i = 0; i < audioUrls.length; i++) {
-                    console.log(`Loading audio part ${i + 1}/${audioUrls.length}`);
-                    updateProgress('speechify', 60 + (30 * i / audioUrls.length), `Combining audio parts... ${i + 1} of ${audioUrls.length}`);
-                    
-                    const response = await fetch(audioUrls[i]);
-                    const arrayBuffer = await response.arrayBuffer();
-                    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-                    audioBuffers.push(audioBuffer);
-                }
-                
-                // Calculate total length
-                const totalLength = audioBuffers.reduce((acc, buffer) => acc + buffer.length, 0);
-                const numberOfChannels = audioBuffers[0].numberOfChannels;
-                const sampleRate = audioBuffers[0].sampleRate;
-                
-                // Create output buffer
-                const outputBuffer = audioContext.createBuffer(numberOfChannels, totalLength, sampleRate);
-                
-                // Copy all buffers into the output
-                let offset = 0;
-                for (const buffer of audioBuffers) {
-                    for (let channel = 0; channel < numberOfChannels; channel++) {
-                        outputBuffer.copyToChannel(buffer.getChannelData(channel), channel, offset);
-                    }
-                    offset += buffer.length;
-                }
-                
-                // Convert to WAV format
-                const wavBlob = await audioBufferToWav(outputBuffer);
-                const url = URL.createObjectURL(wavBlob);
-                
-                console.log('Audio concatenation complete');
-                return url;
-                
-            } catch (error) {
-                console.error('Error concatenating audio:', error);
-                throw error;
+                document.getElementById('generatedContent').textContent = 
+                    `Error: ${error.message}\n\n` +
+                    `Make sure CLAUDE_API_KEY is set in your Vercel environment variables.`;
             }
         }
-        
-        // Convert AudioBuffer to WAV blob
-        function audioBufferToWav(buffer) {
-            const numberOfChannels = buffer.numberOfChannels;
-            const sampleRate = buffer.sampleRate;
-            const format = 1; // PCM
-            const bitDepth = 16;
-            
-            const bytesPerSample = bitDepth / 8;
-            const blockAlign = numberOfChannels * bytesPerSample;
-            
-            const data = [];
-            for (let channel = 0; channel < numberOfChannels; channel++) {
-                data.push(buffer.getChannelData(channel));
-            }
-            
-            const length = buffer.length;
-            const arrayBuffer = new ArrayBuffer(44 + length * numberOfChannels * bytesPerSample);
-            const view = new DataView(arrayBuffer);
-            
-            // WAV header
-            const writeString = (offset, string) => {
-                for (let i = 0; i < string.length; i++) {
-                    view.setUint8(offset + i, string.charCodeAt(i));
-                }
-            };
-            
-            writeString(0, 'RIFF');
-            view.setUint32(4, 36 + length * numberOfChannels * bytesPerSample, true);
-            writeString(8, 'WAVE');
-            writeString(12, 'fmt ');
-            view.setUint32(16, 16, true);
-            view.setUint16(20, format, true);
-            view.setUint16(22, numberOfChannels, true);
-            view.setUint32(24, sampleRate, true);
-            view.setUint32(28, sampleRate * blockAlign, true);
-            view.setUint16(32, blockAlign, true);
-            view.setUint16(34, bitDepth, true);
-            writeString(36, 'data');
-            view.setUint32(40, length * numberOfChannels * bytesPerSample, true);
-            
-            // Interleave channels and convert to 16-bit PCM
-            let offset = 44;
-            for (let i = 0; i < length; i++) {
-                for (let channel = 0; channel < numberOfChannels; channel++) {
-                    const sample = Math.max(-1, Math.min(1, data[channel][i]));
-                    view.setInt16(offset, sample * 0x7FFF, true);
-                    offset += 2;
-                }
-            }
-            
-            return new Blob([arrayBuffer], { type: 'audio/wav' });
-        }
 
-        // Generate audio with Speechify (updated with chunking and preprocessing)
-        async function generateWithSpeechify() {
-            const speechifyKey = localStorage.getItem('speechify_api_key');
-            if (!speechifyKey) {
-                showToast('Please add your Speechify API key first', 'error');
-                return;
-            }
-
+        // Generate audio
+        async function generateAudio() {
             if (!generatedContent) {
                 showToast('Please generate content first', 'error');
                 return;
             }
 
+            const provider = document.getElementById('voiceProvider').value;
             const language = document.getElementById('voiceLanguage').value;
             const speed = parseFloat(document.getElementById('speechSpeed').value);
-            const enhance = document.getElementById('enhanceAudio').checked;
-
-            // Apply TTS preprocessing if enabled
-            let textToGenerate = generatedContent;
-            if (enhance) {
-                textToGenerate = preprocessTextForTTS(textToGenerate, language);
-                console.log('Text preprocessed for TTS optimization');
-            }
-
-            // Check if text needs chunking
-            const MAX_TTS_LENGTH = 3000;
-            const textChunks = textToGenerate.length > MAX_TTS_LENGTH 
-                ? splitTextIntoChunks(textToGenerate, MAX_TTS_LENGTH)
-                : [textToGenerate];
-            
-            console.log(`Text length: ${textToGenerate.length}, Split into ${textChunks.length} chunks`);
 
             // Show progress
-            document.getElementById('speechifyProgress').classList.add('active');
-            updateProgress('speechify', 10, 'Preparing audio generation...');
-
-            const audioUrls = [];
+            document.getElementById('audioProgress').classList.add('active');
+            updateProgress('audio', 10, 'Preparing audio generation...');
 
             try {
-                // Generate audio for each chunk
-                for (let i = 0; i < textChunks.length; i++) {
-                    const chunk = textChunks[i];
-                    console.log(`Generating chunk ${i + 1}/${textChunks.length}, length: ${chunk.length}`);
-                    
-                    updateProgress('speechify', 20 + (40 * i / textChunks.length), 
-                        `Generating audio... Part ${i + 1} of ${textChunks.length}`);
+                updateProgress('audio', 30, 'Processing text...');
 
-                    // Here you would call the actual Speechify API
-                    // For now, this is a placeholder for the API call
-                    const audioUrl = await callSpeechifyAPI(chunk, selectedVoice, language, speed);
-                    
-                    if (audioUrl) {
-                        audioUrls.push(audioUrl);
-                    } else {
-                        throw new Error(`Failed to generate audio for chunk ${i + 1}`);
-                    }
-                    
-                    // Small delay between chunks to avoid rate limiting
-                    if (i < textChunks.length - 1) {
-                        await new Promise(resolve => setTimeout(resolve, 500));
-                    }
+                let apiEndpoint = '/api/openai-tts';
+                let requestBody = {
+                    text: generatedContent,
+                    voice: selectedVoice,
+                    speed: speed
+                };
+
+                if (provider === 'speechify') {
+                    apiEndpoint = '/api/speechify';
+                    requestBody.language = language;
                 }
 
-                // If we have multiple chunks, concatenate them
-                let finalAudioUrl;
-                if (audioUrls.length > 1) {
-                    console.log('Multiple audio parts generated, concatenating...');
-                    updateProgress('speechify', 60, 'Combining audio parts into single file...');
-                    
-                    try {
-                        finalAudioUrl = await concatenateAudioUrls(audioUrls);
-                        showToast('✅ Audio parts successfully combined!', 'success');
-                    } catch (concatError) {
-                        console.error('Failed to concatenate audio files:', concatError);
-                        showToast('⚠️ Could not combine audio parts. Using first part only.', 'warning');
-                        finalAudioUrl = audioUrls[0];
-                    }
-                } else {
-                    finalAudioUrl = audioUrls[0];
+                updateProgress('audio', 50, 'Generating audio...');
+
+                const response = await fetch(apiEndpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Audio generation failed');
                 }
 
-                audioUrl = finalAudioUrl;
+                const data = await response.json();
+                updateProgress('audio', 90, 'Finalizing audio...');
+
+                // Set audio URL
+                audioUrl = data.audioUrl || data.audioData;
                 
-                updateProgress('speechify', 100, 'Audio generated successfully!');
-                showToast('✅ Premium audio generated with Speechify!', 'success');
-
-                // Show audio player
+                // Show and setup audio player
+                const audioPlayer = document.getElementById('audioPlayer');
+                audioPlayer.src = audioUrl;
                 document.getElementById('audioPlayerSection').classList.add('active');
 
+                updateProgress('audio', 100, 'Audio generated successfully!');
+                showToast('✅ Audio generated successfully!', 'success');
+
                 setTimeout(() => {
-                    document.getElementById('speechifyProgress').classList.remove('active');
+                    document.getElementById('audioProgress').classList.remove('active');
                 }, 2000);
 
             } catch (error) {
-                console.error('Speechify API Error:', error);
+                console.error('Audio generation error:', error);
                 showToast('Error: ' + error.message, 'error');
-                document.getElementById('speechifyProgress').classList.remove('active');
+                document.getElementById('audioProgress').classList.remove('active');
             }
-        }
-
-        // Placeholder for actual Speechify API call
-        async function callSpeechifyAPI(text, voice, language, speed) {
-            // This would be replaced with actual Speechify API implementation
-            // For now, simulating API call
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            
-            // In production, this would return the actual audio URL from Speechify
-            // For demo purposes, returning a data URL placeholder
-            return 'data:audio/wav;base64,placeholder';
         }
 
         // Update progress
@@ -1454,34 +1007,40 @@ Let's travel back in time to understand how this place came to be. The story beg
             const progressBar = document.getElementById(type + 'ProgressBar');
             const statusText = document.getElementById(type + 'Status');
             
-            progressBar.style.width = percentage + '%';
-            statusText.textContent = status;
+            if (progressBar) progressBar.style.width = percentage + '%';
+            if (statusText) statusText.textContent = status;
         }
 
         // Toggle audio playback
         function togglePlayback() {
+            const audioPlayer = document.getElementById('audioPlayer');
             const playBtn = document.getElementById('playBtn');
             
-            if (!currentAudio) {
-                currentAudio = new Audio();
-            }
-            
-            if (currentAudio.paused) {
+            if (audioPlayer.paused) {
+                audioPlayer.play();
                 playBtn.textContent = '⏸️';
             } else {
+                audioPlayer.pause();
                 playBtn.textContent = '▶️';
             }
         }
 
-        // Download functions
+        // Download audio
         function downloadAudio() {
             if (!audioUrl) {
                 showToast('No audio to download', 'error');
                 return;
             }
-            showToast('Downloading audio...', 'info');
+            
+            const a = document.createElement('a');
+            a.href = audioUrl;
+            a.download = 'audioguide.mp3';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
         }
 
+        // Download script
         function downloadScript() {
             if (!generatedContent) {
                 showToast('No script to download', 'error');
@@ -1501,6 +1060,7 @@ Let's travel back in time to understand how this place came to be. The story beg
             showToast('Script downloaded!', 'success');
         }
 
+        // Save to library
         function saveToLibrary() {
             if (!generatedContent) {
                 showToast('No content to save', 'error');
@@ -1513,8 +1073,12 @@ Let's travel back in time to understand how this place came to be. The story beg
                 title: document.getElementById('destination').value,
                 content: generatedContent,
                 type: 'premium',
-                createdWith: 'Claude AI + Speechify',
-                date: new Date().toISOString()
+                createdWith: 'Claude AI Premium',
+                date: new Date().toISOString(),
+                location: document.getElementById('destination').value,
+                language: document.getElementById('voiceLanguage').value,
+                stops: document.getElementById('numStops').value,
+                tourType: document.getElementById('guideType').value
             };
             
             audioguides.unshift(newGuide);
