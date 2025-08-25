@@ -71,7 +71,7 @@
             transition: color 0.3s;
         }
 
-        .nav-links a:hover {
+        .nav-links a:hover, .nav-links a.active {
             color: #48bb78;
         }
 
@@ -409,7 +409,11 @@
             }
         }
 
-: 768px) {
+        @media (max-width: 768px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+            
             .nav-links {
                 display: none;
             }
@@ -430,7 +434,7 @@
 </head>
 <body>
     <div class="wrapper">
-        <!-- Header -->
+        <!-- Header with UPDATED NAVIGATION -->
         <header class="header">
             <div class="header-inner">
                 <div class="logo">
@@ -443,7 +447,8 @@
                         <li><a href="index.html">GENERATOR</a></li>
                         <li><a href="library.html">LIBRARY</a></li>
                         <li><a href="audio.html">AUDIO</a></li>
-                        <li><a href="premium.html" style="color: #48bb78;">PREMIUM</a></li>
+                        <li><a href="upload.html">UPLOAD</a></li>
+                        <li><a href="premium.html" class="active">PREMIUM</a></li>
                         <li><a href="about.html">ABOUT</a></li>
                         <li><a href="https://www.cloudguide.me/contact" target="_blank">CONTACT</a></li>
                     </ul>
@@ -1417,6 +1422,8 @@ ${generatedContent}
                 updateWebsiteRefsList();
             }
         });
+
+        // Show message function
         function showMessage(message, type) {
             const messageDiv = document.createElement('div');
             messageDiv.style.cssText = `
