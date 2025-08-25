@@ -1,0 +1,36 @@
+{
+  "name": "cloudguide-audioguide-generator",
+  "version": "1.0.0",
+  "description": "AI-powered audioguide generator for museums and cultural heritage sites",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'No build required'",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "cheerio": "^1.0.0-rc.12",
+    "form-data": "^4.0.0",
+    "multiparty": "^4.2.3"
+  },
+  "devDependencies": {
+    "vercel": "^32.0.0"
+  },
+  "engines": {
+    "node": "18.x"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/cloudguide-audioguide.git"
+  },
+  "keywords": [
+    "audioguide",
+    "ai",
+    "museum",
+    "tourism",
+    "cloudguide"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}
