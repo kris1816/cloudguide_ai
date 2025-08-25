@@ -1,5 +1,67 @@
 {
+  "version": 2,
   "buildCommand": "",
   "outputDirectory": ".",
-  "framework": null
+  "framework": null,
+  "functions": {
+    "api/openai.js": {
+      "maxDuration": 60
+    },
+    "api/groq.js": {
+      "maxDuration": 60
+    },
+    "api/deepseek.js": {
+      "maxDuration": 60
+    },
+    "api/claude.js": {
+      "maxDuration": 60
+    },
+    "api/openai-tts.js": {
+      "maxDuration": 60
+    },
+    "api/multilingual-tts.js": {
+      "maxDuration": 60
+    },
+    "api/speechify.js": {
+      "maxDuration": 60
+    },
+    "api/translate-openai.js": {
+      "maxDuration": 60
+    },
+    "api/translate-groq.js": {
+      "maxDuration": 60
+    },
+    "api/translate-deepseek.js": {
+      "maxDuration": 60
+    },
+    "api/cloudguide-upload.js": {
+      "maxDuration": 60
+    }
+  },
+  "rewrites": [
+    { "source": "/", "destination": "/index.html" },
+    { "source": "/library", "destination": "/library.html" },
+    { "source": "/audio", "destination": "/audio.html" },
+    { "source": "/about", "destination": "/about.html" },
+    { "source": "/premium", "destination": "/premium.html" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        }
+      ]
+    }
+  ]
 }
