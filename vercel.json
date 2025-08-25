@@ -34,7 +34,10 @@
     "api/translate-deepseek.js": {
       "maxDuration": 60
     },
-    "api/cloudguide-upload.js": {
+    "api/email-upload.js": {
+      "maxDuration": 60
+    },
+    "api/upload-to-cloudinary.js": {
       "maxDuration": 60
     }
   },
@@ -45,24 +48,5 @@
     { "source": "/about", "destination": "/about.html" },
     { "source": "/premium", "destination": "/premium.html" },
     { "source": "/upload", "destination": "/upload.html" }
-  ],
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        },
-        {
-          "key": "X-Frame-Options",
-          "value": "DENY"
-        },
-        {
-          "key": "X-XSS-Protection",
-          "value": "1; mode=block"
-        }
-      ]
-    }
   ]
 }
