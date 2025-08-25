@@ -43,7 +43,8 @@
     { "source": "/library", "destination": "/library.html" },
     { "source": "/audio", "destination": "/audio.html" },
     { "source": "/about", "destination": "/about.html" },
-    { "source": "/premium", "destination": "/premium.html" }
+    { "source": "/premium", "destination": "/premium.html" },
+    { "source": "/upload", "destination": "/upload.html" }
   ],
   "headers": [
     {
