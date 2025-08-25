@@ -22,9 +22,6 @@
     "api/multilingual-tts.js": {
       "maxDuration": 60
     },
-    "api/speechify.js": {
-      "maxDuration": 60
-    },
     "api/translate-openai.js": {
       "maxDuration": 60
     },
