@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:title" content="CloudGuide Upload - Send to CMS" />
+    <meta property="og:description" content="Upload your audioguides to CloudGuide CMS" />
+    <title>CloudGuide - Upload to CMS</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Nunito+Sans:300,400,400i,600,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Nunito Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+            min-height: 100vh;
+            color: #4a5568;
+            line-height: 1.6;
+        }
+
+        .wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+
+        .header-inner {
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo img {
+            height: 35px;
+            transition: opacity 0.3s;
+        }
+
+        .logo img:hover {
+            opacity: 0.8;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 25px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: #718096;
+            text-decoration: none;
+            font-weight: 400;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            color: #48bb78;
+        }
+
+        /* Hero Section */
+        .hero-section {
+            background: linear-gradient(rgba(45, 55, 72, 0.85), rgba(45, 55, 72, 0.85)), 
+                        url('https://s.cloudguide.me/m/files/e966ce00-be17-4370-ae0a-c0d90e3cce18.jpg') center/cover;
+            color: white;
+            padding: 50px 30px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .hero-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2.2em;
+            font-weight: 600;
+            margin-bottom: 12px;
+            letter-spacing: -0.5px;
+        }
+
+        .hero-subtitle {
+            font-size: 0.95em;
+            font-weight: 300;
+            opacity: 0.9;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        /* Main Container */
+        .main-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            padding: 35px;
+        }
+
+        /* Connection Status */
+        .connection-status {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space
