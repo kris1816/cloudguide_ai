@@ -540,6 +540,18 @@
                             </select>
                         </div>
                     </div>
+                    
+                    <div class="form-group" style="margin-top: 20px; margin-bottom: 0;">
+                        <label for="claudeModel">Claude Model</label>
+                        <select id="claudeModel" class="form-element" onchange="updateModelInfo()">
+                            <option value="claude-sonnet-4-20250514">Claude Sonnet 4 (Recommended) 💎</option>
+                            <option value="claude-3-5-sonnet-20241022">Claude 3.5 Sonnet (Budget) 💰</option>
+                            <option value="claude-opus-4-20250805">Claude Opus 4 (Maximum Quality) ⭐</option>
+                        </select>
+                        <div id="modelInfo" style="font-size: 12px; margin-top: 8px; padding: 10px; border-radius: 4px;">
+                            <strong>Claude Sonnet 4:</strong> Best balance • Advanced reasoning • High quality • Reasonable cost
+                        </div>
+                    </div>
                 </div>
 
                 <button class="btn btn-primary" style="width: 100%; margin-top: 20px;" onclick="generateWithClaude()">
@@ -641,9 +653,11 @@
                         </div>
                     </div>
                 </div>
-                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <div style="display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap;">
                     <button class="btn btn-secondary" onclick="downloadAudio()">📥 Download Audio</button>
                     <button class="btn btn-secondary" onclick="downloadScript()">📄 Download Script</button>
+                    <button class="btn btn-secondary" onclick="downloadPDF()">📄 Download PDF</button>
+                    <button class="btn btn-secondary" onclick="downloadJSON()">💾 Download Data</button>
                     <button class="btn btn-primary" onclick="saveToLibrary()">💾 Save to Library</button>
                 </div>
             </div>
@@ -706,6 +720,29 @@
             console.log('Enhanced initialization complete');
         });
 
+        // Update model information display
+        function updateModelInfo() {
+            const model = document.getElementById('claudeModel').value;
+            const infoDiv = document.getElementById('modelInfo');
+            
+            if (model.includes('sonnet-4')) {
+                infoDiv.innerHTML = '<strong>💎 Claude Sonnet 4:</strong> Best balance • Advanced reasoning • High quality • Reasonable cost';
+                infoDiv.style.background = '#fef3c7';
+                infoDiv.style.color = '#92400e';
+                infoDiv.style.border = '1px solid #fbbf24';
+            } else if (model.includes('3-5-sonnet')) {
+                infoDiv.innerHTML = '<strong>💰 Claude 3.5 Sonnet:</strong> Budget option • Fast generation • Good quality • Lowest cost';
+                infoDiv.style.background = '#f0fff4';
+                infoDiv.style.color = '#22543d';
+                infoDiv.style.border = '1px solid #c6f6d5';
+            } else if (model.includes('opus-4')) {
+                infoDiv.innerHTML = '<strong>⭐ Claude Opus 4:</strong> Maximum quality • Best reasoning • Premium features • Higher cost';
+                infoDiv.style.background = '#fef2f2';
+                infoDiv.style.color = '#7f1d1d';
+                infoDiv.style.border = '1px solid #fecaca';
+            }
+        }
+
         // Update batch information display
         function updateBatchInfo() {
             const numStops = parseInt(document.getElementById('numStops').value);
@@ -764,7 +801,9 @@
 
             // Get website references
             const websiteRefs = getWebsiteReferences();
+            const selectedModel = document.getElementById('claudeModel').value;
             console.log('Website references:', websiteRefs);
+            console.log('Selected model:', selectedModel);
 
             // Get all form values
             const guideType = document.getElementById('guideType').value;
@@ -789,7 +828,8 @@
                     style,
                     customPrompt,
                     stopLength,
-                    websiteRefs
+                    websiteRefs,
+                    selectedModel
                 }
             };
 
@@ -839,7 +879,8 @@
                 customPrompt: batchPrompt,
                 numStops: stopsInThisBatch,
                 stopLength: batchState.settings.stopLength,
-                websiteRefs: batchState.settings.websiteRefs || []
+                websiteRefs: batchState.settings.websiteRefs || [],
+                preferredModel: batchState.settings.selectedModel
             };
             
             console.log('Batch request:', requestBody);
@@ -926,8 +967,19 @@
         function createBatchPrompt(stopsInBatch) {
             const startStop = batchState.completedStops + 1;
             const endStop = batchState.completedStops + stopsInBatch;
+            const guideType = batchState.settings.guideType;
             
             let contextPrompt = batchState.settings.customPrompt;
+            
+            // Add city-specific requirements
+            if (guideType === 'city') {
+                contextPrompt += `\n\nCITY GUIDE REQUIREMENTS: For city guides, always include:
+- INTRODUCTION: Overview of the city's character and significance
+- HISTORY: Key historical periods and events that shaped the city
+- LOCAL TIPS: Practical advice for visitors (transport, customs, best times to visit)
+- MUST EATS: Essential local foods, dishes, and where to find them
+- Cultural insights and local traditions`;
+            }
             
             // Add website references to prompt
             if (batchState.settings.websiteRefs && batchState.settings.websiteRefs.length > 0) {
@@ -940,6 +992,11 @@
                 contextPrompt += `Now generate stops ${startStop}-${endStop}, ensuring they complement and continue from the previous stops without repetition.`;
             } else {
                 contextPrompt += `\n\nThis is the first batch of a ${batchState.targetStops}-stop audioguide. Generate stops ${startStop}-${endStop}.`;
+                
+                // For first batch of city guides, emphasize the requirements
+                if (guideType === 'city') {
+                    contextPrompt += ` Make sure to include introduction, history, tips, and must eats in the early stops.`;
+                }
             }
             
             return contextPrompt;
@@ -1180,6 +1237,128 @@ ${generatedContent}
             showMessage(`📄 Script downloaded! (${Math.round(wordCount/1000)}k words)`, 'success');
         }
 
+        function downloadPDF() {
+            if (!generatedContent) {
+                showMessage('No content to download as PDF', 'error');
+                return;
+            }
+            
+            // Create a formatted HTML version for PDF conversion
+            const destination = document.getElementById('destination').value;
+            const wordCount = generatedContent.split(/\s+/).length;
+            const modelInfo = batchState.targetStops ? 
+                `Generated with ${batchState.totalBatches} batches using ${batchState.settings.selectedModel || 'Claude Sonnet 4'}` :
+                'Generated with Claude AI';
+            
+            const htmlContent = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>${destination} - CloudGuide Premium</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; line-height: 1.6; margin: 40px; color: #333; }
+                        h1 { color: #2d3748; border-bottom: 3px solid #48bb78; padding-bottom: 10px; }
+                        .meta { background: #f7fafc; padding: 20px; border-radius: 8px; margin: 20px 0; }
+                        .stop { margin: 30px 0; page-break-inside: avoid; }
+                        .stop-title { font-size: 18px; font-weight: bold; color: #2d3748; margin-bottom: 15px; }
+                        .stop-content { text-align: justify; }
+                        @media print { body { margin: 20px; } }
+                    </style>
+                </head>
+                <body>
+                    <h1>${destination.toUpperCase()} - PREMIUM AUDIOGUIDE</h1>
+                    <div class="meta">
+                        <strong>CloudGuide Premium</strong><br>
+                        ${modelInfo}<br>
+                        Word Count: ${wordCount.toLocaleString()} words<br>
+                        Generated: ${new Date().toLocaleString()}<br>
+                        Website: www.cloudguide.me
+                    </div>
+                    <div>${generatedContent.replace(/\n/g, '<br>').replace(/STOP (\d+): ([^\n]+)/g, '<div class="stop"><div class="stop-title">STOP $1: $2</div><div class="stop-content">')}</div>
+                </body>
+                </html>
+            `;
+            
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${destination.replace(/\s+/g, '_')}_audioguide.html`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showMessage('📄 HTML file downloaded! Open in browser and print to PDF', 'success');
+        }
+
+        function downloadJSON() {
+            if (!generatedContent) {
+                showMessage('No data to download', 'error');
+                return;
+            }
+            
+            const destination = document.getElementById('destination').value;
+            const wordCount = generatedContent.split(/\s+/).length;
+            
+            // Parse content into structured data
+            const stops = [];
+            const lines = generatedContent.split('\n');
+            let currentStop = null;
+            
+            for (const line of lines) {
+                if (line.match(/^STOP \d+:/)) {
+                    if (currentStop) {
+                        stops.push(currentStop);
+                    }
+                    const match = line.match(/^STOP (\d+): (.+)$/);
+                    currentStop = {
+                        number: parseInt(match[1]),
+                        title: match[2],
+                        content: ''
+                    };
+                } else if (currentStop && line.trim()) {
+                    currentStop.content += line + '\n';
+                }
+            }
+            
+            if (currentStop) {
+                stops.push(currentStop);
+            }
+            
+            const jsonData = {
+                title: destination,
+                type: 'premium-audioguide',
+                metadata: {
+                    destination: destination,
+                    totalStops: stops.length,
+                    wordCount: wordCount,
+                    estimatedDuration: Math.round(wordCount * 0.5 / 60),
+                    guideType: document.getElementById('guideType').value,
+                    audience: document.getElementById('audienceType').value,
+                    style: document.getElementById('contentStyle').value,
+                    model: batchState.settings ? batchState.settings.selectedModel : 'claude-sonnet-4',
+                    generated: new Date().toISOString(),
+                    creator: 'CloudGuide Premium'
+                },
+                stops: stops,
+                rawContent: generatedContent
+            };
+            
+            const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${destination.replace(/\s+/g, '_')}_audioguide.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showMessage(`💾 JSON data downloaded! (${stops.length} stops structured)`, 'success');
+        }
+
         // Website references functions
         function addWebsiteRef() {
             const container = document.getElementById('websiteRefsContainer');
@@ -1281,9 +1460,12 @@ ${generatedContent}
         window.togglePlayback = togglePlayback;
         window.downloadAudio = downloadAudio;
         window.downloadScript = downloadScript;
+        window.downloadPDF = downloadPDF;
+        window.downloadJSON = downloadJSON;
         window.saveToLibrary = saveToLibrary;
         window.addWebsiteRef = addWebsiteRef;
         window.removeWebsiteRef = removeWebsiteRef;
+        window.updateModelInfo = updateModelInfo;
 
         console.log('Enhanced functions registered to window with batch generation support');
     </script>
