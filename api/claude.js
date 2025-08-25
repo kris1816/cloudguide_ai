@@ -1,4 +1,4 @@
-// api/claude.js - Updated for Claude 4 models
+// api/claude.js - Updated with Model Selection and Cost Optimization
 export default async function handler(req, res) {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -23,7 +23,8 @@ export default async function handler(req, res) {
       numStops = 10, 
       stopLength = 750, 
       includeCoordinates = false,
-      websiteRefs = []
+      websiteRefs = [],
+      preferredModel = 'claude-sonnet-4-20250514' // Default to Sonnet 4 (good balance)
     } = req.body;
 
     if (!destination) {
@@ -39,23 +40,48 @@ export default async function handler(req, res) {
       });
     }
 
-    console.log(`Generating ${numStops} stops for ${destination}`);
+    console.log(`Generating ${numStops} stops for ${destination} with model: ${preferredModel}`);
 
-    // Build the prompt
-    const prompt = `Create a professional ${numStops}-stop audioguide for ${destination}.
+    // Build the prompt with website references and city requirements
+    let prompt = `Create a professional ${numStops}-stop audioguide for ${destination}.
 
 Guide Type: ${guideType}
 Style: ${style}
 Audience: ${audience}
 Words per stop: approximately ${stopLength}
-${includeCoordinates ? 'Include GPS coordinates [GPS: lat, long] for each stop' : ''}
-${websiteRefs?.length > 0 ? `Reference these websites: ${websiteRefs.join(', ')}` : ''}
-${customPrompt ? `Special requirements: ${customPrompt}` : ''}
+${includeCoordinates ? 'Include GPS coordinates [GPS: lat, long] for each stop' : ''}`;
+
+    // Add city-specific requirements
+    if (guideType === 'city') {
+      prompt += `
+
+CITY GUIDE REQUIREMENTS - Always include these elements:
+🏛️ INTRODUCTION: Overview of the city's character, significance, and what makes it special
+📚 HISTORY: Key historical periods, events, and figures that shaped the city
+💡 LOCAL TIPS: Practical visitor advice (transport, customs, best times to visit, local etiquette)
+🍽️ MUST EATS: Essential local foods, signature dishes, and where to find authentic versions
+🎭 CULTURE: Local traditions, festivals, and cultural insights that enhance the experience`;
+    }
+
+    prompt += `
+${customPrompt ? `Special requirements: ${customPrompt}` : ''}`;
+
+    // Add website references to prompt if provided
+    if (websiteRefs && websiteRefs.length > 0) {
+      prompt += `
+
+IMPORTANT INFORMATION SOURCES:
+Please reference and include key information from these official sources: ${websiteRefs.join(', ')}
+Use these sources to ensure accuracy and include must-have facts, opening hours, ticket prices, historical details, and official information.`;
+    }
+
+    prompt += `
 
 Create exactly ${numStops} stops. Each stop should have:
 - A clear, descriptive title
 - Engaging, informative content of approximately ${stopLength} words
 - Natural, conversational tone suitable for audio narration
+- Accurate information ${websiteRefs.length > 0 ? 'from the provided sources' : ''}
 
 Format each stop as:
 STOP [number]: [Title]
@@ -63,15 +89,38 @@ STOP [number]: [Title]
 
 Generate all ${numStops} stops now:`;
 
-    // Claude 4 models - Based on the migration guide you showed
-    // Priority order: newest and most efficient first
-    const modelOptions = [
-      'claude-opus-4-1-20250805',      // Claude Opus 4.1 - Latest and most capable
-      'claude-sonnet-4-20250514',      // Claude Sonnet 4 - Fast and efficient
-      'claude-opus-4-20250805',        // Claude Opus 4 - Previous flagship
-      // Fallback to Claude 3.5 if Claude 4 not available
-      'claude-3-5-sonnet-20241022',    // Claude 3.5 Sonnet as fallback
-    ];
+    // Model selection with Sonnet 4 as default
+    let modelOptions = [];
+    
+    if (preferredModel.includes('sonnet-4')) {
+      // Sonnet 4 option - good balance (DEFAULT)
+      modelOptions = [
+        'claude-sonnet-4-20250514',      // Primary choice - good balance
+        'claude-opus-4-20250805',        // Upgrade option
+        'claude-3-5-sonnet-20241022',    // Budget fallback
+      ];
+    } else if (preferredModel.includes('3-5-sonnet')) {
+      // Budget option - Claude 3.5 Sonnet first
+      modelOptions = [
+        'claude-3-5-sonnet-20241022',    // Budget choice
+        'claude-3-5-sonnet-20240620',    // Backup Claude 3.5
+        'claude-sonnet-4-20250514',      // Upgrade fallback
+      ];
+    } else if (preferredModel.includes('opus-4')) {
+      // Premium option - Claude Opus 4 first
+      modelOptions = [
+        'claude-opus-4-20250805',        // Maximum quality choice
+        'claude-sonnet-4-20250514',      // Good fallback
+        'claude-3-5-sonnet-20241022',    // Budget fallback
+      ];
+    } else {
+      // Default fallback order (Sonnet 4 preferred)
+      modelOptions = [
+        'claude-sonnet-4-20250514',
+        'claude-opus-4-20250805',
+        'claude-3-5-sonnet-20241022'
+      ];
+    }
 
     let successfulResponse = null;
     let lastError = null;
@@ -190,16 +239,22 @@ Generate all ${numStops} stops now:`;
     // Extract the generated content
     const generatedContent = successfulResponse.content[0].text;
     
-    // Determine model display name for Claude 4
+    // Determine model display name and cost info
     let modelDisplayName = 'Claude';
-    if (modelUsed.includes('opus-4-1')) {
-      modelDisplayName = 'Claude Opus 4.1 (Latest & Most Capable)';
-    } else if (modelUsed.includes('sonnet-4')) {
-      modelDisplayName = 'Claude Sonnet 4 (Fast & Efficient)';
-    } else if (modelUsed.includes('opus-4')) {
-      modelDisplayName = 'Claude Opus 4';
+    let costInfo = '';
+    
+    if (modelUsed.includes('sonnet-4')) {
+      modelDisplayName = 'Claude Sonnet 4 (Recommended)';
+      costInfo = '💎 Optimal Balance';
     } else if (modelUsed.includes('3-5-sonnet')) {
-      modelDisplayName = 'Claude 3.5 Sonnet (Fallback)';
+      modelDisplayName = 'Claude 3.5 Sonnet (Budget)';
+      costInfo = '💰 Cost-Optimized';
+    } else if (modelUsed.includes('opus-4-1')) {
+      modelDisplayName = 'Claude Opus 4.1 (Latest & Most Capable)';
+      costInfo = '⭐ Maximum Quality';
+    } else if (modelUsed.includes('opus-4')) {
+      modelDisplayName = 'Claude Opus 4 (Maximum Quality)';
+      costInfo = '⭐ Premium Choice';
     }
     
     // Format the response
@@ -208,10 +263,12 @@ Generate all ${numStops} stops now:`;
 
 Generated with: ${modelDisplayName}
 Model: ${modelUsed}
+${costInfo}
 Guide Type: ${guideType}
 Style: ${style}
 Total Stops: ${numStops}
 Words per Stop: ${stopLength}
+${websiteRefs.length > 0 ? `Information Sources: ${websiteRefs.length} websites` : ''}
 
 ===================================================
 
@@ -219,6 +276,18 @@ ${generatedContent}
 
 ===================================================
 © CloudGuide Premium - www.cloudguide.me`;
+
+    // Calculate cost estimate (rough approximation)
+    const wordCount = generatedContent.split(/\s+/).length;
+    let costEstimate = '';
+    
+    if (modelUsed.includes('3-5-sonnet')) {
+      costEstimate = 'Budget (~$0.01-0.05)';
+    } else if (modelUsed.includes('sonnet-4')) {
+      costEstimate = 'Reasonable (~$0.15-0.75)';
+    } else if (modelUsed.includes('opus-4')) {
+      costEstimate = 'Premium (~$0.75-3.75)';
+    }
 
     // Return success response
     return res.status(200).json({
@@ -229,7 +298,11 @@ ${generatedContent}
       stops: numStops,
       model: modelDisplayName,
       modelVersion: modelUsed,
-      claudeVersion: modelUsed.includes('opus-4') || modelUsed.includes('sonnet-4') ? '4' : '3.5'
+      claudeVersion: modelUsed.includes('opus-4') || modelUsed.includes('sonnet-4') ? '4' : '3.5',
+      costInfo: costInfo,
+      costEstimate: costEstimate,
+      wordCount: wordCount,
+      websiteRefsUsed: websiteRefs.length
     });
 
   } catch (error) {
