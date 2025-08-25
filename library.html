@@ -71,7 +71,7 @@
             transition: color 0.3s;
         }
 
-        .nav-links a:hover {
+        .nav-links a:hover, .nav-links a.active {
             color: #48bb78;
         }
 
@@ -105,7 +105,7 @@
             margin: 0 auto;
         }
 
-        /* Main Container */
+        /* Main Content */
         .main-container {
             display: grid;
             grid-template-columns: 2fr 1fr;
@@ -664,7 +664,7 @@
 </head>
 <body>
     <div class="wrapper">
-        <!-- Header -->
+        <!-- Header with UPDATED NAVIGATION -->
         <header class="header">
             <div class="header-inner">
                 <div class="logo">
@@ -675,8 +675,10 @@
                 <nav>
                     <ul class="nav-links">
                         <li><a href="index.html">GENERATOR</a></li>
-                        <li><a href="library.html" style="color: #48bb78;">LIBRARY</a></li>
+                        <li><a href="library.html" class="active">LIBRARY</a></li>
                         <li><a href="audio.html">AUDIO</a></li>
+                        <li><a href="upload.html">UPLOAD</a></li>
+                        <li><a href="premium.html">PREMIUM</a></li>
                         <li><a href="about.html">ABOUT</a></li>
                         <li><a href="https://www.cloudguide.me/contact" target="_blank">CONTACT</a></li>
                     </ul>
