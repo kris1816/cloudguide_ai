@@ -3,8 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta property="og:title" content="CloudGuide Upload - Send to CMS" />
-    <meta property="og:description" content="Upload your audioguides to CloudGuide CMS" />
     <title>CloudGuide - Upload to CMS</title>
     
     <!-- Fonts -->
@@ -51,10 +49,6 @@
             transition: opacity 0.3s;
         }
 
-        .logo img:hover {
-            opacity: 0.8;
-        }
-
         .nav-links {
             display: flex;
             gap: 25px;
@@ -91,15 +85,12 @@
             font-size: 2.2em;
             font-weight: 600;
             margin-bottom: 12px;
-            letter-spacing: -0.5px;
         }
 
         .hero-subtitle {
             font-size: 0.95em;
             font-weight: 300;
             opacity: 0.9;
-            max-width: 500px;
-            margin: 0 auto;
         }
 
         /* Main Container */
@@ -110,48 +101,8 @@
             padding: 35px;
         }
 
-        /* Connection Status */
-        .connection-status {
-            background: #f7fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            padding: 20px;
-            margin-bottom: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .status-indicator {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .status-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: #cbd5e0;
-        }
-
-        .status-dot.connected {
-            background: #48bb78;
-            animation: pulse 2s infinite;
-        }
-
-        .status-dot.error {
-            background: #e53e3e;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
-        }
-
-        /* Upload Form */
-        .upload-section {
+        /* Form Section */
+        .form-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 30px;
@@ -172,6 +123,10 @@
             letter-spacing: 0.8px;
         }
 
+        .required {
+            color: #e53e3e;
+        }
+
         .form-element {
             width: 100%;
             padding: 12px 18px;
@@ -180,7 +135,6 @@
             font-size: 14px;
             background: #f7fafc;
             transition: all 0.3s;
-            color: #2d3748;
         }
 
         .form-element:focus {
@@ -205,52 +159,44 @@
             resize: vertical;
         }
 
-        /* File Upload Area */
-        .file-upload-area {
-            border: 2px dashed #cbd5e0;
-            border-radius: 6px;
-            padding: 40px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
+        /* Audio Status */
+        .audio-status {
             background: #f7fafc;
-        }
-
-        .file-upload-area:hover {
-            border-color: #48bb78;
-            background: white;
-        }
-
-        .file-upload-area.dragover {
-            border-color: #48bb78;
-            background: #f0fff4;
-            transform: scale(1.01);
-        }
-
-        .file-icon {
-            font-size: 48px;
-            margin-bottom: 15px;
-            opacity: 0.5;
-        }
-
-        .file-info {
-            display: none;
-            background: #f0fff4;
-            border: 1px solid #48bb78;
+            border: 1px solid #e2e8f0;
             border-radius: 6px;
-            padding: 15px;
-            margin-top: 15px;
+            padding: 20px;
+            margin: 20px 0;
         }
 
-        .file-info.active {
+        .audio-status.has-audio {
+            background: #f0fff4;
+            border-color: #48bb78;
+        }
+
+        .audio-status.no-audio {
+            background: #fffaf0;
+            border-color: #f6ad55;
+        }
+
+        .audio-list {
+            margin-top: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .audio-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            padding: 8px;
+            background: white;
+            border-radius: 4px;
+            margin-bottom: 8px;
         }
 
         /* Buttons */
         .btn {
-            padding: 12px 24px;
+            padding: 14px 28px;
             border: none;
             border-radius: 6px;
             font-size: 12px;
@@ -269,13 +215,11 @@
         .btn-primary:hover {
             background: #38a169;
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(72, 187, 120, 0.3);
         }
 
         .btn-primary:disabled {
             background: #cbd5e0;
             cursor: not-allowed;
-            transform: none;
         }
 
         .btn-secondary {
@@ -283,11 +227,7 @@
             color: white;
         }
 
-        .btn-secondary:hover {
-            background: #4a5568;
-        }
-
-        .upload-btn {
+        .submit-btn {
             width: 100%;
             padding: 16px;
             margin-top: 20px;
@@ -321,67 +261,26 @@
             transition: width 0.5s;
         }
 
-        /* Success/Error Messages */
+        /* Messages */
         .message {
             display: none;
-            padding: 15px;
+            padding: 20px;
             border-radius: 6px;
             margin: 20px 0;
-            font-weight: 500;
         }
 
         .message.success {
-            background: #48bb78;
-            color: white;
-        }
-
-        .message.error {
-            background: #e53e3e;
-            color: white;
+            background: #f0fff4;
+            border: 1px solid #48bb78;
+            color: #22543d;
         }
 
         .message.active {
             display: block;
         }
 
-        /* Recent Uploads */
-        .recent-uploads {
-            margin-top: 40px;
-            padding-top: 30px;
-            border-top: 1px solid #e2e8f0;
-        }
-
-        .upload-history {
-            display: grid;
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .upload-item {
-            background: #f7fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .upload-item:hover {
-            background: white;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-
-        /* Footer */
-        .footer-section {
-            margin-top: 40px;
-            padding-top: 30px;
-            border-top: 1px solid #e2e8f0;
-            text-align: center;
-        }
-
         @media (max-width: 768px) {
-            .upload-section {
+            .form-grid {
                 grid-template-columns: 1fr;
             }
             .nav-links {
@@ -417,335 +316,431 @@
         <!-- Hero Section -->
         <section class="hero-section">
             <h1 class="hero-title">Upload to CloudGuide CMS</h1>
-            <p class="hero-subtitle">Send your audioguides directly to CloudGuide platform</p>
+            <p class="hero-subtitle">Submit your audioguides for professional upload to your CMS account</p>
         </section>
 
         <!-- Main Content -->
         <div class="main-container">
-            <!-- Connection Status -->
-            <div class="connection-status">
-                <div class="status-indicator">
-                    <span class="status-dot" id="statusDot"></span>
-                    <span id="statusText">Checking connection...</span>
-                </div>
-                <button class="btn btn-secondary" onclick="testConnection()">Test Connection</button>
-            </div>
-
-            <!-- Upload Form -->
-            <div class="upload-section">
+            <div class="form-grid">
+                <!-- Left Column -->
                 <div>
                     <div class="form-group">
-                        <label for="audioTitle">Audio Title *</label>
-                        <input type="text" id="audioTitle" class="form-element" placeholder="e.g., Louvre Museum Tour">
+                        <label>CMS Account Email <span class="required">*</span></label>
+                        <input type="email" id="cmsEmail" class="form-element" 
+                               placeholder="your-account@cloudguide.me" required>
+                        <small style="color: #718096; font-size: 12px;">
+                            Enter the email associated with your CloudGuide CMS account
+                        </small>
                     </div>
 
                     <div class="form-group">
-                        <label for="audioDescription">Description</label>
-                        <textarea id="audioDescription" class="form-element" placeholder="Brief description of the audioguide..."></textarea>
+                        <label>Institution Name <span class="required">*</span></label>
+                        <input type="text" id="institutionName" class="form-element" 
+                               placeholder="e.g., National Art Museum" required>
                     </div>
 
                     <div class="form-group">
-                        <label for="audioLanguage">Language</label>
-                        <select id="audioLanguage" class="form-element">
-                            <option value="en">English</option>
-                            <option value="es">Spanish</option>
-                            <option value="fr">French</option>
-                            <option value="de">German</option>
-                            <option value="it">Italian</option>
-                            <option value="pt">Portuguese</option>
-                            <option value="zh">Chinese</option>
-                            <option value="ja">Japanese</option>
+                        <label>Exhibition Name <span class="required">*</span></label>
+                        <input type="text" id="exhibitionName" class="form-element" 
+                               placeholder="e.g., Permanent Collection" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Guide Name <span class="required">*</span></label>
+                        <input type="text" id="guideName" class="form-element" 
+                               placeholder="e.g., Complete Audio Tour" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Contact Phone (Optional)</label>
+                        <input type="tel" id="contactPhone" class="form-element" 
+                               placeholder="+1 234 567 8900">
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div>
+                    <div class="form-group">
+                        <label>Select Audioguide from Library <span class="required">*</span></label>
+                        <select id="guideSelect" class="form-element" onchange="selectGuide()" required>
+                            <option value="">Choose an audioguide...</option>
                         </select>
                     </div>
 
                     <div class="form-group">
-                        <label for="exhibitId">Exhibit ID (Optional)</label>
-                        <input type="text" id="exhibitId" class="form-element" placeholder="Leave empty for general audioguide">
-                    </div>
-                </div>
-
-                <div>
-                    <div class="form-group">
-                        <label>Audio File *</label>
-                        <div class="file-upload-area" id="uploadArea" onclick="document.getElementById('audioFile').click()">
-                            <input type="file" id="audioFile" accept=".mp3,.wav,.m4a" style="display: none;" onchange="handleFileSelect(event)">
-                            <div class="file-icon">🎵</div>
-                            <p style="font-weight: 600; margin-bottom: 8px; color: #4a5568;">Drop audio file here or click to browse</p>
-                            <p style="color: #a0aec0; font-size: 13px;">MP3, WAV, or M4A (max 100MB)</p>
-                        </div>
-                        <div class="file-info" id="fileInfo">
-                            <div>
-                                <div style="font-weight: 600; color: #2d3748;" id="fileName">No file</div>
-                                <div style="color: #718096; font-size: 13px; margin-top: 5px;" id="fileSize">0 KB</div>
-                            </div>
-                            <button class="btn btn-secondary" onclick="removeFile()">Remove</button>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Or Load from Library</label>
-                        <select id="librarySelect" class="form-element" onchange="loadFromLibrary()">
-                            <option value="">Select from your saved audioguides...</option>
+                        <label>Language</label>
+                        <select id="guideLanguage" class="form-element">
+                            <option value="English">English</option>
+                            <option value="Spanish">Spanish</option>
+                            <option value="French">French</option>
+                            <option value="German">German</option>
+                            <option value="Italian">Italian</option>
+                            <option value="Portuguese">Portuguese</option>
+                            <option value="Chinese">Chinese</option>
+                            <option value="Japanese">Japanese</option>
                         </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Additional Notes</label>
+                        <textarea id="additionalNotes" class="form-element" 
+                                  placeholder="Any special instructions or requirements..."></textarea>
                     </div>
                 </div>
             </div>
 
-            <button class="btn btn-primary upload-btn" onclick="uploadToCloudGuide()">
-                📤 Upload to CloudGuide CMS
+            <!-- Audio Status -->
+            <div class="audio-status no-audio" id="audioStatus">
+                <h3 style="margin-bottom: 10px;">📁 Content Status</h3>
+                <div id="statusContent">
+                    <p>No audioguide selected</p>
+                </div>
+                <div class="audio-list" id="audioList" style="display: none;"></div>
+            </div>
+
+            <!-- Submit Button -->
+            <button class="btn btn-primary submit-btn" id="submitBtn" onclick="submitToCloudGuide()">
+                📤 Submit for Upload to CMS
             </button>
 
             <!-- Progress -->
             <div class="progress-container" id="progressContainer">
-                <div style="text-align: center; font-weight: 600; color: #4a5568;">Uploading to CloudGuide...</div>
+                <div style="text-align: center; font-weight: 600;">Processing your submission...</div>
                 <div class="progress-bar">
                     <div class="progress-fill" id="progressBar"></div>
                 </div>
-                <div style="text-align: center; font-size: 13px; color: #718096;" id="progressStatus">Preparing upload...</div>
-            </div>
-
-            <!-- Messages -->
-            <div class="message success" id="successMessage">
-                ✓ Upload successful! Your audioguide is now available on CloudGuide.
-            </div>
-
-            <div class="message error" id="errorMessage">
-                ✗ Upload failed. Please check your connection and try again.
-            </div>
-
-            <!-- Recent Uploads -->
-            <div class="recent-uploads">
-                <h3 style="font-size: 1.2em; font-weight: 600; color: #2d3748; margin-bottom: 15px;">
-                    📋 Recent Uploads
-                </h3>
-                <div class="upload-history" id="uploadHistory">
-                    <!-- Upload history will be loaded here -->
+                <div style="text-align: center; font-size: 13px; color: #718096;" id="progressStatus">
+                    Preparing...
                 </div>
             </div>
-        </div>
 
-        <!-- Footer -->
-        <div class="footer-section">
-            <p style="font-size: 12px; color: #718096; margin-bottom: 20px;">
-                Financiado por la Unión Europea – Next Generation EU<br>
-                a través del Ministerio de Industria y Turismo
-            </p>
-            <div style="display: flex; justify-content: center; gap: 40px;">
-                <img src="https://s.cloudguide.me/m/files/d3e690c8-b10a-49e3-8cda-ac3335896b69.png" 
-                     alt="EU" style="height: 45px; opacity: 0.6;">
-                <img src="https://s.cloudguide.me/m/files/f1eabdef-d522-457d-90fe-fa00b513ac3c.png" 
-                     alt="Spain" style="height: 45px; opacity: 0.6;">
+            <!-- Success Message -->
+            <div class="message success" id="successMessage">
+                <h3 style="margin-bottom: 15px;">✅ Upload Request Submitted Successfully!</h3>
+                <p style="margin-bottom: 15px;">
+                    Thank you for uploading your content. Please allow up to 24 hours for it to appear in your account.
+                </p>
+                <p style="margin-bottom: 15px;">
+                    <strong>Next Steps:</strong>
+                </p>
+                <ol style="margin-left: 20px;">
+                    <li>Log in to your CloudGuide CMS account</li>
+                    <li>Navigate to the PUBLISH section</li>
+                    <li>Upload images for the best visitor experience</li>
+                    <li>Review and publish your audioguide</li>
+                </ol>
+                <p style="margin-top: 15px; font-size: 13px; color: #718096;">
+                    You will receive a confirmation email at the address provided.
+                </p>
             </div>
         </div>
     </div>
 
     <script>
-        let selectedFile = null;
-        let uploadHistory = [];
+        let selectedGuide = null;
+        let selectedGuideId = null;
+        let audioFiles = [];
 
         // Initialize on load
         window.addEventListener('DOMContentLoaded', function() {
-            testConnection();
-            loadLibraryOptions();
-            loadUploadHistory();
-            setupDragAndDrop();
+            loadLibrary();
+            
+            // Check if returning from audio page
+            const savedFormData = localStorage.getItem('uploadFormData');
+            if (savedFormData) {
+                const data = JSON.parse(savedFormData);
+                document.getElementById('cmsEmail').value = data.cmsEmail || '';
+                document.getElementById('institutionName').value = data.institutionName || '';
+                document.getElementById('exhibitionName').value = data.exhibitionName || '';
+                document.getElementById('guideName').value = data.guideName || '';
+                localStorage.removeItem('uploadFormData');
+            }
         });
 
-        // Test connection to CloudGuide
-        async function testConnection() {
-            const statusDot = document.getElementById('statusDot');
-            const statusText = document.getElementById('statusText');
+        // Load audioguides from library
+        function loadLibrary() {
+            const audioguides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
+            const select = document.getElementById('guideSelect');
             
-            statusDot.className = 'status-dot';
-            statusText.textContent = 'Testing connection...';
-            
-            try {
-                const response = await fetch('/api/cloudguide-upload', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ test: true })
-                });
-                
-                const data = await response.json();
-                
-                if (data.configured) {
-                    statusDot.className = 'status-dot connected';
-                    statusText.textContent = '✓ Connected to CloudGuide';
-                } else {
-                    statusDot.className = 'status-dot error';
-                    statusText.textContent = '⚠️ CloudGuide credentials not configured';
-                }
-            } catch (error) {
-                statusDot.className = 'status-dot error';
-                statusText.textContent = '✗ Connection failed';
-            }
-        }
-
-        // File handling
-        function handleFileSelect(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            
-            // Check file size (100MB limit)
-            if (file.size > 100 * 1024 * 1024) {
-                alert('File size must be less than 100MB');
-                event.target.value = '';
+            if (audioguides.length === 0) {
+                select.innerHTML = '<option value="">No audioguides in library - Generate one first</option>';
                 return;
             }
-            
-            selectedFile = file;
-            document.getElementById('fileName').textContent = file.name;
-            document.getElementById('fileSize').textContent = formatFileSize(file.size);
-            document.getElementById('fileInfo').classList.add('active');
-        }
-
-        function removeFile() {
-            selectedFile = null;
-            document.getElementById('audioFile').value = '';
-            document.getElementById('fileInfo').classList.remove('active');
-        }
-
-        function formatFileSize(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
-        }
-
-        // Drag and drop
-        function setupDragAndDrop() {
-            const uploadArea = document.getElementById('uploadArea');
-            
-            uploadArea.addEventListener('dragover', function(e) {
-                e.preventDefault();
-                uploadArea.classList.add('dragover');
-            });
-            
-            uploadArea.addEventListener('dragleave', function() {
-                uploadArea.classList.remove('dragover');
-            });
-            
-            uploadArea.addEventListener('drop', function(e) {
-                e.preventDefault();
-                uploadArea.classList.remove('dragover');
-                
-                const files = e.dataTransfer.files;
-                if (files.length > 0) {
-                    document.getElementById('audioFile').files = files;
-                    handleFileSelect({ target: { files: files } });
-                }
-            });
-        }
-
-        // Load library options
-        function loadLibraryOptions() {
-            const audioguides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
-            const select = document.getElementById('librarySelect');
             
             audioguides.forEach(guide => {
                 const option = document.createElement('option');
                 option.value = guide.id;
-                option.textContent = `${guide.title} (${guide.language})`;
+                option.textContent = `${guide.title} (${guide.language || 'English'}) - ${guide.stops || '?'} stops`;
                 select.appendChild(option);
             });
         }
 
-        // Load from library
-        function loadFromLibrary() {
-            const selectedId = document.getElementById('librarySelect').value;
-            if (!selectedId) return;
+        // Select a guide
+        function selectGuide() {
+            const selectedId = document.getElementById('guideSelect').value;
+            if (!selectedId) {
+                selectedGuide = null;
+                selectedGuideId = null;
+                updateAudioStatus(null);
+                return;
+            }
             
             const audioguides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
-            const guide = audioguides.find(g => g.id == selectedId);
+            selectedGuide = audioguides.find(g => g.id == selectedId);
+            selectedGuideId = selectedId;
             
-            if (guide) {
-                document.getElementById('audioTitle').value = guide.title;
-                document.getElementById('audioDescription').value = `Generated audioguide for ${guide.location}`;
+            if (selectedGuide) {
+                // Set language based on guide
+                document.getElementById('guideLanguage').value = selectedGuide.language || 'English';
                 
-                // Map language
-                const langMap = {
-                    'English': 'en',
-                    'Spanish': 'es',
-                    'French': 'fr',
-                    'German': 'de',
-                    'Italian': 'it',
-                    'Portuguese': 'pt',
-                    'Chinese': 'zh',
-                    'Japanese': 'ja'
-                };
-                
-                document.getElementById('audioLanguage').value = langMap[guide.language] || 'en';
-                
-                showMessage('Loaded from library. Now generate audio and upload!', 'success');
+                // Check for audio files
+                checkForAudioFiles(selectedId);
             }
         }
 
-        // Upload to CloudGuide
-        async function uploadToCloudGuide() {
-            const title = document.getElementById('audioTitle').value.trim();
+        // Check for audio files
+        function checkForAudioFiles(guideId) {
+            // Check localStorage for audio files from audio.html page
+            const storedAudio = localStorage.getItem(`cloudguide_audio_${guideId}`);
             
-            if (!title) {
-                alert('Please enter a title');
+            if (storedAudio) {
+                audioFiles = JSON.parse(storedAudio);
+                updateAudioStatus(selectedGuide, audioFiles);
+            } else {
+                audioFiles = [];
+                updateAudioStatus(selectedGuide, []);
+            }
+        }
+
+        // Update audio status display
+        function updateAudioStatus(guide, audioArray) {
+            const statusDiv = document.getElementById('audioStatus');
+            const contentDiv = document.getElementById('statusContent');
+            const audioListDiv = document.getElementById('audioList');
+            
+            if (!guide) {
+                statusDiv.className = 'audio-status no-audio';
+                contentDiv.innerHTML = '<p>No audioguide selected</p>';
+                audioListDiv.style.display = 'none';
                 return;
             }
             
-            if (!selectedFile) {
-                alert('Please select an audio file');
+            const wordCount = guide.content ? guide.content.split(/\s+/).length : 0;
+            
+            if (audioArray && audioArray.length > 0) {
+                statusDiv.className = 'audio-status has-audio';
+                contentDiv.innerHTML = `
+                    <p>✅ <strong>Script:</strong> ${wordCount.toLocaleString()} words (${guide.stops || '?'} stops)</p>
+                    <p>✅ <strong>Audio Files:</strong> ${audioArray.length} files ready for upload</p>
+                `;
+                
+                // Show audio file list
+                audioListDiv.style.display = 'block';
+                audioListDiv.innerHTML = '<strong>Audio Files:</strong><br>' + 
+                    audioArray.map((audio, i) => `
+                        <div class="audio-item">
+                            <span>🎵 ${audio.name || `Stop ${i + 1}.mp3`}</span>
+                            <span style="font-size: 12px; color: #718096;">${audio.size || 'Ready'}</span>
+                        </div>
+                    `).join('');
+            } else {
+                statusDiv.className = 'audio-status no-audio';
+                contentDiv.innerHTML = `
+                    <p>✅ <strong>Script:</strong> ${wordCount.toLocaleString()} words (${guide.stops || '?'} stops)</p>
+                    <p>⚠️ <strong>Audio:</strong> Not generated yet</p>
+                    <p style="margin-top: 10px;">
+                        <a href="audio.html?id=${guide.id}" style="color: #f6ad55;">
+                            Generate audio files →
+                        </a>
+                    </p>
+                `;
+                audioListDiv.style.display = 'none';
+            }
+        }
+
+        // Upload audio to Cloudinary
+        async function uploadAudioToCloudinary(audioData, fileName) {
+            try {
+                const response = await fetch('/api/upload-to-cloudinary', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        audioData: audioData,
+                        fileName: fileName.replace(/[^a-z0-9]/gi, '_')
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    return data.url;
+                } else {
+                    console.error('Cloudinary upload failed:', data.error);
+                    return null;
+                }
+            } catch (error) {
+                console.error('Upload error:', error);
+                return null;
+            }
+        }
+
+        // Submit to CloudGuide
+        async function submitToCloudGuide() {
+            // Validate required fields
+            const cmsEmail = document.getElementById('cmsEmail').value.trim();
+            const institutionName = document.getElementById('institutionName').value.trim();
+            const exhibitionName = document.getElementById('exhibitionName').value.trim();
+            const guideName = document.getElementById('guideName').value.trim();
+            
+            if (!cmsEmail || !institutionName || !exhibitionName || !guideName) {
+                alert('Please fill in all required fields');
                 return;
+            }
+            
+            if (!selectedGuide) {
+                alert('Please select an audioguide from your library');
+                return;
+            }
+            
+            // Disable submit button
+            document.getElementById('submitBtn').disabled = true;
+            
+            // Check for audio
+            if (audioFiles.length === 0) {
+                const proceed = confirm(
+                    'No audio files found for this guide.\n\n' +
+                    'Do you want to:\n' +
+                    '• OK - Submit script only (audio can be added later)\n' +
+                    '• Cancel - Generate audio first'
+                );
+                
+                if (!proceed) {
+                    // Save form data and redirect to audio page
+                    localStorage.setItem('uploadFormData', JSON.stringify({
+                        cmsEmail: cmsEmail,
+                        institutionName: institutionName,
+                        exhibitionName: exhibitionName,
+                        guideName: guideName
+                    }));
+                    window.location.href = `audio.html?id=${selectedGuideId}`;
+                    return;
+                }
             }
             
             // Show progress
             document.getElementById('progressContainer').classList.add('active');
-            updateProgress(10, 'Preparing upload...');
+            updateProgress(10, 'Preparing submission...');
             
             try {
-                const formData = new FormData();
-                formData.append('audio', selectedFile);
-                formData.append('title', title);
-                formData.append('description', document.getElementById('audioDescription').value);
-                formData.append('language', document.getElementById('audioLanguage').value);
-                formData.append('exhibitId', document.getElementById('exhibitId').value);
+                // Upload audio files to Cloudinary if they exist
+                const cloudinaryUrls = [];
                 
-                updateProgress(30, 'Uploading to CloudGuide...');
+                if (audioFiles.length > 0) {
+                    updateProgress(20, `Uploading ${audioFiles.length} audio files to cloud...`);
+                    
+                    for (let i = 0; i < audioFiles.length; i++) {
+                        const audio = audioFiles[i];
+                        updateProgress(20 + (i * 40 / audioFiles.length), 
+                            `Uploading audio ${i + 1} of ${audioFiles.length}...`);
+                        
+                        // Upload to Cloudinary
+                        if (audio.dataUrl || audio.url) {
+                            const cloudUrl = await uploadAudioToCloudinary(
+                                audio.dataUrl || audio.url,
+                                audio.name || `${guideName}_Stop_${i + 1}.mp3`
+                            );
+                            
+                            if (cloudUrl) {
+                                cloudinaryUrls.push({
+                                    name: audio.name || `Stop ${i + 1}.mp3`,
+                                    url: cloudUrl,
+                                    stopNumber: i + 1
+                                });
+                            }
+                        }
+                    }
+                }
                 
-                const response = await fetch('/api/cloudguide-upload', {
+                updateProgress(70, 'Sending to CloudGuide email system...');
+                
+                // Prepare submission data
+                const submissionData = {
+                    cmsEmail: cmsEmail,
+                    institutionName: institutionName,
+                    exhibitionName: exhibitionName,
+                    guideName: guideName,
+                    language: document.getElementById('guideLanguage').value,
+                    additionalNotes: document.getElementById('additionalNotes').value,
+                    contactPhone: document.getElementById('contactPhone').value,
+                    guideContent: selectedGuide.content,
+                    guideMetadata: {
+                        originalTitle: selectedGuide.title,
+                        location: selectedGuide.location,
+                        stops: selectedGuide.stops,
+                        tourType: selectedGuide.tourType,
+                        wordCount: selectedGuide.content ? selectedGuide.content.split(/\s+/).length : 0,
+                        generatedDate: selectedGuide.date
+                    },
+                    audioUrls: cloudinaryUrls,
+                    hasAudio: cloudinaryUrls.length > 0,
+                    submittedAt: new Date().toISOString()
+                };
+                
+                updateProgress(85, 'Finalizing submission...');
+                
+                // Send to email API
+                const response = await fetch('/api/email-upload', {
                     method: 'POST',
-                    body: formData
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(submissionData)
                 });
-                
-                updateProgress(80, 'Processing response...');
                 
                 const data = await response.json();
                 
                 if (data.success) {
-                    updateProgress(100, 'Upload complete!');
-                    showMessage('✓ Upload successful! Your audioguide is now available on CloudGuide.', 'success');
+                    updateProgress(100, 'Submission complete!');
                     
-                    // Save to history
-                    addToHistory({
-                        title: title,
-                        language: document.getElementById('audioLanguage').value,
-                        date: new Date().toISOString()
+                    // Show success message
+                    document.getElementById('successMessage').classList.add('active');
+                    
+                    // Scroll to success message
+                    document.getElementById('successMessage').scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'center' 
                     });
                     
-                    // Reset form
+                    // Clear audio files from localStorage after successful upload
+                    if (selectedGuideId) {
+                        localStorage.removeItem(`cloudguide_audio_${selectedGuideId}`);
+                    }
+                    
+                    // Reset form after delay
                     setTimeout(() => {
-                        document.getElementById('audioTitle').value = '';
-                        document.getElementById('audioDescription').value = '';
-                        document.getElementById('exhibitId').value = '';
-                        removeFile();
-                    }, 2000);
+                        document.getElementById('cmsEmail').value = '';
+                        document.getElementById('institutionName').value = '';
+                        document.getElementById('exhibitionName').value = '';
+                        document.getElementById('guideName').value = '';
+                        document.getElementById('additionalNotes').value = '';
+                        document.getElementById('contactPhone').value = '';
+                        document.getElementById('guideSelect').value = '';
+                        selectedGuide = null;
+                        audioFiles = [];
+                        updateAudioStatus(null);
+                    }, 3000);
                 } else {
-                    throw new Error(data.message || 'Upload failed');
+                    throw new Error(data.message || 'Submission failed');
                 }
                 
             } catch (error) {
-                console.error('Upload error:', error);
-                showMessage('✗ Upload failed: ' + error.message, 'error');
+                console.error('Submission error:', error);
+                alert('Submission error: ' + error.message + '\n\nPlease try again or contact support.');
             } finally {
+                // Re-enable submit button
+                document.getElementById('submitBtn').disabled = false;
+                
                 setTimeout(() => {
                     document.getElementById('progressContainer').classList.remove('active');
                     document.getElementById('progressBar').style.width = '0%';
@@ -753,58 +748,10 @@
             }
         }
 
-        // Update progress
+        // Update progress bar
         function updateProgress(percentage, status) {
             document.getElementById('progressBar').style.width = percentage + '%';
             document.getElementById('progressStatus').textContent = status;
-        }
-
-        // Show message
-        function showMessage(text, type) {
-            const messageEl = type === 'success' ? 
-                document.getElementById('successMessage') : 
-                document.getElementById('errorMessage');
-            
-            messageEl.textContent = text;
-            messageEl.classList.add('active');
-            
-            setTimeout(() => {
-                messageEl.classList.remove('active');
-            }, 5000);
-        }
-
-        // Upload history
-        function addToHistory(upload) {
-            uploadHistory = JSON.parse(localStorage.getItem('cloudguide_uploads') || '[]');
-            uploadHistory.unshift(upload);
-            uploadHistory = uploadHistory.slice(0, 10); // Keep last 10
-            localStorage.setItem('cloudguide_uploads', JSON.stringify(uploadHistory));
-            loadUploadHistory();
-        }
-
-        function loadUploadHistory() {
-            uploadHistory = JSON.parse(localStorage.getItem('cloudguide_uploads') || '[]');
-            const historyDiv = document.getElementById('uploadHistory');
-            
-            if (uploadHistory.length === 0) {
-                historyDiv.innerHTML = '<p style="text-align: center; color: #a0aec0;">No uploads yet</p>';
-                return;
-            }
-            
-            historyDiv.innerHTML = uploadHistory.map(upload => {
-                const date = new Date(upload.date).toLocaleDateString();
-                return `
-                    <div class="upload-item">
-                        <div>
-                            <div style="font-weight: 600;">${upload.title}</div>
-                            <div style="font-size: 13px; color: #718096;">
-                                ${upload.language.toUpperCase()} • ${date}
-                            </div>
-                        </div>
-                        <span style="color: #48bb78;">✓ Uploaded</span>
-                    </div>
-                `;
-            }).join('');
         }
     </script>
 </body>
