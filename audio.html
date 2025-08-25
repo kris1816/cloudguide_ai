@@ -583,6 +583,8 @@
                         <li><a href="index.html">GENERATOR</a></li>
                         <li><a href="library.html">LIBRARY</a></li>
                         <li><a href="audio.html" class="active">AUDIO</a></li>
+                        <li><a href="upload.html">UPLOAD</a></li>
+                        <li><a href="premium.html">PREMIUM</a></li>
                         <li><a href="about.html">ABOUT</a></li>
                         <li><a href="https://www.cloudguide.me/contact" target="_blank">CONTACT</a></li>
                     </ul>
@@ -1598,305 +1600,310 @@ Leonardo da Vinci's masterpiece from the 16th century. The painting measures 77c
                     // Show progress for multi-chunk generation
                     const loadingDiv = document.getElementById('loading');
                     const loadingText = loadingDiv.querySelector('div:last-child');
-                    if (loadingText) {
-                        loadingText.textContent = `Generating audio... Part ${i + 1} of ${textChunks.length}`;
-                    }
-                    
-                    const response = await fetch('/api/multilingual-tts', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            text: chunk,
-                            language: language,
-                            voice: selectedVoice,
-                            speed: speed
-                        })
-                    });
+                    if (loadingText) {loadingText.textContent = `Generating audio... Part ${i + 1} of ${textChunks.length}`;
+                   }
+                   
+                   const response = await fetch('/api/multilingual-tts', {
+                       method: 'POST',
+                       headers: { 'Content-Type': 'application/json' },
+                       body: JSON.stringify({
+                           text: chunk,
+                           language: language,
+                           voice: selectedVoice,
+                           speed: speed
+                       })
+                   });
 
-                    console.log(`Chunk ${i + 1} response status:`, response.status);
+                   console.log(`Chunk ${i + 1} response status:`, response.status);
 
-                    if (response.ok) {
-                        const data = await response.json();
-                        if (data.audioUrl) {
-                            audioUrls.push(data.audioUrl);
-                        } else {
-                            throw new Error(`No audio URL in response for chunk ${i + 1}`);
-                        }
-                    } else {
-                        const errorData = await response.json().catch(() => ({}));
-                        console.error(`API Error for chunk ${i + 1}:`, errorData);
-                        throw new Error(errorData.error || errorData.message || `Failed to generate audio for part ${i + 1}`);
-                    }
-                    
-                    // Small delay between chunks to avoid rate limiting
-                    if (i < textChunks.length - 1) {
-                        await new Promise(resolve => setTimeout(resolve, 500));
-                    }
-                }
-                
-                // If we have multiple chunks, concatenate them
-                let finalAudioUrl;
-                if (audioUrls.length > 1) {
-                    console.log('Multiple audio parts generated, concatenating...');
-                    showMessage('🔄 Combining audio parts into single file...', 'info');
-                    
-                    try {
-                        finalAudioUrl = await concatenateAudioUrls(audioUrls);
-                        showMessage('✅ Audio parts successfully combined!', 'success');
-                    } catch (concatError) {
-                        console.error('Failed to concatenate audio files:', concatError);
-                        showMessage('⚠️ Could not combine audio parts. Saving as separate files.', 'warning');
-                        
-                        // Fall back to saving separate parts
-                        audioUrls.forEach((url, index) => {
-                            const file = {
-                                name: `${chapter.shortTitle || chapter.title}`.replace(/[^a-z0-9]/gi, '_') + `_part${index + 1}_${language}.mp3`,
-                                chapter: chapter.title + ` (Part ${index + 1}/${audioUrls.length})`,
-                                language: language,
-                                url: url,
-                                provider: 'openai'
-                            };
-                            generatedFiles.push(file);
-                        });
-                        
-                        renderFiles();
-                        return;
-                    }
-                } else {
-                    finalAudioUrl = audioUrls[0];
-                }
-                
-                // Update chapter status
-                chapter.status = 'completed';
-                renderChapters();
-                
-                // Add the final combined file
-                const file = {
-                    name: `${chapter.shortTitle || chapter.title}`.replace(/[^a-z0-9]/gi, '_') + `_${language}.${finalAudioUrl.includes('wav') ? 'wav' : 'mp3'}`,
-                    chapter: chapter.title,
-                    language: language,
-                    url: finalAudioUrl,
-                    provider: 'openai',
-                    combined: audioUrls.length > 1
-                };
-                generatedFiles.push(file);
-                renderFiles();
-                
-                // Show success message
-                if (audioUrls.length > 1) {
-                    showMessage(`✅ Audio generated and combined for "${chapter.shortTitle || chapter.title}" (${audioUrls.length} parts merged)`, 'success');
-                } else {
-                    showMessage(`✅ Audio generated for "${chapter.shortTitle || chapter.title}"`, 'success');
-                }
-                
-            } catch (error) {
-                console.error('Error:', error);
-                showMessage('Error generating audio: ' + error.message, 'error');
-            } finally {
-                document.getElementById('loading').classList.remove('active');
-                document.getElementById('generateSingle').disabled = false;
-                document.getElementById('generateAll').disabled = false;
-                // Reset loading text
-                const loadingDiv = document.getElementById('loading');
-                const loadingText = loadingDiv.querySelector('div:last-child');
-                if (loadingText) {
-                    loadingText.textContent = 'Generating audio... Please wait...';
-                }
-            }
-        }
+                   if (response.ok) {
+                       const data = await response.json();
+                       if (data.audioUrl) {
+                           audioUrls.push(data.audioUrl);
+                       } else {
+                           throw new Error(`No audio URL in response for chunk ${i + 1}`);
+                       }
+                   } else {
+                       const errorData = await response.json().catch(() => ({}));
+                       console.error(`API Error for chunk ${i + 1}:`, errorData);
+                       throw new Error(errorData.error || errorData.message || `Failed to generate audio for part ${i + 1}`);
+                   }
+                   
+                   // Small delay between chunks to avoid rate limiting
+                   if (i < textChunks.length - 1) {
+                       await new Promise(resolve => setTimeout(resolve, 500));
+                   }
+               }
+               
+               // If we have multiple chunks, concatenate them
+               let finalAudioUrl;
+               if (audioUrls.length > 1) {
+                   console.log('Multiple audio parts generated, concatenating...');
+                   showMessage('🔄 Combining audio parts into single file...', 'info');
+                   
+                   try {
+                       finalAudioUrl = await concatenateAudioUrls(audioUrls);
+                       showMessage('✅ Audio parts successfully combined!', 'success');
+                   } catch (concatError) {
+                       console.error('Failed to concatenate audio files:', concatError);
+                       showMessage('⚠️ Could not combine audio parts. Saving as separate files.', 'warning');
+                       
+                       // Fall back to saving separate parts
+                       audioUrls.forEach((url, index) => {
+                           const file = {
+                               name: `${chapter.shortTitle || chapter.title}`.replace(/[^a-z0-9]/gi, '_') + `_part${index + 1}_${language}.mp3`,
+                               chapter: chapter.title + ` (Part ${index + 1}/${audioUrls.length})`,
+                               language: language,
+                               url: url,
+                               provider: 'openai'
+                           };
+                           generatedFiles.push(file);
+                       });
+                       
+                       renderFiles();
+                       return;
+                   }
+               } else {
+                   finalAudioUrl = audioUrls[0];
+               }
+               
+               // Update chapter status
+               chapter.status = 'completed';
+               renderChapters();
+               
+               // Add the final combined file
+               const file = {
+                   name: `${chapter.shortTitle || chapter.title}`.replace(/[^a-z0-9]/gi, '_') + `_${language}.${finalAudioUrl.includes('wav') ? 'wav' : 'mp3'}`,
+                   chapter: chapter.title,
+                   language: language,
+                   url: finalAudioUrl,
+                   provider: 'openai',
+                   combined: audioUrls.length > 1
+               };
+               generatedFiles.push(file);
+               renderFiles();
+               
+               // Show success message
+               if (audioUrls.length > 1) {
+                   showMessage(`✅ Audio generated and combined for "${chapter.shortTitle || chapter.title}" (${audioUrls.length} parts merged)`, 'success');
+               } else {
+                   showMessage(`✅ Audio generated for "${chapter.shortTitle || chapter.title}"`, 'success');
+               }
+               
+           } catch (error) {
+               console.error('Error:', error);
+               showMessage('Error generating audio: ' + error.message, 'error');
+           } finally {
+               document.getElementById('loading').classList.remove('active');
+               document.getElementById('generateSingle').disabled = false;
+               document.getElementById('generateAll').disabled = false;
+               // Reset loading text
+               const loadingDiv = document.getElementById('loading');
+               const loadingText = loadingDiv.querySelector('div:last-child');
+               if (loadingText) {
+                   loadingText.textContent = 'Generating audio... Please wait...';
+               }
+           }
+       }
 
-        // Show message function
-        function showMessage(message, type) {
-            const messageDiv = document.createElement('div');
-            messageDiv.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                padding: 15px 20px;
-                border-radius: 6px;
-                z-index: 10000;
-                max-width: 400px;
-                animation: slideIn 0.3s ease-out;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            `;
-            
-            if (type === 'success') {
-                messageDiv.style.background = '#48bb78';
-                messageDiv.style.color = 'white';
-            } else if (type === 'warning') {
-                messageDiv.style.background = '#f59e0b';
-                messageDiv.style.color = 'white';
-            } else {
-                messageDiv.style.background = '#e53e3e';
-                messageDiv.style.color = 'white';
-            }
-            
-            messageDiv.textContent = message;
-            document.body.appendChild(messageDiv);
-            
-            setTimeout(() => {
-                messageDiv.remove();
-            }, 5000);
-        }
+       // Show message function
+       function showMessage(message, type) {
+           const messageDiv = document.createElement('div');
+           messageDiv.style.cssText = `
+               position: fixed;
+               top: 20px;
+               right: 20px;
+               padding: 15px 20px;
+               border-radius: 6px;
+               z-index: 10000;
+               max-width: 400px;
+               animation: slideIn 0.3s ease-out;
+               box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+           `;
+           
+           if (type === 'success') {
+               messageDiv.style.background = '#48bb78';
+               messageDiv.style.color = 'white';
+           } else if (type === 'warning') {
+               messageDiv.style.background = '#f59e0b';
+               messageDiv.style.color = 'white';
+           } else {
+               messageDiv.style.background = '#e53e3e';
+               messageDiv.style.color = 'white';
+           }
+           
+           messageDiv.textContent = message;
+           document.body.appendChild(messageDiv);
+           
+           setTimeout(() => {
+               messageDiv.remove();
+           }, 5000);
+       }
 
-        // Render files
-        function renderFiles() {
-            if (generatedFiles.length === 0) return;
-            
-            document.getElementById('filesSection').style.display = 'block';
-            document.getElementById('fileList').innerHTML = generatedFiles.map((file, index) => `
-                <div class="file-item">
-                    <div class="file-info">
-                        <div style="font-size: 1.5em;">🎵</div>
-                        <div>
-                            <div style="font-weight: 600;">${file.name}</div>
-                            <div style="font-size: 0.85em; color: #718096;">
-                                ${file.chapter} • ${file.language} • ${file.provider}
-                                ${file.combined ? ' • Combined from multiple parts' : ''}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="file-actions">
-                        <button class="btn btn-primary audio-play-btn" onclick="playAudio('${file.url}')">Play</button>
-                        <button class="btn btn-secondary" onclick="downloadAudio('${file.url}', '${file.name}')">Download</button>
-                    </div>
-                </div>
-            `).join('');
-        }
+       // Render files
+       function renderFiles() {
+           if (generatedFiles.length === 0) return;
+           
+           document.getElementById('filesSection').style.display = 'block';
+           document.getElementById('fileList').innerHTML = generatedFiles.map((file, index) => `
+               <div class="file-item">
+                   <div class="file-info">
+                       <div style="font-size: 1.5em;">🎵</div>
+                       <div>
+                           <div style="font-weight: 600;">${file.name}</div>
+                           <div style="font-size: 0.85em; color: #718096;">
+                               ${file.chapter} • ${file.language} • ${file.provider}
+                               ${file.combined ? ' • Combined from multiple parts' : ''}
+                           </div>
+                       </div>
+                   </div>
+                   <div class="file-actions">
+                       <button class="btn btn-primary audio-play-btn" onclick="playAudio('${file.url}')">Play</button>
+                       <button class="btn btn-secondary" onclick="downloadAudio('${file.url}', '${file.name}')">Download</button>
+                   </div>
+               </div>
+           `).join('');
+       }
 
-        // Play/Stop audio with proper toggle
-        function playAudio(url, buttonElement) {
-            // If no button element passed, try to get it from the event
-            const button = buttonElement || event.target;
-            
-            // Check if this button is currently playing
-            if (button.textContent === 'Stop') {
-                // Stop the audio
-                if (currentAudioPlayer) {
-                    currentAudioPlayer.pause();
-                    currentAudioPlayer.currentTime = 0;
-                    currentAudioPlayer = null;
-                }
-                button.textContent = 'Play';
-                button.classList.remove('btn-danger');
-                button.classList.add('btn-primary');
-                return;
-            }
-            
-            // Stop any other playing audio
-            if (currentAudioPlayer) {
-                currentAudioPlayer.pause();
-                currentAudioPlayer.currentTime = 0;
-                currentAudioPlayer = null;
-                
-                // Reset all play buttons
-                document.querySelectorAll('.audio-play-btn').forEach(btn => {
-                    btn.textContent = 'Play';
-                    btn.classList.remove('btn-danger');
-                    btn.classList.add('btn-primary');
-                });
-            }
-            
-            // Create new audio player
-            currentAudioPlayer = new Audio(url);
-            
-            // Update button to show playing state
-            button.textContent = 'Stop';
-            button.classList.remove('btn-primary');
-            button.classList.add('btn-danger');
-            
-            // Add event listeners
-            currentAudioPlayer.onended = () => {
-                button.textContent = 'Play';
-                button.classList.remove('btn-danger');
-                button.classList.add('btn-primary');
-                currentAudioPlayer = null;
-            };
-            
-            currentAudioPlayer.onerror = () => {
-                showMessage('Error playing audio', 'error');
-                button.textContent = 'Play';
-                button.classList.remove('btn-danger');
-                button.classList.add('btn-primary');
-                currentAudioPlayer = null;
-            };
-            
-            // Handle pause event (in case paused by browser)
-            currentAudioPlayer.onpause = () => {
-                if (currentAudioPlayer && currentAudioPlayer.currentTime < currentAudioPlayer.duration) {
-                    // Audio was paused but not ended
-                    button.textContent = 'Play';
-                    button.classList.remove('btn-danger');
-                    button.classList.add('btn-primary');
-                }
-            };
-            
-            // Start playing
-            currentAudioPlayer.play().catch(error => {
-                console.error('Play error:', error);
-                showMessage('Failed to play audio: ' + error.message, 'error');
-                button.textContent = 'Play';
-                button.classList.remove('btn-danger');
-                button.classList.add('btn-primary');
-                currentAudioPlayer = null;
-            });
-        }
+       // Play/Stop audio with proper toggle
+       function playAudio(url, buttonElement) {
+           // If no button element passed, try to get it from the event
+           const button = buttonElement || event.target;
+           
+           // Check if this button is currently playing
+           if (button.textContent === 'Stop') {
+               // Stop the audio
+               if (currentAudioPlayer) {
+                   currentAudioPlayer.pause();
+                   currentAudioPlayer.currentTime = 0;
+                   currentAudioPlayer = null;
+               }
+               button.textContent = 'Play';
+               button.classList.remove('btn-danger');
+               button.classList.add('btn-primary');
+               return;
+           }
+           
+           // Stop any other playing audio
+           if (currentAudioPlayer) {
+               currentAudioPlayer.pause();
+               currentAudioPlayer.currentTime = 0;
+               currentAudioPlayer = null;
+               
+               // Reset all play buttons
+               document.querySelectorAll('.audio-play-btn').forEach(btn => {
+                   btn.textContent = 'Play';
+                   btn.classList.remove('btn-danger');
+                   btn.classList.add('btn-primary');
+               });
+           }
+           
+           // Create new audio player
+           currentAudioPlayer = new Audio(url);
+           
+           // Update button to show playing state
+           button.textContent = 'Stop';
+           button.classList.remove('btn-primary');
+           button.classList.add('btn-danger');
+           
+           // Add event listeners
+           currentAudioPlayer.onended = () => {
+               button.textContent = 'Play';
+               button.classList.remove('btn-danger');
+               button.classList.add('btn-primary');
+               currentAudioPlayer = null;
+           };
+           
+           currentAudioPlayer.onerror = () => {
+               showMessage('Error playing audio', 'error');
+               button.textContent = 'Play';
+               button.classList.remove('btn-danger');
+               button.classList.add('btn-primary');
+               currentAudioPlayer = null;
+           };
+           
+           // Handle pause event (in case paused by browser)
+           currentAudioPlayer.onpause = () => {
+               if (currentAudioPlayer && currentAudioPlayer.currentTime < currentAudioPlayer.duration) {
+                   // Audio was paused but not ended
+                   button.textContent = 'Play';
+                   button.classList.remove('btn-danger');
+                   button.classList.add('btn-primary');
+               }
+           };
+           
+           // Start playing
+           currentAudioPlayer.play().catch(error => {
+               console.error('Play error:', error);
+               showMessage('Failed to play audio: ' + error.message, 'error');
+               button.textContent = 'Play';
+               button.classList.remove('btn-danger');
+               button.classList.add('btn-primary');
+               currentAudioPlayer = null;
+           });
+       }
 
-        // Download audio
-        function downloadAudio(url, filename) {
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-        }
+       // Download audio
+       function downloadAudio(url, filename) {
+           const a = document.createElement('a');
+           a.href = url;
+           a.download = filename;
+           document.body.appendChild(a);
+           a.click();
+           document.body.removeChild(a);
+       }
 
-        // Load library
-        function loadLibrary() {
-            const audioguides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
-            const list = document.getElementById('libraryList');
-            
-            if (audioguides.length === 0) {
-                list.innerHTML = '<p style="text-align: center; padding: 40px; color: #718096;">No audioguides in library. <a href="index.html">Generate one first</a>.</p>';
-                return;
-            }
-            
-            list.innerHTML = audioguides.map(guide => `
-                <div style="padding: 20px; background: #f7fafc; border-radius: 6px; margin-bottom: 15px; cursor: pointer;"
-                     onclick="loadFromLibrary('${guide.id}')">
-                    <div style="font-weight: 600; margin-bottom: 8px;">${guide.title}</div>
-                    <div style="font-size: 0.85em; color: #718096;">
-                        ${guide.location} • ${guide.language} • ${guide.stops} stops
-                    </div>
-                </div>
-            `).join('');
-        }
+       // Load library
+       function loadLibrary() {
+           const audioguides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
+           const libraryGrid = document.getElementById('libraryList');
+           
+           if (audioguides.length === 0) {
+               libraryGrid.innerHTML = `
+                   <div style="text-align: center; padding: 60px 20px; color: #a0aec0;">
+                       <div style="font-size: 3em; margin-bottom: 20px;">📚</div>
+                       <p style="font-size: 1.2em; margin-bottom: 15px;">Your library is empty</p>
+                       <p><a href="index.html" style="color: #48bb78; text-decoration: none;">Generate your first audioguide →</a></p>
+                   </div>
+               `;
+               return;
+           }
 
-        // Load from library
-        function loadFromLibrary(id) {
-            const audioguides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
-            const guide = audioguides.find(g => g.id == id);
-            
-            if (guide && guide.content) {
-                switchTab('text');
-                document.getElementById('textInput').value = guide.content;
-                parseChapters();
-            }
-        }
+           libraryGrid.innerHTML = audioguides.map(guide => `
+               <div style="padding: 20px; background: #f7fafc; border-radius: 6px; margin-bottom: 15px; cursor: pointer;"
+                    onclick="loadFromLibrary('${guide.id}')">
+                   <div style="font-weight: 600; margin-bottom: 8px;">${guide.title}</div>
+                   <div style="font-size: 0.85em; color: #718096;">
+                       ${guide.location} • ${guide.language} • ${guide.stops} stops
+                   </div>
+               </div>
+           `).join('');
+       }
 
-        // Initialize on load
-        window.addEventListener('DOMContentLoaded', function() {
-            updateSpeed();
-            updateLanguageInfo();
-            
-            // Check URL params
-            const urlParams = new URLSearchParams(window.location.search);
-            const id = urlParams.get('id');
-            if (id) {
-                loadFromLibrary(id);
-            }
-        });
-    </script>
+       // Load from library
+       function loadFromLibrary(id) {
+           const audioguides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
+           const guide = audioguides.find(g => g.id == id);
+           
+           if (guide && guide.content) {
+               switchTab('text');
+               document.getElementById('textInput').value = guide.content;
+               parseChapters();
+           }
+       }
+
+       // Initialize on load
+       window.addEventListener('DOMContentLoaded', function() {
+           updateSpeed();
+           updateLanguageInfo();
+           
+           // Check URL params
+           const urlParams = new URLSearchParams(window.location.search);
+           const id = urlParams.get('id');
+           if (id) {
+               loadFromLibrary(id);
+           }
+       });
+   </script>
 </body>
 </html>
