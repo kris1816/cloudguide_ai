@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta property="og:title" content="CloudGuide Library" />
-    <meta property="og:description" content="Manage and translate your audioguide collection" />
-    <title>CloudGuide - Library & Translation</title>
+    <meta property="og:title" content="CloudGuide Library - Your Audioguide Collection" />
+    <meta property="og:description" content="Manage, organize and access all your AI-generated audioguides" />
+    <title>CloudGuide Library - Your Complete Collection</title>
     
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css?family=Nunito+Sans:300,400,400i,600,700&display=swap" rel="stylesheet">
@@ -27,7 +27,7 @@
         }
 
         .wrapper {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             padding: 20px;
         }
@@ -84,8 +84,6 @@
             border-radius: 8px;
             text-align: center;
             margin-bottom: 25px;
-            position: relative;
-            overflow: hidden;
         }
 
         .hero-title {
@@ -101,87 +99,70 @@
             font-size: 0.95em;
             font-weight: 300;
             opacity: 0.9;
-            max-width: 500px;
+            max-width: 600px;
             margin: 0 auto;
         }
 
-        /* Main Content */
-        .main-container {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 25px;
-        }
-
-        .panel {
+        /* Stats Bar */
+        .stats-container {
             background: white;
             border-radius: 8px;
+            padding: 25px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            padding: 35px;
-        }
-
-        .panel-title {
-            font-family: 'Montserrat', sans-serif;
-            font-size: 1.4em;
-            font-weight: 600;
-            margin-bottom: 20px;
-            color: #2d3748;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .panel-title .icon {
-            font-size: 1.2em;
-        }
-
-        /* Library Section */
-        .library-stats {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
             margin-bottom: 25px;
         }
 
-        .stat-card {
-            background: #f7fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            padding: 20px;
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+        }
+
+        .stat-item {
             text-align: center;
         }
 
-        .stat-number {
-            font-size: 2em;
+        .stat-value {
+            font-size: 2.5em;
             font-weight: 700;
-            color: #48bb78;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
             margin-bottom: 5px;
         }
 
         .stat-label {
-            font-size: 0.85em;
+            font-size: 12px;
             color: #718096;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
         }
 
-        /* Search and Filter */
-        .search-section {
+        /* Control Bar */
+        .control-bar {
+            background: white;
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
             margin-bottom: 25px;
         }
 
-        .search-bar {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 15px;
+        .search-section {
+            margin-bottom: 20px;
+        }
+
+        .search-box {
+            position: relative;
         }
 
         .search-input {
-            flex: 1;
-            padding: 12px 18px;
+            width: 100%;
+            padding: 12px 20px 12px 45px;
             border: 1px solid #e2e8f0;
             border-radius: 6px;
             font-size: 14px;
             background: #f7fafc;
+            transition: all 0.3s;
         }
 
         .search-input:focus {
@@ -191,85 +172,284 @@
             box-shadow: 0 0 0 3px rgba(72, 187, 120, 0.15);
         }
 
-        .filter-buttons {
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 18px;
+            color: #a0aec0;
+        }
+
+        .control-buttons {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .filter-group {
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
         }
 
         .filter-btn {
-            padding: 6px 16px;
+            padding: 8px 18px;
             background: #f7fafc;
             border: 1px solid #e2e8f0;
             border-radius: 5px;
             cursor: pointer;
             font-size: 12px;
             font-weight: 500;
-            transition: all 0.3s;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            transition: all 0.3s;
         }
 
-        .filter-btn:hover, .filter-btn.active {
+        .filter-btn:hover {
             background: #48bb78;
             color: white;
             border-color: #48bb78;
         }
 
-        /* Library Items */
-        .library-grid {
-            display: grid;
-            gap: 20px;
+        .filter-btn.active {
+            background: #48bb78;
+            color: white;
+            border-color: #48bb78;
         }
 
-        .library-item {
+        .view-toggle {
+            display: flex;
+            gap: 5px;
             background: #f7fafc;
-            border: 1px solid #e2e8f0;
+            padding: 5px;
+            border-radius: 6px;
+        }
+
+        .view-btn {
+            padding: 8px 12px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 16px;
+            transition: all 0.3s;
+            color: #718096;
+        }
+
+        .view-btn.active {
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            color: #48bb78;
+        }
+
+        /* Library Container */
+        .library-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .library-container.list-view {
+            grid-template-columns: 1fr;
+        }
+
+        /* Guide Card */
+        .guide-card {
+            background: white;
             border-radius: 8px;
-            padding: 25px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
             transition: all 0.3s;
             position: relative;
         }
 
-        .library-item:hover {
-            background: white;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            transform: translateY(-2px);
+        .guide-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
         }
 
-        .library-item-header {
+        .guide-card.selected {
+            border: 2px solid #667eea;
+        }
+
+        .guide-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 20px;
+            position: relative;
+        }
+
+        .guide-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #667eea;
+        }
+
+        .guide-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.3em;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 8px;
+            padding-right: 80px;
+        }
+
+        .guide-meta {
             display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
+            gap: 15px;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .guide-content {
+            padding: 20px;
+        }
+
+        .guide-description {
+            color: #4a5568;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .guide-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
             margin-bottom: 15px;
         }
 
-        .library-item-title {
-            font-size: 1.2em;
+        .tag {
+            padding: 4px 10px;
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 15px;
+            font-size: 12px;
+            color: #4a5568;
+        }
+
+        .guide-actions {
+            display: flex;
+            gap: 10px;
+            padding-top: 15px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: transparent;
+            color: #4a5568;
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .action-btn:hover {
+            background: #f7fafc;
+            color: #48bb78;
+        }
+
+        .action-btn.danger:hover {
+            background: #fff5f5;
+            color: #e53e3e;
+        }
+
+        /* List View Styles */
+        .list-view .guide-card {
+            display: flex;
+            align-items: stretch;
+        }
+
+        .list-view .guide-header {
+            width: 300px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 25px;
+        }
+
+        .list-view .guide-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 25px;
+        }
+
+        .list-view .guide-info {
+            flex: 1;
+        }
+
+        .list-view .guide-actions {
+            border: none;
+            padding: 0;
+            margin-left: 20px;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        /* Empty State */
+        .empty-state {
+            background: white;
+            border-radius: 8px;
+            padding: 80px 40px;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .empty-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        .empty-title {
+            font-size: 24px;
             font-weight: 600;
             color: #2d3748;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
 
-        .library-item-meta {
-            font-size: 12px;
+        .empty-message {
             color: #718096;
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
+            margin-bottom: 30px;
         }
 
-        .library-item-actions {
-            display: flex;
-            gap: 8px;
-            align-items: flex-start;
-        }
-
-        .btn-small {
-            padding: 6px 12px;
+        /* Buttons */
+        .btn {
+            padding: 12px 24px;
             border: none;
-            border-radius: 4px;
-            font-size: 11px;
+            border-radius: 6px;
+            font-size: 13px;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -305,256 +485,34 @@
             background: #c53030;
         }
 
-        .library-item-preview {
-            font-size: 13px;
-            color: #4a5568;
-            line-height: 1.5;
-            max-height: 80px;
-            overflow: hidden;
-            margin-bottom: 15px;
-            position: relative;
-        }
-
-        .library-item-preview::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 20px;
-            background: linear-gradient(transparent, #f7fafc);
-        }
-
-        /* Translation Panel */
-        .translation-section {
-            margin-bottom: 25px;
-        }
-
-        .translation-tabs {
-            display: flex;
-            gap: 2px;
-            margin-bottom: 20px;
-            background: #e2e8f0;
-            border-radius: 6px;
-            padding: 4px;
-        }
-
-        .tab-btn {
-            flex: 1;
-            padding: 10px 15px;
-            background: transparent;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            transition: all 0.3s;
-            color: #718096;
-        }
-
-        .tab-btn.active {
-            background: white;
-            color: #48bb78;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: #4a5568;
-            font-weight: 600;
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-        }
-
-        .form-element {
-            width: 100%;
-            padding: 12px 18px;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            font-size: 14px;
-            font-family: 'Nunito Sans', sans-serif;
-            transition: all 0.3s;
-            background: #f7fafc;
-            color: #2d3748;
-        }
-
-        .form-element:focus {
-            outline: none;
-            border-color: #48bb78;
-            background: white;
-            box-shadow: 0 0 0 3px rgba(72, 187, 120, 0.15);
-        }
-
-        select.form-element {
-            cursor: pointer;
-            appearance: none;
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23718096' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-            background-repeat: no-repeat;
-            background-position: right 15px center;
-            background-size: 18px;
-            padding-right: 45px;
-        }
-
-        textarea.form-element {
-            min-height: 200px;
-            resize: vertical;
-        }
-
-        .translate-btn {
-            width: 100%;
-            padding: 14px;
-            background: #48bb78;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1.2px;
-            cursor: pointer;
-            margin-top: 15px;
-            transition: all 0.3s;
-        }
-
-        .translate-btn:hover {
-            background: #38a169;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(72, 187, 120, 0.3);
-        }
-
-        .translate-btn:disabled {
-            background: #cbd5e0;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        /* Progress Bar */
-        .progress-container {
-            display: none;
-            margin-top: 20px;
-            background: #f7fafc;
-            border-radius: 8px;
-            padding: 20px;
-            border: 1px solid #e2e8f0;
-        }
-
-        .progress-container.active {
-            display: block;
-        }
-
-        .progress-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 12px;
-        }
-
-        .progress-title {
-            font-weight: 600;
-            color: #4a5568;
-            font-size: 14px;
-        }
-
-        .progress-percentage {
-            color: #48bb78;
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        .progress-bar-bg {
-            width: 100%;
-            height: 8px;
-            background: #e2e8f0;
-            border-radius: 4px;
-            overflow: hidden;
-        }
-
-        .progress-bar-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #48bb78 0%, #38a169 100%);
-            width: 0%;
-            transition: width 0.5s ease;
-            border-radius: 4px;
-        }
-
-        .progress-status {
-            margin-top: 12px;
-            font-size: 13px;
-            color: #718096;
-            font-style: italic;
-        }
-
-        /* Success/Error Messages */
-        .success-message, .error-message {
-            display: none;
-            padding: 15px;
-            border-radius: 6px;
-            margin-top: 20px;
-            font-weight: 500;
-        }
-
-        .success-message {
-            background: #48bb78;
-            color: white;
-        }
-
-        .error-message {
-            background: #e53e3e;
-            color: white;
-        }
-
-        .success-message.active, .error-message.active {
-            display: block;
-            animation: slideIn 0.5s ease-out;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
         /* Modal */
         .modal {
             display: none;
             position: fixed;
-            z-index: 1000;
-            left: 0;
             top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
         }
 
         .modal-content {
-            background-color: white;
-            margin: 5% auto;
-            padding: 30px;
+            background: white;
             border-radius: 10px;
-            width: 90%;
+            padding: 30px;
             max-width: 800px;
+            width: 90%;
             max-height: 80vh;
             overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
         }
 
         .modal-header {
@@ -575,23 +533,27 @@
         .close-modal {
             background: none;
             border: none;
-            font-size: 1.5em;
+            font-size: 28px;
             cursor: pointer;
             color: #718096;
-            padding: 5px;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .close-modal:hover {
             color: #e53e3e;
         }
 
-        /* Footer Section */
+        /* Footer */
         .footer-section {
             margin-top: 40px;
             padding-top: 30px;
             border-top: 1px solid #e2e8f0;
             text-align: center;
-            grid-column: 1 / -1;
         }
 
         .funding-text {
@@ -619,52 +581,86 @@
             opacity: 0.8;
         }
 
+        /* Toast Messages */
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 6px;
+            z-index: 10000;
+            animation: slideInRight 0.3s ease-out;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .toast.success {
+            background: #48bb78;
+            color: white;
+        }
+
+        .toast.error {
+            background: #e53e3e;
+            color: white;
+        }
+
+        .toast.info {
+            background: #3182ce;
+            color: white;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
-            .main-container {
-                grid-template-columns: 1fr;
-            }
-            
-            .library-stats {
+            .library-container {
                 grid-template-columns: 1fr;
             }
 
-            .funding-logos {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .control-buttons {
                 flex-direction: column;
-                gap: 20px;
+                align-items: stretch;
+            }
+
+            .filter-group {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .list-view .guide-card {
+                flex-direction: column;
+            }
+
+            .list-view .guide-header {
+                width: 100%;
             }
 
             .nav-links {
                 display: none;
             }
 
-            .hero-title {
-                font-size: 2em;
-            }
-
-            .panel {
-                padding: 25px;
-            }
-
-            .search-bar {
+            .funding-logos {
                 flex-direction: column;
-            }
-
-            .library-item-actions {
-                flex-direction: column;
-                gap: 5px;
-            }
-
-            .btn-small {
-                font-size: 10px;
-                padding: 5px 10px;
+                gap: 20px;
             }
         }
     </style>
 </head>
 <body>
     <div class="wrapper">
-        <!-- Header with UPDATED NAVIGATION -->
+        <!-- Header -->
         <header class="header">
             <div class="header-inner">
                 <div class="logo">
@@ -688,155 +684,84 @@
 
         <!-- Hero Section -->
         <section class="hero-section">
-            <h1 class="hero-title">Library & Translation</h1>
-            <p class="hero-subtitle">Manage Your Audioguide Collection and Translate to Any Language</p>
+            <h1 class="hero-title">Your Audioguide Library</h1>
+            <p class="hero-subtitle">Access, manage and share your complete collection of AI-generated audioguides</p>
         </section>
 
-        <!-- Main Content -->
-        <div class="main-container">
-            <!-- Library Panel -->
-            <div class="panel">
-                <h2 class="panel-title">
-                    <span class="icon">📚</span>
-                    Your Audioguide Library
-                </h2>
-
-                <!-- Library Stats -->
-                <div class="library-stats">
-                    <div class="stat-card">
-                        <div class="stat-number" id="totalAudioguides">0</div>
-                        <div class="stat-label">Total Audioguides</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="totalLanguages">0</div>
-                        <div class="stat-label">Languages</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="totalStops">0</div>
-                        <div class="stat-label">Total Stops</div>
-                    </div>
+        <!-- Stats Container -->
+        <div class="stats-container">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value" id="totalGuides">0</div>
+                    <div class="stat-label">Total Audioguides</div>
                 </div>
-
-                <!-- Search and Filter -->
-                <div class="search-section">
-                    <div class="search-bar">
-                        <input type="text" class="search-input" id="searchInput" placeholder="Search audioguides by title, location, or content...">
-                    </div>
-                    <div class="filter-buttons">
-                        <button class="filter-btn active" onclick="filterByLanguage('all')">All Languages</button>
-                        <button class="filter-btn" onclick="filterByLanguage('English')">English</button>
-                        <button class="filter-btn" onclick="filterByLanguage('Spanish')">Spanish</button>
-                        <button class="filter-btn" onclick="filterByLanguage('French')">French</button>
-                        <button class="filter-btn" onclick="filterByLanguage('German')">German</button>
-                        <button class="filter-btn" onclick="filterByLanguage('Italian')">Italian</button>
-                    </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="totalWords">0</div>
+                    <div class="stat-label">Total Words</div>
                 </div>
-
-                <!-- Library Grid -->
-                <div class="library-grid" id="libraryGrid">
-                    <!-- Library items will be loaded here -->
+                <div class="stat-item">
+                    <div class="stat-value" id="totalStops">0</div>
+                    <div class="stat-label">Total Stops</div>
                 </div>
-            </div>
-
-            <!-- Translation Panel -->
-            <div class="panel">
-                <h2 class="panel-title">
-                    <span class="icon">🌍</span>
-                    AI Translation
-                </h2>
-
-                <!-- Translation Tabs -->
-                <div class="translation-tabs">
-                    <button class="tab-btn active" onclick="switchTranslationTab('existing')">Translate Existing</button>
-                    <button class="tab-btn" onclick="switchTranslationTab('new')">Translate New Text</button>
-                </div>
-
-                <!-- Translate Existing Tab -->
-                <div id="existingTab" class="tab-content active">
-                    <div class="form-group">
-                        <label for="selectAudioguide">Select Audioguide</label>
-                        <select id="selectAudioguide" class="form-element">
-                            <option value="">Choose an audioguide to translate...</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Translate New Text Tab -->
-                <div id="newTab" class="tab-content">
-                    <div class="form-group">
-                        <label for="newText">Text to Translate</label>
-                        <textarea id="newText" class="form-element" placeholder="Paste your audioguide text here for translation..."></textarea>
-                    </div>
-                </div>
-
-                <!-- Common Translation Settings -->
-                <div class="translation-section">
-                    <div class="form-group">
-                        <label for="fromLanguage">From Language</label>
-                        <select id="fromLanguage" class="form-element">
-                            <option value="English">English</option>
-                            <option value="Spanish">Spanish</option>
-                            <option value="French">French</option>
-                            <option value="German">German</option>
-                            <option value="Italian">Italian</option>
-                            <option value="Portuguese">Portuguese</option>
-                            <option value="Chinese">Chinese</option>
-                            <option value="Japanese">Japanese</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="toLanguage">To Language</label>
-                        <select id="toLanguage" class="form-element">
-                            <option value="Spanish">Spanish</option>
-                            <option value="French">French</option>
-                            <option value="German">German</option>
-                            <option value="Italian">Italian</option>
-                            <option value="Portuguese">Portuguese</option>
-                            <option value="English">English</option>
-                            <option value="Chinese">Chinese</option>
-                            <option value="Japanese">Japanese</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="translationModel">AI Model</label>
-                        <select id="translationModel" class="form-element">
-                            <option value="openai">OpenAI GPT (Best Quality)</option>
-                            <option value="groq">Groq Mixtral (Fast & Free)</option>
-                            <option value="deepseek">DeepSeek (Budget)</option>
-                        </select>
-                    </div>
-
-                    <button class="translate-btn" id="translateBtn" onclick="translateText()">
-                        🌍 Translate with AI
-                    </button>
-
-                    <!-- Progress Bar -->
-                    <div class="progress-container" id="progressContainer">
-                        <div class="progress-header">
-                            <div class="progress-title">Translating Content</div>
-                            <div class="progress-percentage" id="progressPercentage">0%</div>
-                        </div>
-                        <div class="progress-bar-bg">
-                            <div class="progress-bar-fill" id="progressBar"></div>
-                        </div>
-                        <div class="progress-status" id="progressStatus">Initializing...</div>
-                    </div>
-
-                    <!-- Success/Error Messages -->
-                    <div class="success-message" id="successMessage">
-                        ✓ Translation completed successfully!
-                    </div>
-
-                    <div class="error-message" id="errorMessage">
-                        ✗ Translation failed. Please try again.
-                    </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="totalLanguages">0</div>
+                    <div class="stat-label">Languages</div>
                 </div>
             </div>
         </div>
 
-        <!-- Footer Section -->
+        <!-- Control Bar -->
+        <div class="control-bar">
+            <div class="search-section">
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" class="search-input" id="searchInput" 
+                           placeholder="Search by title, location, or content...">
+                </div>
+            </div>
+            
+            <div class="control-buttons">
+                <div class="filter-group">
+                    <button class="filter-btn active" onclick="filterByLanguage('all')">All</button>
+                    <button class="filter-btn" onclick="filterByLanguage('English')">English</button>
+                    <button class="filter-btn" onclick="filterByLanguage('Spanish')">Spanish</button>
+                    <button class="filter-btn" onclick="filterByLanguage('French')">French</button>
+                    <button class="filter-btn" onclick="filterByLanguage('German')">German</button>
+                    <button class="filter-btn" onclick="filterByLanguage('Italian')">Italian</button>
+                </div>
+                
+                <div class="view-toggle">
+                    <button class="view-btn active" onclick="setViewMode('grid')" title="Grid View">⚏</button>
+                    <button class="view-btn" onclick="setViewMode('list')" title="List View">☰</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Library Container -->
+        <div class="library-container" id="libraryContainer">
+            <!-- Cards will be loaded here -->
+        </div>
+
+        <!-- View Modal -->
+        <div class="modal" id="viewModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title" id="modalTitle">Audioguide Content</h2>
+                    <button class="close-modal" onclick="closeModal()">&times;</button>
+                </div>
+                <div id="modalContent" style="white-space: pre-wrap; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.6; background: #f7fafc; padding: 20px; border-radius: 6px; max-height: 500px; overflow-y: auto;">
+                    <!-- Content will be loaded here -->
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                    <button class="btn btn-secondary" onclick="closeModal()">Close</button>
+                    <button class="btn btn-primary" onclick="copyContent()">Copy Text</button>
+                    <button class="btn btn-primary" onclick="downloadContent()">Download</button>
+                    <button class="btn btn-primary" onclick="openInAudio()">Generate Audio</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
         <div class="footer-section">
             <p class="funding-text">
                 Financiado por la Unión Europea – Next Generation EU<br>
@@ -849,471 +774,304 @@
                      alt="Spain" class="funding-logo">
             </div>
         </div>
-
-        <!-- Translation Result Modal -->
-        <div id="translationModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2 class="modal-title" id="modalTitle">Translation Result</h2>
-                    <button class="close-modal" onclick="closeTranslationModal()">&times;</button>
-                </div>
-                <div id="translationResult">
-                    <!-- Translation result will be shown here -->
-                </div>
-                <div style="display: flex; gap: 15px; margin-top: 30px; justify-content: flex-end;">
-                    <button class="btn-secondary btn-small" onclick="closeTranslationModal()">Close</button>
-                    <button class="btn-primary btn-small" onclick="saveTranslation()">Save to Library</button>
-                    <button class="btn-primary btn-small" onclick="downloadTranslation()">Download</button>
-                </div>
-            </div>
-        </div>
     </div>
 
     <script>
+        let audioguides = [];
+        let filteredGuides = [];
         let currentFilter = 'all';
-        let currentTranslationResult = '';
-        let currentTranslationMeta = {};
+        let currentViewMode = 'grid';
+        let currentViewingGuide = null;
 
-        // Load page
+        // Initialize
         window.addEventListener('DOMContentLoaded', function() {
             loadLibrary();
-            loadAudioguideSelector();
-            setupSearch();
+            setupEventListeners();
         });
 
-        function loadLibrary() {
-            const audioguides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
-            const libraryGrid = document.getElementById('libraryGrid');
-            
-            // Update stats
-            updateLibraryStats(audioguides);
-            
-            if (audioguides.length === 0) {
-                libraryGrid.innerHTML = `
-                    <div style="text-align: center; padding: 60px 20px; color: #a0aec0;">
-                        <div style="font-size: 3em; margin-bottom: 20px;">📚</div>
-                        <p style="font-size: 1.2em; margin-bottom: 15px;">Your library is empty</p>
-                        <p><a href="index.html" style="color: #48bb78; text-decoration: none;">Generate your first audioguide →</a></p>
-                    </div>
-                `;
-                return;
-            }
-
-            // Filter audioguides
-            const filteredAudioguides = currentFilter === 'all' 
-                ? audioguides 
-                : audioguides.filter(guide => guide.language === currentFilter);
-
-            if (filteredAudioguides.length === 0) {
-                libraryGrid.innerHTML = `
-                    <div style="text-align: center; padding: 40px 20px; color: #a0aec0;">
-                        <p>No audioguides found for "${currentFilter}"</p>
-                    </div>
-                `;
-                return;
-            }
-
-            libraryGrid.innerHTML = filteredAudioguides.map((guide, index) => {
-                const preview = guide.content ? guide.content.substring(0, 200) + '...' : 'No content available';
-                const date = new Date(guide.date).toLocaleDateString();
-                
-                return `
-                    <div class="library-item">
-                        <div class="library-item-header">
-                            <div>
-                                <div class="library-item-title">${guide.title}</div>
-                                <div class="library-item-meta">
-                                    <span>📍 ${guide.location}</span>
-                                    <span>🗣️ ${guide.language}</span>
-                                    <span>🎯 ${guide.stops} stops</span>
-                                    <span>📅 ${date}</span>
-                                </div>
-                            </div>
-                            <div class="library-item-actions">
-                                <button class="btn-small btn-primary" onclick="translateAudioguide('${guide.id}')">Translate</button>
-                                <button class="btn-small btn-secondary" onclick="viewAudioguide('${guide.id}')">View</button>
-                                <button class="btn-small btn-secondary" onclick="editAudioguide('${guide.id}')">Edit</button>
-                                <button class="btn-small btn-danger" onclick="deleteAudioguide('${guide.id}')">Delete</button>
-                            </div>
-                        </div>
-                        <div class="library-item-preview">${preview}</div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function updateLibraryStats(audioguides) {
-            const totalAudioguides = audioguides.length;
-            const totalLanguages = [...new Set(audioguides.map(guide => guide.language))].length;
-            const totalStops = audioguides.reduce((sum, guide) => sum + (guide.stops || 0), 0);
-
-            document.getElementById('totalAudioguides').textContent = totalAudioguides;
-            document.getElementById('totalLanguages').textContent = totalLanguages;
-            document.getElementById('totalStops').textContent = totalStops;
-        }
-
-        function loadAudioguideSelector() {
-            const audioguides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
-            const selector = document.getElementById('selectAudioguide');
-            
-            selector.innerHTML = '<option value="">Choose an audioguide to translate...</option>';
-            
-            audioguides.forEach(guide => {
-                const option = document.createElement('option');
-                option.value = guide.id;
-                option.textContent = `${guide.title} (${guide.language})`;
-                selector.appendChild(option);
-            });
-        }
-
-        function setupSearch() {
+        // Setup event listeners
+        function setupEventListeners() {
             const searchInput = document.getElementById('searchInput');
-            searchInput.addEventListener('input', function() {
-                // Simple search implementation
-                loadLibrary();
+            searchInput.addEventListener('input', debounce(handleSearch, 300));
+
+            // Close modal on click outside
+            window.addEventListener('click', function(event) {
+                const modal = document.getElementById('viewModal');
+                if (event.target === modal) {
+                    closeModal();
+                }
             });
         }
 
+        // Load library
+        function loadLibrary() {
+            audioguides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
+            updateStats();
+            applyFilters();
+        }
+
+        // Update statistics
+        function updateStats() {
+            const totalWords = audioguides.reduce((sum, guide) => {
+                const words = guide.content ? guide.content.split(/\s+/).length : 0;
+                return sum + words;
+            }, 0);
+            
+            const totalStops = audioguides.reduce((sum, guide) => sum + (parseInt(guide.stops) || 0), 0);
+            const languages = [...new Set(audioguides.map(g => g.language || 'English'))];
+
+            document.getElementById('totalGuides').textContent = audioguides.length;
+            document.getElementById('totalWords').textContent = formatNumber(totalWords);
+            document.getElementById('totalStops').textContent = totalStops;
+            document.getElementById('totalLanguages').textContent = languages.length;
+        }
+
+        // Format large numbers
+        function formatNumber(num) {
+            if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+            if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
+            return num.toString();
+        }
+
+        // Apply filters
+        function applyFilters() {
+            filteredGuides = audioguides;
+
+            // Apply language filter
+            if (currentFilter !== 'all') {
+                filteredGuides = filteredGuides.filter(g => (g.language || 'English') === currentFilter);
+            }
+
+            // Apply search filter
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            if (searchTerm) {
+                filteredGuides = filteredGuides.filter(g => {
+                    const searchableText = `${g.title} ${g.location || ''} ${g.content || ''}`.toLowerCase();
+                    return searchableText.includes(searchTerm);
+                });
+            }
+
+            renderLibrary();
+        }
+
+        // Render library
+        function renderLibrary() {
+            const container = document.getElementById('libraryContainer');
+            
+            if (filteredGuides.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📚</div>
+                        <h2 class="empty-title">No Audioguides Found</h2>
+                        <p class="empty-message">
+                            ${audioguides.length === 0 
+                                ? 'Your library is empty. Start by generating your first audioguide!' 
+                                : 'No audioguides match your current filters.'}
+                        </p>
+                        ${audioguides.length === 0 
+                            ? '<a href="index.html" class="btn btn-primary">Generate Audioguide</a>'
+                            : '<button class="btn btn-secondary" onclick="clearFilters()">Clear Filters</button>'}
+                    </div>
+                `;
+                return;
+            }
+
+            container.className = `library-container ${currentViewMode === 'list' ? 'list-view' : ''}`;
+            container.innerHTML = filteredGuides.map(guide => renderGuideCard(guide)).join('');
+        }
+
+        // Render individual guide card
+        function renderGuideCard(guide) {
+            const wordCount = guide.content ? guide.content.split(/\s+/).length : 0;
+            const date = new Date(guide.date).toLocaleDateString();
+            const preview = guide.content ? guide.content.substring(0, 150) + '...' : 'No content available';
+            
+            // Check if audio files exist
+            const audioFiles = localStorage.getItem(`cloudguide_audio_${guide.id}`);
+            const hasAudio = audioFiles ? JSON.parse(audioFiles).length > 0 : false;
+            
+            return `
+                <div class="guide-card" id="guide-${guide.id}">
+                    <div class="guide-header">
+                        <div class="guide-badge">${guide.tourType || guide.type || 'Standard'}</div>
+                        <div class="guide-title">${guide.title || 'Untitled'}</div>
+                        <div class="guide-meta">
+                            <div class="meta-item">📍 ${guide.location || 'Unknown'}</div>
+                            <div class="meta-item">📝 ${formatNumber(wordCount)} words</div>
+                        </div>
+                    </div>
+                    <div class="guide-content">
+                        ${currentViewMode === 'list' ? '<div class="guide-info">' : ''}
+                        <div class="guide-description">${preview}</div>
+                        <div class="guide-tags">
+                            <span class="tag">🗣️ ${guide.language || 'English'}</span>
+                            <span class="tag">🎯 ${guide.stops || '?'} stops</span>
+                            <span class="tag">📅 ${date}</span>
+                            ${hasAudio ? '<span class="tag" style="background: #f0fff4; color: #48bb78; border-color: #48bb78;">🎵 Audio Ready</span>' : ''}
+                        </div>
+                        ${currentViewMode === 'list' ? '</div>' : ''}
+                        <div class="guide-actions">
+                            <button class="action-btn" onclick="viewGuide(${guide.id})">
+                                <span>👁️</span> View
+                            </button>
+                            <button class="action-btn" onclick="openAudioGenerator(${guide.id})">
+                                <span>🎙️</span> Audio
+                            </button>
+                            <button class="action-btn" onclick="downloadGuide(${guide.id})">
+                                <span>📥</span> Download
+                            </button>
+                            <button class="action-btn danger" onclick="deleteGuide(${guide.id})">
+                                <span>🗑️</span> Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // View guide
+        function viewGuide(id) {
+            const guide = audioguides.find(g => g.id === id);
+            if (!guide) return;
+            
+            currentViewingGuide = guide;
+            document.getElementById('modalTitle').textContent = guide.title || 'Audioguide Content';
+            document.getElementById('modalContent').textContent = guide.content || 'No content available';
+            document.getElementById('viewModal').classList.add('active');
+        }
+
+        // Open audio generator
+        function openAudioGenerator(id) {
+            window.location.href = `audio.html?id=${id}`;
+        }
+
+        // Download guide
+        function downloadGuide(id) {
+            const guide = audioguides.find(g => g.id === id);
+            if (!guide) return;
+            
+            const blob = new Blob([guide.content || ''], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${guide.title || 'audioguide'}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showToast('Audioguide downloaded!', 'success');
+        }
+
+        // Delete guide
+        function deleteGuide(id) {
+            if (!confirm('Are you sure you want to delete this audioguide? This action cannot be undone.')) {
+                return;
+            }
+            
+            audioguides = audioguides.filter(g => g.id !== id);
+            localStorage.setItem('cloudguide_audioguides', JSON.stringify(audioguides));
+            
+            // Also remove associated audio files
+            localStorage.removeItem(`cloudguide_audio_${id}`);
+            
+            showToast('Audioguide deleted', 'success');
+            loadLibrary();
+        }
+
+        // Filter by language
         function filterByLanguage(language) {
             currentFilter = language;
             
-            // Update active button
+            // Update button states
             document.querySelectorAll('.filter-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
             event.target.classList.add('active');
             
-            loadLibrary();
+            applyFilters();
         }
 
-        function switchTranslationTab(tab) {
-            // Update tab buttons
-            document.querySelectorAll('.tab-btn').forEach(btn => {
+        // Set view mode
+        function setViewMode(mode) {
+            currentViewMode = mode;
+            
+            // Update button states
+            document.querySelectorAll('.view-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
             event.target.classList.add('active');
             
-            // Update tab content
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.remove('active');
+            renderLibrary();
+        }
+
+        // Handle search
+        function handleSearch() {
+            applyFilters();
+        }
+
+        // Clear filters
+        function clearFilters() {
+            currentFilter = 'all';
+            document.getElementById('searchInput').value = '';
+            
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
             });
+            document.querySelector('.filter-btn').classList.add('active');
             
-            if (tab === 'existing') {
-                document.getElementById('existingTab').classList.add('active');
-            } else {
-                document.getElementById('newTab').classList.add('active');
-            }
+            applyFilters();
         }
 
-        function translateAudioguide(id) {
-            // Find the audioguide
-            const audioguides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
-            const guide = audioguides.find(g => g.id == id);
-            
-            if (guide) {
-                // Set up translation form
-                document.getElementById('selectAudioguide').value = id;
-                document.getElementById('fromLanguage').value = guide.language;
-                
-                // Switch to existing tab
-                switchTranslationTab('existing');
-                document.querySelector('[onclick="switchTranslationTab(\'existing\')"]').click();
-            }
+        // Modal functions
+        function closeModal() {
+            document.getElementById('viewModal').classList.remove('active');
+            currentViewingGuide = null;
         }
 
-        async function translateText() {
-            const currentTab = document.querySelector('.tab-content.active').id;
-            const fromLang = document.getElementById('fromLanguage').value;
-            const toLang = document.getElementById('toLanguage').value;
-            const model = document.getElementById('translationModel').value;
+        function copyContent() {
+            if (!currentViewingGuide) return;
             
-            let textToTranslate = '';
-            let sourceMeta = {};
-            
-            if (currentTab === 'existingTab') {
-                const selectedId = document.getElementById('selectAudioguide').value;
-                if (!selectedId) {
-                    alert('Please select an audioguide to translate');
-                    return;
-                }
-                
-                const audioguides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
-                const guide = audioguides.find(g => g.id == selectedId);
-                if (!guide) {
-                    alert('Audioguide not found');
-                    return;
-                }
-                
-                textToTranslate = guide.content;
-                sourceMeta = {
-                    originalTitle: guide.title,
-                    originalLocation: guide.location,
-                    originalLanguage: guide.language,
-                    stops: guide.stops,
-                    tourType: guide.tourType
-                };
-            } else {
-                textToTranslate = document.getElementById('newText').value.trim();
-                if (!textToTranslate) {
-                    alert('Please enter text to translate');
-                    return;
-                }
-                sourceMeta = {
-                    originalTitle: 'Custom Translation',
-                    originalLocation: 'User Input',
-                    originalLanguage: fromLang,
-                    stops: 'Unknown',
-                    tourType: 'custom'
-                };
-            }
-
-            if (fromLang === toLang) {
-                alert('Please select different source and target languages');
-                return;
-            }
-
-            // Show progress
-            showProgress(true);
-            updateProgress(10, 'Preparing translation...');
-
-            try {
-                updateProgress(30, 'Connecting to AI translation service...');
-                
-                const translatedContent = await callTranslationAPI(textToTranslate, fromLang, toLang, model);
-                
-                updateProgress(90, 'Finalizing translation...');
-                
-                // Store result for potential saving
-                currentTranslationResult = translatedContent;
-                currentTranslationMeta = {
-                    ...sourceMeta,
-                    targetLanguage: toLang,
-                    translatedTitle: sourceMeta.originalTitle + ` (${toLang})`,
-                    model: model,
-                    translatedDate: new Date().toISOString()
-                };
-                
-                updateProgress(100, 'Translation completed!');
-                
-                // Show result in modal
-                showTranslationResult(translatedContent, sourceMeta.originalTitle, toLang);
-                
-                showSuccess('Translation completed successfully!');
-                
-            } catch (error) {
-                console.error('Translation error:', error);
-                showError('Translation failed: ' + error.message);
-            } finally {
-                showProgress(false);
-            }
-        }
-
-        async function callTranslationAPI(text, fromLang, toLang, model) {
-            // Use dedicated translation endpoints
-            let apiEndpoint = '';
-            switch (model) {
-                case 'groq':
-                    apiEndpoint = '/api/translate-groq';
-                    break;
-                case 'openai':
-                    apiEndpoint = '/api/translate-openai';
-                    break;
-                case 'deepseek':
-                    apiEndpoint = '/api/translate-deepseek';
-                    break;
-                default:
-                    throw new Error('Invalid AI model selected');
-            }
-
-            console.log(`Calling ${apiEndpoint} for translation`);
-
-            const response = await fetch(apiEndpoint, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    text: text,
-                    fromLanguage: fromLang,
-                    toLanguage: toLang
-                })
+            navigator.clipboard.writeText(currentViewingGuide.content || '').then(() => {
+                showToast('Content copied to clipboard!', 'success');
             });
-
-            console.log(`${model} translation response status:`, response.status);
-
-            if (!response.ok) {
-                const errorText = await response.text();
-                console.error(`${model} Translation API Error:`, errorText);
-                
-                try {
-                    const errorData = JSON.parse(errorText);
-                    throw new Error(errorData.error || errorData.message || `${model} translation failed`);
-                } catch (parseError) {
-                    throw new Error(`${model} API error (${response.status}): ${errorText.substring(0, 100)}`);
-                }
-            }
-
-            const data = await response.json();
-            console.log(`${model} translation success!`);
-            
-            if (!data.translatedText) {
-                throw new Error('No translated content received from API');
-            }
-
-            return data.translatedText;
         }
 
-        function showTranslationResult(translatedContent, originalTitle, targetLanguage) {
-            const modal = document.getElementById('translationModal');
-            const modalTitle = document.getElementById('modalTitle');
-            const resultDiv = document.getElementById('translationResult');
-            
-            modalTitle.textContent = `Translation: ${originalTitle} → ${targetLanguage}`;
-            resultDiv.innerHTML = `
-                <div style="background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 20px; max-height: 400px; overflow-y: auto;">
-                    <pre style="white-space: pre-wrap; font-family: 'Nunito Sans', sans-serif; font-size: 14px; line-height: 1.6; margin: 0;">${translatedContent}</pre>
-                </div>
-            `;
-            
-            modal.style.display = 'block';
-        }
-
-        function closeTranslationModal() {
-            document.getElementById('translationModal').style.display = 'none';
-        }
-
-        function saveTranslation() {
-            if (!currentTranslationResult) {
-                alert('No translation to save');
-                return;
+        function downloadContent() {
+            if (currentViewingGuide) {
+                downloadGuide(currentViewingGuide.id);
             }
+        }
 
-            const audioguides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
+        function openInAudio() {
+            if (currentViewingGuide) {
+                openAudioGenerator(currentViewingGuide.id);
+            }
+        }
+
+        // Toast notification
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
             
-            const newGuide = {
-                id: Date.now(),
-                title: currentTranslationMeta.translatedTitle,
-                location: currentTranslationMeta.originalLocation,
-                language: currentTranslationMeta.targetLanguage,
-                tourType: currentTranslationMeta.tourType,
-                stops: currentTranslationMeta.stops,
-                content: currentTranslationResult,
-                date: currentTranslationMeta.translatedDate,
-                model: currentTranslationMeta.model,
-                isTranslation: true,
-                originalLanguage: currentTranslationMeta.originalLanguage
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        // Debounce function
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
             };
-            
-            audioguides.unshift(newGuide);
-            
-            // Keep only last 50 audioguides
-            if (audioguides.length > 50) {
-                audioguides.splice(50);
-            }
-            
-            localStorage.setItem('cloudguide_audioguides', JSON.stringify(audioguides));
-            
-            // Refresh library
-            loadLibrary();
-            loadAudioguideSelector();
-            
-            closeTranslationModal();
-            showSuccess('Translation saved to library!');
-        }
-
-        function downloadTranslation() {
-            if (!currentTranslationResult) {
-                alert('No translation to download');
-                return;
-            }
-
-            const blob = new Blob([currentTranslationResult], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${currentTranslationMeta.translatedTitle.replace(/[^a-z0-9]/gi, '_')}.txt`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
-
-        function viewAudioguide(id) {
-            const audioguides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
-            const guide = audioguides.find(g => g.id == id);
-            
-            if (guide) {
-                // Open in audio generation page
-                window.open(`audio.html?id=${id}`, '_blank');
-            }
-        }
-
-        function editAudioguide(id) {
-            // For now, just show the content in an alert
-            // In a full implementation, you'd open an edit modal
-            const audioguides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
-            const guide = audioguides.find(g => g.id == id);
-            
-            if (guide) {
-                alert('Edit functionality would open here. For now, you can view the content and copy it to create a new version.');
-            }
-        }
-
-        function deleteAudioguide(id) {
-            if (confirm('Are you sure you want to delete this audioguide? This action cannot be undone.')) {
-                let audioguides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
-                audioguides = audioguides.filter(g => g.id != id);
-                localStorage.setItem('cloudguide_audioguides', JSON.stringify(audioguides));
-                
-                loadLibrary();
-                loadAudioguideSelector();
-                showSuccess('Audioguide deleted successfully');
-            }
-        }
-
-        // Utility functions
-        function showProgress(show) {
-            const container = document.getElementById('progressContainer');
-            if (show) {
-                container.classList.add('active');
-            } else {
-                setTimeout(() => {
-                    container.classList.remove('active');
-                    document.getElementById('progressBar').style.width = '0%';
-                }, 2000);
-            }
-        }
-
-        function updateProgress(percentage, status) {
-            document.getElementById('progressBar').style.width = percentage + '%';
-            document.getElementById('progressPercentage').textContent = Math.round(percentage) + '%';
-            document.getElementById('progressStatus').textContent = status;
-        }
-
-        function showSuccess(message) {
-            const successDiv = document.getElementById('successMessage');
-            successDiv.textContent = '✓ ' + message;
-            successDiv.classList.add('active');
-            setTimeout(() => {
-                successDiv.classList.remove('active');
-            }, 5000);
-        }
-
-        function showError(message) {
-            const errorDiv = document.getElementById('errorMessage');
-            errorDiv.textContent = '✗ ' + message;
-            errorDiv.classList.add('active');
-            setTimeout(() => {
-                errorDiv.classList.remove('active');
-            }, 8000);
-        }
-
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            const modal = document.getElementById('translationModal');
-            if (event.target == modal) {
-                closeTranslationModal();
-            }
         }
     </script>
 </body>
