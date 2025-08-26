@@ -612,6 +612,48 @@
                 </div>
             </div>
         </div>
+
+        <!-- Translation Modal -->
+        <div class="modal" id="translateModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Translate Audioguide</h3>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="targetLanguage">Select Target Language</label>
+                        <select id="targetLanguage" class="form-element" style="width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 4px;">
+                            <option value="Spanish">Spanish</option>
+                            <option value="French">French</option>
+                            <option value="German">German</option>
+                            <option value="Italian">Italian</option>
+                            <option value="Portuguese">Portuguese</option>
+                            <option value="Chinese">Chinese</option>
+                            <option value="Japanese">Japanese</option>
+                            <option value="Korean">Korean</option>
+                            <option value="Arabic">Arabic</option>
+                            <option value="Russian">Russian</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-top: 15px;">
+                        <label for="translationProvider">Translation Provider</label>
+                        <select id="translationProvider" class="form-element" style="width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 4px;">
+                            <option value="openai">OpenAI GPT-3.5</option>
+                            <option value="deepseek">DeepSeek</option>
+                            <option value="groq">Groq</option>
+                        </select>
+                    </div>
+                    <div id="translationProgress" style="display: none; margin-top: 20px;">
+                        <div class="spinner"></div>
+                        <div style="text-align: center; margin-top: 10px;">Translating... Please wait</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="closeTranslateModal()">Cancel</button>
+                    <button class="btn btn-primary" id="translateBtn" onclick="performTranslation()">Translate</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -621,7 +663,35 @@
 
         // Initialize
         window.addEventListener('DOMContentLoaded', function() {
-            console.log('Library page initialized');
+            console.log('=== Library page initialized ===');
+            
+            // Debug localStorage
+            console.log('Checking localStorage...');
+            const audioguides = localStorage.getItem('cloudguide_audioguides');
+            const cloudguides = localStorage.getItem('cloudguide_guides');
+            
+            if (audioguides) {
+                try {
+                    const parsed = JSON.parse(audioguides);
+                    console.log(`Found ${parsed.length} local audioguides`);
+                } catch (e) {
+                    console.error('Error parsing audioguides:', e);
+                }
+            } else {
+                console.log('No local audioguides found');
+            }
+            
+            if (cloudguides) {
+                try {
+                    const parsed = JSON.parse(cloudguides);
+                    console.log(`Found ${parsed.length} cloud references`);
+                } catch (e) {
+                    console.error('Error parsing cloud guides:', e);
+                }
+            } else {
+                console.log('No cloud references found');
+            }
+            
             loadLibrary();
             updateStats();
             checkStorageStatus();
@@ -751,6 +821,7 @@
                             <a href="audio.html?id=${isCloud ? encodeURIComponent(guide.cloudinaryUrl) : guide.id}" 
                                class="guide-action-btn" onclick="event.stopPropagation()">Audio</a>
                             <button class="guide-action-btn" onclick="downloadGuide('${guide.id}', event)">Download</button>
+                            <button class="guide-action-btn" onclick="translateGuide('${guide.id}', event)">Translate</button>
                             ${isCloud ? `<button class="guide-action-btn" onclick="shareGuide('${guide.cloudinaryUrl}', event)">Share</button>` : ''}
                         </div>
                     </div>
@@ -946,21 +1017,32 @@
             for (const guide of guides) {
                 if (!guide.cloudinaryUrl && guide.content) {
                     try {
+                        // Properly encode the guide data
+                        const guideJson = JSON.stringify(guide);
+                        const base64Data = 'data:application/json;base64,' + btoa(unescape(encodeURIComponent(guideJson)));
+                        
                         const response = await fetch('/api/upload-to-cloudinary', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
-                                audioData: btoa(unescape(encodeURIComponent(JSON.stringify(guide)))),
+                                audioData: base64Data,
                                 fileName: `guide_${guide.id}.json`
                             })
                         });
                         
                         if (response.ok) {
                             const data = await response.json();
-                            if (data.url && !data.url.includes('mock-cloudinary')) {
+                            console.log('Sync response for guide', guide.id, ':', data);
+                            
+                            if (data.url && !data.mock) {
                                 guide.cloudinaryUrl = data.url;
                                 synced++;
+                                console.log('✅ Synced guide to cloud:', guide.id);
+                            } else if (data.mock) {
+                                console.log('⚠️ Mock URL returned for guide:', guide.id);
                             }
+                        } else {
+                            console.error('Sync request failed for guide', guide.id);
                         }
                     } catch (error) {
                         console.error('Sync error for guide', guide.id, error);
@@ -975,7 +1057,7 @@
                 updateStats();
                 showMessage(`✅ Synced ${synced} guides to cloud`, 'success');
             } else {
-                showMessage('All guides already synced or cloud not available', 'info');
+                showMessage('All guides already synced or cloud not configured (check CLOUDINARY environment variables)', 'info');
             }
         }
 
@@ -1070,6 +1152,130 @@
             setTimeout(() => {
                 messageDiv.remove();
             }, 5000);
+        }
+
+        // Translation functions
+        let currentTranslateGuideId = null;
+
+        function translateGuide(id, event) {
+            event.stopPropagation();
+            currentTranslateGuideId = id;
+            document.getElementById('translateModal').classList.add('active');
+        }
+
+        function closeTranslateModal() {
+            document.getElementById('translateModal').classList.remove('active');
+            document.getElementById('translationProgress').style.display = 'none';
+            currentTranslateGuideId = null;
+        }
+
+        async function performTranslation() {
+            if (!currentTranslateGuideId) return;
+            
+            const guide = guides.find(g => g.id === currentTranslateGuideId);
+            if (!guide) {
+                showMessage('Guide not found', 'error');
+                return;
+            }
+            
+            const targetLanguage = document.getElementById('targetLanguage').value;
+            const provider = document.getElementById('translationProvider').value;
+            
+            // Show progress
+            document.getElementById('translationProgress').style.display = 'block';
+            document.getElementById('translateBtn').disabled = true;
+            
+            try {
+                let content = guide.content;
+                
+                // If it's a cloud guide without content, fetch it first
+                if (guide.cloudinaryUrl && !content) {
+                    const response = await fetch(guide.cloudinaryUrl);
+                    const data = await response.json();
+                    content = data.content;
+                }
+                
+                if (!content) {
+                    throw new Error('No content to translate');
+                }
+                
+                // Call translation API
+                const apiEndpoint = `/api/translate-${provider}`;
+                const response = await fetch(apiEndpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        text: content,
+                        fromLanguage: guide.language || 'English',
+                        toLanguage: targetLanguage
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Translation failed: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                const translatedContent = result.translatedText || result.content;
+                
+                if (!translatedContent) {
+                    throw new Error('No translated content received');
+                }
+                
+                // Save translated guide
+                const translatedGuide = {
+                    ...guide,
+                    id: 'guide_' + Date.now(),
+                    title: `${guide.title} (${targetLanguage})`,
+                    language: targetLanguage,
+                    content: translatedContent,
+                    originalId: guide.id,
+                    translatedFrom: guide.language || 'English',
+                    date: new Date().toISOString()
+                };
+                
+                // Add to guides array
+                guides.unshift(translatedGuide);
+                
+                // Save to localStorage
+                const localGuides = guides.filter(g => g.content);
+                localStorage.setItem('cloudguide_audioguides', JSON.stringify(localGuides));
+                
+                // Try to upload to Cloudinary
+                if (guide.cloudinaryUrl) {
+                    try {
+                        const uploadResponse = await fetch('/api/upload-to-cloudinary', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                audioData: 'data:application/json;base64,' + btoa(unescape(encodeURIComponent(JSON.stringify(translatedGuide)))),
+                                fileName: `guide_${translatedGuide.id}.json`
+                            })
+                        });
+                        
+                        if (uploadResponse.ok) {
+                            const uploadData = await uploadResponse.json();
+                            if (uploadData.url && !uploadData.mock) {
+                                translatedGuide.cloudinaryUrl = uploadData.url;
+                            }
+                        }
+                    } catch (uploadError) {
+                        console.error('Failed to upload translation to cloud:', uploadError);
+                    }
+                }
+                
+                closeTranslateModal();
+                renderLibrary();
+                updateStats();
+                showMessage(`✅ Translated to ${targetLanguage} successfully!`, 'success');
+                
+            } catch (error) {
+                console.error('Translation error:', error);
+                showMessage(`Translation failed: ${error.message}`, 'error');
+            } finally {
+                document.getElementById('translationProgress').style.display = 'none';
+                document.getElementById('translateBtn').disabled = false;
+            }
         }
     </script>
 </body>
