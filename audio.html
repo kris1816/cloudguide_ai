@@ -263,6 +263,11 @@
             color: #065f46;
         }
 
+        .status-error {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
         /* Settings Grid */
         .settings-grid {
             display: grid;
@@ -459,6 +464,12 @@
             color: #065f46;
         }
 
+        .alert-error {
+            background: #fed7d7;
+            border: 1px solid #fc8181;
+            color: #742a2a;
+        }
+
         /* Loading */
         .loading {
             display: none;
@@ -484,6 +495,20 @@
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+        }
+
+        /* API Setup Section */
+        .api-setup {
+            background: #fef3c7;
+            border: 2px solid #f59e0b;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .api-setup h3 {
+            color: #92400e;
+            margin-bottom: 15px;
         }
 
         @media (max-width: 768px) {
@@ -535,8 +560,21 @@
         <!-- Main Content -->
         <div class="main-container">
             <!-- API Status Alert -->
-            <div class="alert alert-info" id="apiStatusAlert" style="display: none;">
-                <strong>ℹ️ API Configuration:</strong> <span id="apiStatusMessage"></span>
+            <div class="alert" id="apiStatusAlert" style="display: none;">
+                <span id="apiStatusMessage"></span>
+            </div>
+
+            <!-- API Setup Alert (if needed) -->
+            <div class="api-setup" id="apiSetupSection" style="display: none;">
+                <h3>⚠️ API Configuration Required</h3>
+                <p>To generate audio files, you need to configure the following in your Vercel environment variables:</p>
+                <ul style="margin: 15px 0; padding-left: 20px;">
+                    <li><strong>OPENAI_API_KEY</strong> - Required for English audio generation</li>
+                    <li><strong>GOOGLE_CLOUD_API_KEY</strong> - Optional, for non-English languages</li>
+                </ul>
+                <p style="font-size: 0.9em; margin-top: 15px;">
+                    Add these in your Vercel Dashboard → Settings → Environment Variables
+                </p>
             </div>
 
             <!-- Tabs -->
@@ -612,7 +650,7 @@ Your history text here..."></textarea>
                     </div>
 
                     <div id="languageAlert" class="alert alert-warning" style="display: none;">
-                        ⚠️ Non-English languages will use English accent with OpenAI TTS.
+                        ⚠️ Non-English languages will use English accent with OpenAI TTS unless Google Cloud API is configured.
                     </div>
                 </div>
 
@@ -687,6 +725,7 @@ Your history text here..."></textarea>
         let generatedFiles = [];
         let currentGuideId = null;
         let currentAudioPlayer = null;
+        let apiConfigured = false;
 
         // Initialize
         window.addEventListener('DOMContentLoaded', function() {
@@ -707,19 +746,52 @@ Your history text here..."></textarea>
         // Check API configuration
         async function checkAPIConfiguration() {
             try {
-                const response = await fetch('/api/openai-tts', {
-                    method: 'GET'
+                // First check if the multilingual endpoint exists
+                const response = await fetch('/api/multilingual-tts', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        text: 'Test',
+                        language: 'en-US',
+                        voice: 'alloy',
+                        speed: 1.0
+                    })
                 });
                 
-                if (response.ok) {
+                console.log('API Configuration check response:', response.status);
+                
+                if (response.status === 500 || response.status === 501) {
                     const data = await response.json();
-                    console.log('API Status:', data);
+                    console.log('API Configuration issue:', data);
+                    
+                    if (data.error && data.error.includes('not configured')) {
+                        showAPIStatus('error', data.message || 'OpenAI API key not configured. Please add OPENAI_API_KEY to your Vercel environment variables.');
+                        document.getElementById('apiSetupSection').style.display = 'block';
+                        apiConfigured = false;
+                        return;
+                    }
+                }
+                
+                if (response.ok) {
+                    // API is configured properly
+                    apiConfigured = true;
+                    console.log('API is configured and working');
                 } else {
-                    showAPIStatus('warning', 'API may not be properly configured. Please check environment variables.');
+                    // Try the simpler OpenAI endpoint as fallback
+                    console.log('Trying OpenAI TTS endpoint as fallback...');
+                    const fallbackResponse = await fetch('/api/openai-tts', {
+                        method: 'GET'
+                    });
+                    
+                    if (fallbackResponse.ok) {
+                        showAPIStatus('warning', 'Using fallback TTS endpoint. Some features may be limited.');
+                        apiConfigured = true;
+                    }
                 }
             } catch (error) {
                 console.log('API check failed:', error);
-                showAPIStatus('warning', 'Could not verify API configuration. Audio generation may not work.');
+                showAPIStatus('warning', 'Could not verify API configuration. Audio generation may not work properly.');
+                apiConfigured = false;
             }
         }
 
@@ -728,9 +800,144 @@ Your history text here..."></textarea>
             const alert = document.getElementById('apiStatusAlert');
             const msg = document.getElementById('apiStatusMessage');
             
-            alert.className = `alert alert-${type}`;
-            msg.textContent = message;
+            // Map type to alert class
+            const alertClass = {
+                'error': 'alert-error',
+                'warning': 'alert-warning',
+                'info': 'alert-info',
+                'success': 'alert-success'
+            };
+            
+            alert.className = `alert ${alertClass[type] || 'alert-info'}`;
+            msg.innerHTML = message;
             alert.style.display = 'block';
+        }
+
+        // Generate audio with better error handling
+        async function generateAudio(chapter) {
+            const language = document.getElementById('audioLanguage').value;
+            const speed = parseFloat(document.getElementById('speed').value);
+            
+            let textToGenerate = chapter.content;
+            
+            // Show loading
+            document.getElementById('loading').classList.add('active');
+            const loadingText = document.getElementById('loadingText');
+            loadingText.textContent = `Generating audio for ${chapter.shortTitle || chapter.title}...`;
+            document.getElementById('generateSingle').disabled = true;
+            document.getElementById('generateAll').disabled = true;
+            
+            try {
+                // Try multilingual endpoint first
+                let response = await fetch('/api/multilingual-tts', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        text: textToGenerate,
+                        language: language,
+                        voice: selectedVoice,
+                        speed: speed
+                    })
+                });
+                
+                // If multilingual fails, try simple OpenAI endpoint as fallback
+                if (!response.ok && response.status === 500) {
+                    console.log('Multilingual TTS failed, trying OpenAI fallback...');
+                    
+                    // Only fallback for English
+                    if (language.startsWith('en-')) {
+                        response = await fetch('/api/openai-tts', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                text: textToGenerate,
+                                voice: selectedVoice,
+                                speed: speed
+                            })
+                        });
+                        
+                        if (response.ok) {
+                            showMessage('⚠️ Using fallback TTS API', 'warning');
+                        }
+                    }
+                }
+
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    if (data.audioUrl || data.audioData) {
+                        // Update chapter status
+                        chapter.status = 'completed';
+                        renderChapters();
+                        
+                        // Create file object
+                        const fileName = `${chapter.shortTitle || chapter.title}`.replace(/[^a-z0-9]/gi, '_') + `_${language}.mp3`;
+                        
+                        const file = {
+                            name: fileName,
+                            chapter: chapter.title,
+                            language: language,
+                            url: data.audioUrl || data.audioData,
+                            provider: data.provider || 'openai',
+                            stopNumber: chapter.stopNumber || chapter.id,
+                            size: 'Generated',
+                            warning: data.warning
+                        };
+                        
+                        // Add to generated files
+                        generatedFiles.push(file);
+                        
+                        // Save metadata to localStorage
+                        if (currentGuideId) {
+                            saveAudioForUpload(currentGuideId, file);
+                        }
+                        
+                        renderFiles();
+                        
+                        if (data.warning) {
+                            showMessage(`✅ Audio generated! ${data.warning}`, 'warning');
+                        } else {
+                            showMessage(`✅ Audio generated successfully!`, 'success');
+                        }
+                    }
+                } else {
+                    let errorMessage = 'Failed to generate audio';
+                    let suggestion = '';
+                    
+                    try {
+                        const errorData = await response.json();
+                        errorMessage = errorData.error || errorData.message || errorMessage;
+                        
+                        // Provide helpful error messages
+                        if (errorMessage.includes('not configured')) {
+                            errorMessage = 'API key not configured';
+                            suggestion = 'Please add OPENAI_API_KEY to your Vercel environment variables';
+                            document.getElementById('apiSetupSection').style.display = 'block';
+                        } else if (response.status === 429) {
+                            errorMessage = 'Rate limit exceeded';
+                            suggestion = 'Please wait a moment and try again';
+                        } else if (response.status === 401) {
+                            errorMessage = 'Invalid API key';
+                            suggestion = 'Please check your OPENAI_API_KEY in Vercel settings';
+                        }
+                    } catch (e) {
+                        errorMessage = `Server error (${response.status})`;
+                    }
+                    
+                    const fullError = suggestion ? `${errorMessage}. ${suggestion}` : errorMessage;
+                    throw new Error(fullError);
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('Error: ' + error.message, 'error');
+                chapter.status = 'error';
+                renderChapters();
+            } finally {
+                document.getElementById('loading').classList.remove('active');
+                document.getElementById('generateSingle').disabled = false;
+                document.getElementById('generateAll').disabled = false;
+            }
         }
 
         // Save audio metadata
@@ -865,88 +1072,6 @@ Your history text here..."></textarea>
             document.getElementById('totalCount').textContent = chapters.length;
         }
 
-        // Generate audio
-        async function generateAudio(chapter) {
-            const language = document.getElementById('audioLanguage').value;
-            const speed = parseFloat(document.getElementById('speed').value);
-            
-            let textToGenerate = chapter.content;
-            
-            // Show loading
-            document.getElementById('loading').classList.add('active');
-            const loadingText = document.getElementById('loadingText');
-            loadingText.textContent = `Generating audio for ${chapter.shortTitle || chapter.title}...`;
-            document.getElementById('generateSingle').disabled = true;
-            document.getElementById('generateAll').disabled = true;
-            
-            try {
-                const response = await fetch('/api/multilingual-tts', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        text: textToGenerate,
-                        language: language,
-                        voice: selectedVoice,
-                        speed: speed
-                    })
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    
-                    if (data.audioUrl) {
-                        // Update chapter status
-                        chapter.status = 'completed';
-                        renderChapters();
-                        
-                        // Create file object
-                        const fileName = `${chapter.shortTitle || chapter.title}`.replace(/[^a-z0-9]/gi, '_') + `_${language}.mp3`;
-                        
-                        const file = {
-                            name: fileName,
-                            chapter: chapter.title,
-                            language: language,
-                            url: data.audioUrl,
-                            provider: 'openai',
-                            stopNumber: chapter.stopNumber || chapter.id,
-                            size: 'Generated'
-                        };
-                        
-                        // Add to generated files
-                        generatedFiles.push(file);
-                        
-                        // Save metadata to localStorage
-                        if (currentGuideId) {
-                            saveAudioForUpload(currentGuideId, file);
-                        }
-                        
-                        renderFiles();
-                        showMessage(`✅ Audio generated successfully!`, 'success');
-                    }
-                } else {
-                    let errorMessage = 'Failed to generate audio';
-                    try {
-                        const errorData = await response.json();
-                        errorMessage = errorData.error || errorData.message || errorMessage;
-                    } catch (e) {
-                        errorMessage = `Server error (${response.status})`;
-                    }
-                    
-                    throw new Error(errorMessage);
-                }
-                
-            } catch (error) {
-                console.error('Error:', error);
-                showMessage('Error: ' + error.message, 'error');
-                chapter.status = 'error';
-                renderChapters();
-            } finally {
-                document.getElementById('loading').classList.remove('active');
-                document.getElementById('generateSingle').disabled = false;
-                document.getElementById('generateAll').disabled = false;
-            }
-        }
-
         // Toggle chapter
         function toggleChapter(index) {
             chapters[index].selected = !chapters[index].selected;
@@ -1056,6 +1181,7 @@ Your history text here..."></textarea>
                                 <div style="font-weight: 600;">${file.name}</div>
                                 <div style="font-size: 0.85em; color: #718096;">
                                     ${file.chapter} • ${file.language} • ${file.provider}
+                                    ${file.warning ? ' • ⚠️ ' + file.warning : ''}
                                 </div>
                             </div>
                         </div>
@@ -1250,6 +1376,9 @@ Before you stands the main attraction, a testament to human creativity and ingen
                 messageDiv.style.color = 'white';
             } else if (type === 'error') {
                 messageDiv.style.background = '#e53e3e';
+                messageDiv.style.color = 'white';
+            } else if (type === 'warning') {
+                messageDiv.style.background = '#f6ad55';
                 messageDiv.style.color = 'white';
             } else {
                 messageDiv.style.background = '#3182ce';
