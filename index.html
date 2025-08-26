@@ -113,6 +113,16 @@
             padding: 35px;
         }
 
+        /* Section Headers */
+        .section-header {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: #718096;
+            margin-bottom: 15px;
+        }
+
         /* Form Elements */
         .form-group {
             margin-bottom: 25px;
@@ -157,67 +167,45 @@
             padding-right: 45px;
         }
 
-        textarea.form-element {
-            min-height: 120px;
-            resize: vertical;
-        }
-
-        /* Tabs */
-        .tabs-container {
-            margin-bottom: 30px;
-        }
-
-        .tabs {
-            display: flex;
+        /* AI Model Selection */
+        .ai-model-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
             gap: 12px;
-            border-bottom: 1px solid #e2e8f0;
             margin-bottom: 25px;
         }
 
-        .tab-btn {
-            padding: 10px 20px;
-            background: none;
-            border: none;
-            color: #a0aec0;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
+        .ai-model-card {
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 15px;
             cursor: pointer;
-            position: relative;
             transition: all 0.3s;
+            text-align: center;
+            background: white;
         }
 
-        .tab-btn:hover {
-            color: #48bb78;
+        .ai-model-card:hover {
+            border-color: #cbd5e0;
+            background: #f7fafc;
+            transform: translateY(-1px);
         }
 
-        .tab-btn.active {
-            color: #48bb78;
+        .ai-model-card.selected {
+            border-color: #48bb78;
+            background: #f0fff4;
         }
 
-        .tab-btn.active::after {
-            content: '';
-            position: absolute;
-            bottom: -1px;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: #48bb78;
+        .ai-model-card h4 {
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 3px;
+            color: #2d3748;
         }
 
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-            animation: fadeIn 0.3s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+        .ai-model-card p {
+            font-size: 11px;
+            color: #a0aec0;
         }
 
         /* Location Examples */
@@ -262,50 +250,7 @@
             transform: translateY(-1px);
         }
 
-        /* File Upload */
-        .file-upload-area {
-            border: 2px dashed #cbd5e0;
-            border-radius: 6px;
-            padding: 35px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            background: #f7fafc;
-        }
-
-        .file-upload-area:hover {
-            border-color: #48bb78;
-            background: white;
-        }
-
-        .file-upload-area.dragover {
-            border-color: #48bb78;
-            background: white;
-            transform: scale(1.01);
-        }
-
-        .file-icon {
-            font-size: 35px;
-            margin-bottom: 12px;
-            opacity: 0.5;
-        }
-
-        .file-info {
-            display: none;
-            background: #f7fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            padding: 15px;
-            margin-top: 12px;
-        }
-
-        .file-info.active {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        /* Grid Layout */
+        /* Configuration Grid */
         .config-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -313,7 +258,25 @@
             margin-bottom: 25px;
         }
 
-        /* Buttons */
+        /* Advanced Settings */
+        .advanced-settings {
+            background: #f7fafc;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .advanced-settings h3 {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: #718096;
+            margin-bottom: 20px;
+        }
+
+        /* Generate Button */
         .generate-btn {
             width: 100%;
             padding: 14px;
@@ -342,84 +305,15 @@
             transform: none;
         }
 
-        .remove-file-btn {
-            background: #718096;
-            color: white;
-            border: none;
-            padding: 6px 14px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            transition: all 0.3s;
-        }
-
-        .remove-file-btn:hover {
-            background: #4a5568;
-        }
-
-        /* Progress Bar */
-        .progress-container {
-            display: none;
-            margin-top: 20px;
-            background: #f7fafc;
-            border-radius: 8px;
-            padding: 20px;
-            border: 1px solid #e2e8f0;
-        }
-
-        .progress-container.active {
-            display: block;
-        }
-
-        .progress-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 12px;
-        }
-
-        .progress-title {
-            font-weight: 600;
-            color: #4a5568;
-            font-size: 14px;
-        }
-
-        .progress-percentage {
-            color: #48bb78;
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        .progress-bar-bg {
-            width: 100%;
-            height: 8px;
-            background: #e2e8f0;
-            border-radius: 4px;
-            overflow: hidden;
-        }
-
-        .progress-bar-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #48bb78 0%, #38a169 100%);
-            width: 0%;
-            transition: width 0.5s ease;
-            border-radius: 4px;
-        }
-
-        .progress-status {
-            margin-top: 12px;
-            font-size: 13px;
-            color: #718096;
-            font-style: italic;
-        }
-
         /* Loading State */
         .loading {
             display: none;
             text-align: center;
             padding: 40px;
+            background: #f7fafc;
+            border-radius: 8px;
+            margin-top: 20px;
+            border: 1px solid #e2e8f0;
         }
 
         .loading.active {
@@ -479,40 +373,28 @@
             }
         }
 
-        /* Debug Panel */
-        .debug-panel {
-            background: #f7fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
+        .success-links {
+            margin-top: 15px;
+        }
+
+        .success-links a {
+            color: white;
+            text-decoration: underline;
+            margin: 0 10px;
+        }
+
+        /* Error Message */
+        .error-message {
+            display: none;
+            background: #fed7d7;
+            color: #c53030;
             padding: 15px;
+            border-radius: 6px;
             margin-top: 20px;
         }
 
-        .debug-panel h4 {
-            color: #4a5568;
-            margin-bottom: 10px;
-            font-size: 13px;
-        }
-
-        .debug-buttons {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .debug-btn {
-            padding: 8px 16px;
-            background: #718096;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 11px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .debug-btn:hover {
-            background: #4a5568;
+        .error-message.active {
+            display: block;
         }
 
         /* Footer Section */
@@ -554,6 +436,10 @@
                 grid-template-columns: 1fr;
             }
             
+            .ai-model-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
             .funding-logos {
                 flex-direction: column;
                 gap: 20px;
@@ -564,7 +450,7 @@
             }
 
             .hero-title {
-                font-size: 2em;
+                font-size: 1.8em;
             }
 
             .main-container {
@@ -588,16 +474,14 @@
                         <li><a href="index.html" style="color: #48bb78;">GENERATOR</a></li>
                         <li><a href="library.html">LIBRARY</a></li>
                         <li><a href="audio.html">AUDIO</a></li>
-                        <li><a href="upload.html">UPLOAD</a></li>
                         <li><a href="premium.html">PREMIUM</a></li>
                         <li><a href="about.html">ABOUT</a></li>
-                        <li><a href="https://www.cloudguide.me/contact" target="_blank">CONTACT</a></li>
                     </ul>
                 </nav>
             </div>
         </header>
 
-        <!-- Hero Section with Background Image -->
+        <!-- Hero Section -->
         <section class="hero-section">
             <h1 class="hero-title">AI Audioguide Generator</h1>
             <p class="hero-subtitle">Create Professional Audioguides for Museums and Cultural Heritage Sites</p>
@@ -605,71 +489,46 @@
 
         <!-- Main Content -->
         <div class="main-container">
-            <!-- Tabs -->
-            <div class="tabs-container">
-                <div class="tabs">
-                    <button class="tab-btn active" onclick="switchTab('location')">Location Input</button>
-                    <button class="tab-btn" onclick="switchTab('file')">File Upload</button>
-                </div>
-            </div>
-
             <!-- AI Model Selection -->
             <div class="form-group">
-                <label for="aiModel">AI Model</label>
-                <select id="aiModel" class="form-element">
-                    <option value="sample">Sample Content (No API Required)</option>
-                    <option value="openai">OpenAI GPT (API Key Required)</option>
-                    <option value="groq">Groq Mixtral (API Key Required)</option>
-                    <option value="deepseek">DeepSeek (API Key Required)</option>
-                </select>
-                <small style="color: #a0aec0; display: block; margin-top: 8px; font-size: 12px;">
-                    💡 Use "Sample Content" for testing without API keys
-                </small>
-            </div>
-
-            <!-- Location Input Tab -->
-            <div id="locationTab" class="tab-content active">
-                <div class="form-group">
-                    <label for="location">Location Name</label>
-                    <input type="text" id="location" class="form-element" placeholder="Enter any museum, landmark, city, or cultural site...">
-                    <div class="location-examples">
-                        <h4>Quick Examples</h4>
-                        <div class="example-buttons">
-                            <button class="example-btn" onclick="setExample('Louvre Museum Paris')">Louvre Museum</button>
-                            <button class="example-btn" onclick="setExample('Sagrada Familia Barcelona')">Sagrada Familia</button>
-                            <button class="example-btn" onclick="setExample('Vatican Museums')">Vatican Museums</button>
-                            <button class="example-btn" onclick="setExample('Alhambra Granada')">Alhambra Granada</button>
-                            <button class="example-btn" onclick="setExample('Acropolis Athens')">Acropolis Athens</button>
-                            <button class="example-btn" onclick="setExample('Colosseum Rome')">Colosseum</button>
-                        </div>
+                <label>Select AI Model</label>
+                <div class="ai-model-grid">
+                    <div class="ai-model-card selected" onclick="selectModel('openai')" data-model="openai">
+                        <h4>OpenAI</h4>
+                        <p>GPT-3.5</p>
+                    </div>
+                    <div class="ai-model-card" onclick="selectModel('groq')" data-model="groq">
+                        <h4>Groq</h4>
+                        <p>Fast</p>
+                    </div>
+                    <div class="ai-model-card" onclick="selectModel('deepseek')" data-model="deepseek">
+                        <h4>DeepSeek</h4>
+                        <p>Efficient</p>
+                    </div>
+                    <div class="ai-model-card" onclick="selectModel('claude')" data-model="claude">
+                        <h4>Claude</h4>
+                        <p>Quality</p>
                     </div>
                 </div>
             </div>
 
-            <!-- File Upload Tab -->
-            <div id="fileTab" class="tab-content">
-                <div class="form-group">
-                    <div class="file-upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
-                        <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.txt" style="display: none;" onchange="handleFileUpload(event)">
-                        <div class="file-icon">📄</div>
-                        <p style="font-weight: 600; margin-bottom: 8px; color: #4a5568;">Drop your file here or click to browse</p>
-                        <p style="color: #a0aec0; font-size: 13px;">PDF, Word, or TXT files (max 10MB)</p>
+            <!-- Location Input -->
+            <div class="form-group">
+                <label for="location">Location / Destination</label>
+                <input type="text" id="location" class="form-element" placeholder="Enter any museum, landmark, city, or cultural site...">
+                <div class="location-examples">
+                    <h4>Quick Examples</h4>
+                    <div class="example-buttons">
+                        <button class="example-btn" onclick="setExample('Louvre Museum Paris')">Louvre Museum</button>
+                        <button class="example-btn" onclick="setExample('Sagrada Familia Barcelona')">Sagrada Familia</button>
+                        <button class="example-btn" onclick="setExample('Vatican Museums')">Vatican Museums</button>
+                        <button class="example-btn" onclick="setExample('Colosseum Rome')">Colosseum</button>
+                        <button class="example-btn" onclick="setExample('Acropolis Athens')">Acropolis</button>
                     </div>
-                    <div class="file-info" id="fileInfo">
-                        <div>
-                            <div style="font-weight: 600; color: #2d3748;" id="fileName">No file</div>
-                            <div style="color: #718096; font-size: 13px; margin-top: 5px;" id="fileSize">0 KB</div>
-                        </div>
-                        <button class="remove-file-btn" onclick="removeFile()">Remove</button>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="fileLocation">Location Name (from document)</label>
-                    <input type="text" id="fileLocation" class="form-element" placeholder="Enter the location this document is about...">
                 </div>
             </div>
 
-            <!-- Configuration Grid -->
+            <!-- Basic Configuration -->
             <div class="config-grid">
                 <div class="form-group">
                     <label for="language">Output Language</label>
@@ -686,77 +545,89 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="tourType">Tour Type</label>
-                    <select id="tourType" class="form-element">
-                        <option value="comprehensive">Comprehensive Overview</option>
-                        <option value="historical">Historical Focus</option>
-                        <option value="cultural">Cultural Heritage</option>
-                        <option value="family">Family Friendly</option>
-                        <option value="artistic">Art & Architecture</option>
+                    <label for="stops">Number of Stops</label>
+                    <select id="stops" class="form-element">
+                        <option value="5">5 Stops</option>
+                        <option value="8" selected>8 Stops (Standard)</option>
+                        <option value="10">10 Stops</option>
+                        <option value="12">12 Stops</option>
+                        <option value="15">15 Stops</option>
+                        <option value="20">20 Stops</option>
                     </select>
                 </div>
             </div>
 
-            <div class="form-group">
-                <label for="stops">Number of Stops</label>
-                <select id="stops" class="form-element">
-                    <option value="3">Quick Tour (3 stops)</option>
-                    <option value="5">Short (5 stops)</option>
-                    <option value="8" selected>Standard (8 stops)</option>
-                    <option value="10">Extended (10 stops)</option>
-                    <option value="12">Comprehensive (12 stops)</option>
-                    <option value="15">Detailed (15 stops)</option>
-                    <option value="20">In-Depth (20 stops)</option>
-                    <option value="25">Maximum (25 stops)</option>
-                </select>
-                <small style="color: #a0aec0; display: block; margin-top: 10px; font-size: 12px;">
-                    Each stop contains ~900 words. More stops = longer, more detailed audioguide.
-                </small>
+            <!-- Advanced Settings -->
+            <div class="advanced-settings">
+                <h3>Advanced Options</h3>
+                <div class="config-grid">
+                    <div class="form-group">
+                        <label for="tourType">Tour Type</label>
+                        <select id="tourType" class="form-element">
+                            <option value="comprehensive">Comprehensive Overview</option>
+                            <option value="historical">Historical Focus</option>
+                            <option value="cultural">Cultural Heritage</option>
+                            <option value="family">Family Friendly</option>
+                            <option value="artistic">Art & Architecture</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="guideType">Guide Type</label>
+                        <select id="guideType" class="form-element">
+                            <option value="museum">Museum</option>
+                            <option value="landmark">Landmark</option>
+                            <option value="city">City Tour</option>
+                            <option value="heritage">Heritage Site</option>
+                            <option value="gallery">Art Gallery</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="audience">Target Audience</label>
+                        <select id="audience" class="form-element">
+                            <option value="general">General Visitors</option>
+                            <option value="experts">History Enthusiasts</option>
+                            <option value="students">Students & Educators</option>
+                            <option value="families">Families with Children</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="style">Narrative Style</label>
+                        <select id="style" class="form-element">
+                            <option value="storytelling">Storytelling</option>
+                            <option value="educational">Educational</option>
+                            <option value="conversational">Conversational</option>
+                            <option value="dramatic">Dramatic</option>
+                        </select>
+                    </div>
+                </div>
             </div>
 
-            <div class="form-group">
-                <label for="context">Additional Context (Optional)</label>
-                <textarea id="context" class="form-element" placeholder="Any specific focus, target audience, or special requirements..."></textarea>
-            </div>
-
+            <!-- Generate Button -->
             <button class="generate-btn" id="generateBtn" onclick="generateGuide()">
                 Generate Audioguide
             </button>
 
-            <!-- Debug Panel -->
-            <div class="debug-panel">
-                <h4>🔧 Debug & Test Tools</h4>
-                <div class="debug-buttons">
-                    <button class="debug-btn" onclick="testGenerateSimple()">Test Save (Simple)</button>
-                    <button class="debug-btn" onclick="checkStorage()">Check Storage</button>
-                    <button class="debug-btn" onclick="clearStorage()">Clear Storage</button>
-                    <button class="debug-btn" onclick="showStorageInfo()">Storage Info</button>
-                </div>
-            </div>
-
-            <!-- Progress Bar -->
-            <div class="progress-container" id="progressContainer">
-                <div class="progress-header">
-                    <div class="progress-title">Generating Audioguide</div>
-                    <div class="progress-percentage" id="progressPercentage">0%</div>
-                </div>
-                <div class="progress-bar-bg">
-                    <div class="progress-bar-fill" id="progressBar"></div>
-                </div>
-                <div class="progress-status" id="progressStatus">Initializing...</div>
-            </div>
-
+            <!-- Loading State -->
             <div class="loading" id="loading">
                 <div class="spinner"></div>
-                <div class="loading-text">Creating your audioguide</div>
+                <div class="loading-text" id="loadingText">Generating your audioguide...</div>
             </div>
 
-            <div class="success-message" id="success">
-                ✓ Audioguide generated successfully and saved to your library!
-                <div style="margin-top: 15px;">
-                    <a href="library.html" style="color: white; text-decoration: underline;">View in Library</a> | 
-                    <a href="audio.html" style="color: white; text-decoration: underline;">Generate Audio</a>
+            <!-- Success Message -->
+            <div class="success-message" id="successMessage">
+                <div>✓ Audioguide generated successfully and saved to your library!</div>
+                <div class="success-links">
+                    <a href="library.html">View in Library</a> | 
+                    <a href="audio.html" id="generateAudioLink">Generate Audio</a>
                 </div>
+            </div>
+
+            <!-- Error Message -->
+            <div class="error-message" id="errorMessage">
+                <strong>Error:</strong> <span id="errorText"></span>
             </div>
 
             <!-- Footer Section -->
@@ -777,29 +648,16 @@
 
     <script>
         // Global variables
-        var currentTab = 'location';
-        var uploadedFile = null;
-        var uploadedFileContent = null;
+        let selectedModel = 'openai';
+        let currentGuideId = null;
 
-        // Initialize
-        window.addEventListener('DOMContentLoaded', function() {
-            console.log('CloudGuide Generator Initialized');
-            checkStorage();
-        });
-
-        // Tab switching
-        function switchTab(tab) {
-            currentTab = tab;
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-            
-            if (tab === 'location') {
-                document.querySelector('.tab-btn:nth-child(1)').classList.add('active');
-                document.getElementById('locationTab').classList.add('active');
-            } else {
-                document.querySelector('.tab-btn:nth-child(2)').classList.add('active');
-                document.getElementById('fileTab').classList.add('active');
-            }
+        // Model selection
+        function selectModel(model) {
+            selectedModel = model;
+            document.querySelectorAll('.ai-model-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            document.querySelector(`[data-model="${model}"]`).classList.add('selected');
         }
 
         // Set example location
@@ -807,375 +665,226 @@
             document.getElementById('location').value = location;
         }
 
-        // File upload handling
-        function handleFileUpload(event) {
-            var file = event.target.files[0];
-            if (!file) return;
+        // Main generate function
+        async function generateGuide() {
+            const location = document.getElementById('location').value.trim();
             
-            if (file.size > 10 * 1024 * 1024) {
-                alert('File size must be less than 10MB');
-                event.target.value = '';
+            if (!location) {
+                showError('Please enter a location');
                 return;
             }
-            
-            uploadedFile = file;
-            document.getElementById('fileName').textContent = file.name;
-            document.getElementById('fileSize').textContent = formatFileSize(file.size);
-            document.getElementById('fileInfo').classList.add('active');
-            
-            // Read file content
-            var reader = new FileReader();
-            reader.onload = function(e) {
-                uploadedFileContent = e.target.result;
-                console.log('File uploaded successfully');
-            };
-            reader.readAsText(file);
-        }
 
-        function removeFile() {
-            uploadedFile = null;
-            uploadedFileContent = null;
-            document.getElementById('fileInput').value = '';
-            document.getElementById('fileInfo').classList.remove('active');
-        }
+            // Get all form values
+            const language = document.getElementById('language').value;
+            const stops = document.getElementById('stops').value;
+            const tourType = document.getElementById('tourType').value;
+            const guideType = document.getElementById('guideType').value;
+            const audience = document.getElementById('audience').value;
+            const style = document.getElementById('style').value;
 
-        function formatFileSize(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            var k = 1024;
-            var sizes = ['Bytes', 'KB', 'MB'];
-            var i = Math.floor(Math.log(bytes) / Math.log(k));
-            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
-        }
+            // Show loading
+            document.getElementById('generateBtn').disabled = true;
+            document.getElementById('loading').classList.add('active');
+            document.getElementById('successMessage').classList.remove('active');
+            document.getElementById('errorMessage').classList.remove('active');
 
-        // Drag and drop support
-        window.addEventListener('DOMContentLoaded', function() {
-            var uploadArea = document.getElementById('uploadArea');
-            if (!uploadArea) return;
-            
-            uploadArea.addEventListener('dragover', function(e) {
-                e.preventDefault();
-                uploadArea.classList.add('dragover');
-            });
-            
-            uploadArea.addEventListener('dragleave', function() {
-                uploadArea.classList.remove('dragover');
-            });
-            
-            uploadArea.addEventListener('drop', function(e) {
-                e.preventDefault();
-                uploadArea.classList.remove('dragover');
-                
-                var files = e.dataTransfer.files;
-                if (files.length > 0) {
-                    document.getElementById('fileInput').files = files;
-                    handleFileUpload({ target: { files: files } });
-                }
-            });
-        });
-
-        // Update progress
-        function updateProgress(percentage, status) {
-            document.getElementById('progressContainer').classList.add('active');
-            document.getElementById('progressBar').style.width = percentage + '%';
-            document.getElementById('progressPercentage').textContent = Math.round(percentage) + '%';
-            document.getElementById('progressStatus').textContent = status;
-        }
-
-        // Generate sample content
-        function generateSampleContent(location, stopType) {
-            const templates = {
-                introduction: `Welcome to ${location}. This remarkable destination offers visitors an unforgettable journey through history, culture, and human achievement. As you stand here today, you are experiencing centuries of human creativity and ingenuity. The architecture around you tells stories of different eras, each adding its own unique chapter to this magnificent place.`,
-                
-                history: `The history of ${location} spans many centuries, beginning from its earliest foundations to the vibrant present day. This location has witnessed the rise and fall of empires, served as a center of cultural exchange, and played a pivotal role in shaping the region's identity. Through wars, peace, prosperity, and challenges, it has remained a testament to human resilience.`,
-                
-                attraction: `This particular area of ${location} showcases some of the most impressive features of the site. Notice the intricate details in the architecture, the careful craftsmanship that went into every element, and the symbolic meanings embedded in the design. These elements combine to create an experience that engages all your senses and leaves a lasting impression.`,
-                
-                cuisine: `The culinary traditions associated with ${location} reflect the rich cultural tapestry of the region. Local dishes have been perfected over generations, combining influences from various cultures that have passed through this area. From street food to fine dining, the flavors here tell their own story of cultural exchange and innovation.`,
-                
-                tips: `To make the most of your visit to ${location}, consider these practical tips: Arrive early in the morning or late afternoon to avoid crowds. Wear comfortable walking shoes as you'll be doing considerable walking. Bring water and sun protection. Take time to sit and absorb the atmosphere rather than rushing. The best experiences often come from unexpected discoveries.`
-            };
-            
-            return templates[stopType] || templates.attraction;
-        }
-
-        // Save to library function
-        function saveToLibrary(location, language, tourType, stops, content) {
             try {
-                console.log('=== SAVE TO LIBRARY START ===');
+                let apiUrl = '';
+                let requestBody = {};
                 
-                // Validate inputs
-                if (!location || !content) {
-                    console.error('Missing required data for saving');
-                    return null;
+                // Update loading text based on model
+                document.getElementById('loadingText').textContent = `Generating with ${selectedModel.toUpperCase()}...`;
+                
+                // Configure API based on selected model
+                switch (selectedModel) {
+                    case 'openai':
+                        apiUrl = '/api/openai';
+                        requestBody = {
+                            prompt: `Create a detailed ${stops}-stop audioguide for ${location}.
+                            
+Language: ${language}
+Tour Type: ${tourType}
+Guide Type: ${guideType}
+Audience: ${audience}
+Style: ${style}
+
+Create exactly ${stops} stops with comprehensive information about ${location}. Each stop should be detailed and engaging, approximately 800-1000 words.
+
+Format each stop as:
+STOP [number]: [Title]
+------------------------------
+[Detailed content]
+
+Start now:`,
+                            max_tokens: 4000,
+                            temperature: 0.8
+                        };
+                        break;
+                        
+                    case 'groq':
+                        apiUrl = '/api/groq';
+                        requestBody = {
+                            destination: location,
+                            stops: stops,
+                            tourType: tourType,
+                            language: language
+                        };
+                        break;
+                        
+                    case 'deepseek':
+                        apiUrl = '/api/deepseek';
+                        requestBody = {
+                            location: location,
+                            duration: stops + ' stops',
+                            interests: tourType
+                        };
+                        break;
+                        
+                    case 'claude':
+                        apiUrl = '/api/claude';
+                        requestBody = {
+                            destination: location,
+                            guideType: guideType,
+                            audience: audience,
+                            style: style,
+                            numStops: parseInt(stops),
+                            stopLength: 800,
+                            preferredModel: 'claude-3-5-sonnet-20241022'
+                        };
+                        break;
                 }
+
+                // Make API call
+                console.log(`Calling ${selectedModel} API...`);
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `API returned ${response.status}`);
+                }
+
+                const data = await response.json();
                 
+                // Extract content based on model response format
+                let content = '';
+                if (selectedModel === 'openai') {
+                    content = data.choices?.[0]?.message?.content || '';
+                } else if (selectedModel === 'deepseek') {
+                    content = data.content || data.generated_text || '';
+                } else {
+                    content = data.content || data.rawContent || '';
+                }
+
+                if (!content) {
+                    throw new Error('No content generated from API');
+                }
+
+                // Format content
+                const formattedContent = formatAudioguideContent(content, location, language, tourType, stops);
+                
+                // Save to library
+                const savedGuide = saveToLibrary(location, language, tourType, stops, formattedContent, selectedModel);
+                
+                if (savedGuide) {
+                    currentGuideId = savedGuide.id;
+                    
+                    // Download the file
+                    downloadAudioguide(formattedContent, location);
+                    
+                    // Update success message
+                    document.getElementById('generateAudioLink').href = `audio.html?id=${savedGuide.id}`;
+                    document.getElementById('successMessage').classList.add('active');
+                    
+                    console.log('Guide saved successfully:', savedGuide.id);
+                } else {
+                    throw new Error('Failed to save guide to library');
+                }
+
+            } catch (error) {
+                console.error('Generation error:', error);
+                showError(error.message);
+            } finally {
+                document.getElementById('generateBtn').disabled = false;
+                document.getElementById('loading').classList.remove('active');
+            }
+        }
+
+        // Format audioguide content
+        function formatAudioguideContent(content, location, language, tourType, stops) {
+            // If content already has proper formatting, use it
+            if (content.includes('AUDIOGUIDE:')) {
+                return content;
+            }
+            
+            // Otherwise, format it properly
+            let formatted = `AUDIOGUIDE: ${location.toUpperCase()}\n`;
+            formatted += '='.repeat(60) + '\n\n';
+            formatted += `Language: ${language}\n`;
+            formatted += `Tour Type: ${tourType}\n`;
+            formatted += `Total Stops: ${stops}\n`;
+            formatted += `Generated: ${new Date().toLocaleDateString()}\n`;
+            formatted += `AI Model: ${selectedModel.toUpperCase()}\n\n`;
+            formatted += '='.repeat(60) + '\n\n';
+            formatted += content;
+            formatted += '\n\n' + '='.repeat(60) + '\n';
+            formatted += '© CloudGuide - www.cloudguide.me\n';
+            
+            return formatted;
+        }
+
+        // Save to library
+        function saveToLibrary(location, language, tourType, stops, content, model) {
+            try {
                 // Get existing guides
                 let audioguides = [];
                 const stored = localStorage.getItem('cloudguide_audioguides');
                 if (stored) {
                     try {
                         audioguides = JSON.parse(stored);
-                        console.log('Found existing guides:', audioguides.length);
                     } catch (e) {
                         console.error('Error parsing existing guides:', e);
                         audioguides = [];
                     }
                 }
-                
+
                 // Create new guide
                 const newGuide = {
                     id: Date.now().toString(),
                     title: location,
                     location: location,
-                    language: language || 'English',
-                    tourType: tourType || 'comprehensive',
-                    stops: stops || 8,
+                    language: language,
+                    tourType: tourType,
+                    stops: parseInt(stops),
                     date: new Date().toISOString(),
                     content: content,
                     type: 'generated',
-                    wordCount: content.split(/\s+/).filter(w => w.length > 0).length
+                    model: model,
+                    wordCount: content.split(/\s+/).length
                 };
-                
-                console.log('New guide created:', {
-                    id: newGuide.id,
-                    title: newGuide.title,
-                    contentLength: newGuide.content.length
-                });
-                
-                // Add to array
+
+                // Add to beginning of array
                 audioguides.unshift(newGuide);
-                
+
                 // Limit to 50 guides
                 if (audioguides.length > 50) {
                     audioguides = audioguides.slice(0, 50);
                 }
-                
+
                 // Save to localStorage
-                const jsonString = JSON.stringify(audioguides);
-                localStorage.setItem('cloudguide_audioguides', jsonString);
-                console.log('Saved to localStorage, total size:', jsonString.length);
+                localStorage.setItem('cloudguide_audioguides', JSON.stringify(audioguides));
                 
-                // Verify save
-                const verification = localStorage.getItem('cloudguide_audioguides');
-                if (verification) {
-                    const parsed = JSON.parse(verification);
-                    const found = parsed.find(g => g.id === newGuide.id);
-                    if (found) {
-                        console.log('✅ SAVE VERIFIED - Guide found in storage');
-                    } else {
-                        console.error('❌ SAVE FAILED - Guide not found after save');
-                        return null;
-                    }
-                }
-                
-                console.log('=== SAVE TO LIBRARY END ===');
+                console.log('Saved to library:', newGuide.id);
                 return newGuide;
-                
+
             } catch (error) {
-                console.error('CRITICAL ERROR in saveToLibrary:', error);
-                alert('Error saving audioguide: ' + error.message);
+                console.error('Error saving to library:', error);
                 return null;
-            }
-        }
-
-        // Main generate function
-        async function generateGuide() {
-            const aiModel = document.getElementById('aiModel').value;
-            const language = document.getElementById('language').value;
-            const tourType = document.getElementById('tourType').value;
-            const stops = parseInt(document.getElementById('stops').value);
-            const context = document.getElementById('context').value.trim();
-            
-            let location = '';
-            
-            if (currentTab === 'location') {
-                location = document.getElementById('location').value.trim();
-                if (!location) {
-                    alert('Please enter a location');
-                    return;
-                }
-            } else {
-                location = document.getElementById('fileLocation').value.trim();
-                if (!location) {
-                    alert('Please enter the location name');
-                    return;
-                }
-            }
-
-            console.log('Generating guide for:', location);
-
-            // Disable button and show loading
-            document.getElementById('generateBtn').disabled = true;
-            document.getElementById('loading').classList.add('active');
-            document.getElementById('success').classList.remove('active');
-
-            try {
-                let content = '';
-                
-                // Generate content based on model
-                if (aiModel === 'sample') {
-                    // Generate sample content without API
-                    content = await generateSampleAudioguide(location, language, tourType, stops);
-                } else if (aiModel === 'openai') {
-                    // Try OpenAI API
-                    content = await generateWithOpenAI(location, language, tourType, stops, context);
-                } else if (aiModel === 'groq') {
-                    // Try Groq API
-                    content = await generateWithGroq(location, language, tourType, stops, context);
-                } else {
-                    // Fallback to sample
-                    content = await generateSampleAudioguide(location, language, tourType, stops);
-                }
-                
-                if (!content) {
-                    throw new Error('No content generated');
-                }
-                
-                // Save to library
-                const savedGuide = saveToLibrary(location, language, tourType, stops, content);
-                
-                if (savedGuide) {
-                    console.log('Guide saved successfully:', savedGuide.id);
-                    
-                    // Download file
-                    downloadAudioguide(content, location);
-                    
-                    // Show success message
-                    document.getElementById('success').innerHTML = `
-                        ✓ Audioguide generated successfully and saved to your library!
-                        <div style="margin-top: 15px;">
-                            <a href="library.html" style="color: white; text-decoration: underline;">View in Library</a> | 
-                            <a href="audio.html?id=${savedGuide.id}" style="color: white; text-decoration: underline;">Generate Audio</a>
-                        </div>
-                    `;
-                    document.getElementById('success').classList.add('active');
-                    
-                    setTimeout(() => {
-                        document.getElementById('success').classList.remove('active');
-                    }, 10000);
-                } else {
-                    throw new Error('Failed to save guide to library');
-                }
-                
-            } catch (error) {
-                console.error('Generation error:', error);
-                alert('Error: ' + error.message);
-            } finally {
-                document.getElementById('generateBtn').disabled = false;
-                document.getElementById('loading').classList.remove('active');
-                document.getElementById('progressContainer').classList.remove('active');
-            }
-        }
-
-        // Generate sample audioguide (no API needed)
-        async function generateSampleAudioguide(location, language, tourType, stops) {
-            console.log('Generating sample content...');
-            
-            let content = `AUDIOGUIDE: ${location.toUpperCase()}\n`;
-            content += '='.repeat(60) + '\n\n';
-            content += `Language: ${language}\n`;
-            content += `Tour Type: ${tourType}\n`;
-            content += `Total Stops: ${stops}\n`;
-            content += `Generated: ${new Date().toLocaleDateString()}\n\n`;
-            content += '='.repeat(60) + '\n\n';
-            
-            updateProgress(10, 'Creating introduction...');
-            
-            // Generate stops
-            content += 'STOP 1: INTRODUCTION\n';
-            content += '-'.repeat(30) + '\n\n';
-            content += generateSampleContent(location, 'introduction');
-            content += '\n\n';
-            
-            updateProgress(30, 'Adding history...');
-            
-            content += 'STOP 2: HISTORY\n';
-            content += '-'.repeat(30) + '\n\n';
-            content += generateSampleContent(location, 'history');
-            content += '\n\n';
-            
-            updateProgress(50, 'Creating attraction stops...');
-            
-            for (let i = 3; i <= stops - 2; i++) {
-                content += `STOP ${i}: MAIN ATTRACTION ${i - 2}\n`;
-                content += '-'.repeat(30) + '\n\n';
-                content += generateSampleContent(location, 'attraction');
-                content += '\n\n';
-            }
-            
-            updateProgress(70, 'Adding cuisine section...');
-            
-            content += `STOP ${stops - 1}: LOCAL CUISINE\n`;
-            content += '-'.repeat(30) + '\n\n';
-            content += generateSampleContent(location, 'cuisine');
-            content += '\n\n';
-            
-            updateProgress(90, 'Final touches...');
-            
-            content += `STOP ${stops}: PRACTICAL TIPS\n`;
-            content += '-'.repeat(30) + '\n\n';
-            content += generateSampleContent(location, 'tips');
-            content += '\n\n';
-            
-            content += '='.repeat(60) + '\n';
-            content += '© CloudGuide - www.cloudguide.me\n';
-            
-            updateProgress(100, 'Complete!');
-            
-            return content;
-        }
-
-        // OpenAI API call
-        async function generateWithOpenAI(location, language, tourType, stops, context) {
-            try {
-                const response = await fetch('/api/openai', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        prompt: `Create an audioguide for ${location} with ${stops} stops in ${language}`,
-                        max_tokens: 4000
-                    })
-                });
-                
-                if (!response.ok) {
-                    throw new Error('OpenAI API failed');
-                }
-                
-                const data = await response.json();
-                return data.content || generateSampleAudioguide(location, language, tourType, stops);
-                
-            } catch (error) {
-                console.error('OpenAI error:', error);
-                // Fallback to sample content
-                return generateSampleAudioguide(location, language, tourType, stops);
-            }
-        }
-
-        // Groq API call
-        async function generateWithGroq(location, language, tourType, stops, context) {
-            try {
-                const response = await fetch('/api/groq', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        destination: location,
-                        stops: stops,
-                        tourType: tourType,
-                        language: language
-                    })
-                });
-                
-                if (!response.ok) {
-                    throw new Error('Groq API failed');
-                }
-                
-                const data = await response.json();
-                return data.content || generateSampleAudioguide(location, language, tourType, stops);
-                
-            } catch (error) {
-                console.error('Groq error:', error);
-                // Fallback to sample content
-                return generateSampleAudioguide(location, language, tourType, stops);
             }
         }
 
@@ -1192,53 +901,13 @@
             URL.revokeObjectURL(url);
         }
 
-        // Debug functions
-        function testGenerateSimple() {
-            console.log('Testing simple save...');
-            const testLocation = 'Test Museum ' + Date.now();
-            const testContent = 'This is a test audioguide content.\nIt has multiple lines.\nAnd some stops.';
-            
-            const saved = saveToLibrary(testLocation, 'English', 'test', 3, testContent);
-            
-            if (saved) {
-                alert('Test guide saved! ID: ' + saved.id + '\nCheck the Library page.');
-            } else {
-                alert('Test save failed! Check console for errors.');
-            }
-        }
-
-        function checkStorage() {
-            console.log('=== STORAGE CHECK ===');
-            const guides = localStorage.getItem('cloudguide_audioguides');
-            if (guides) {
-                try {
-                    const parsed = JSON.parse(guides);
-                    console.log('Guides in storage:', parsed.length);
-                    console.log('First guide:', parsed[0]);
-                    alert(`Found ${parsed.length} guides in storage`);
-                } catch (e) {
-                    console.error('Error parsing guides:', e);
-                    alert('Storage corrupted! Use Clear Storage to fix.');
-                }
-            } else {
-                console.log('No guides in storage');
-                alert('No guides found in storage');
-            }
-        }
-
-        function clearStorage() {
-            if (confirm('This will delete all saved audioguides. Continue?')) {
-                localStorage.removeItem('cloudguide_audioguides');
-                alert('Storage cleared');
-                console.log('Storage cleared');
-            }
-        }
-
-        function showStorageInfo() {
-            const used = new Blob(Object.values(localStorage)).size;
-            const limit = 5 * 1024 * 1024; // 5MB typical limit
-            const percent = (used / limit * 100).toFixed(2);
-            alert(`Storage used: ${(used/1024).toFixed(2)} KB (${percent}% of typical 5MB limit)`);
+        // Show error message
+        function showError(message) {
+            document.getElementById('errorText').textContent = message;
+            document.getElementById('errorMessage').classList.add('active');
+            setTimeout(() => {
+                document.getElementById('errorMessage').classList.remove('active');
+            }, 5000);
         }
     </script>
 </body>
