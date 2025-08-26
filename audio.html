@@ -497,20 +497,6 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* API Setup Section */
-        .api-setup {
-            background: #fef3c7;
-            border: 2px solid #f59e0b;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .api-setup h3 {
-            color: #92400e;
-            margin-bottom: 15px;
-        }
-
         /* Storage Options */
         .storage-options {
             background: #f0f4ff;
@@ -522,6 +508,23 @@
 
         .storage-option {
             margin: 10px 0;
+        }
+
+        .storage-status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        .storage-status.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .storage-status.warning {
+            background: #fef3c7;
+            color: #92400e;
         }
 
         @media (max-width: 768px) {
@@ -589,9 +592,10 @@
                 <div class="storage-option">
                     <label>
                         <input type="radio" name="storage" value="cloudinary"> 
-                        <strong>Cloudinary</strong> - Unlimited storage, permanent URLs (requires setup)
+                        <strong>Cloudinary</strong> - Unlimited storage, permanent URLs (automatic via server)
                     </label>
                 </div>
+                <div class="storage-status" id="storageStatus" style="display: none;"></div>
             </div>
 
             <!-- Tabs -->
@@ -751,6 +755,7 @@ Your history text here..."></textarea>
             checkAPIConfiguration();
             updateSpeed();
             updateLanguageInfo();
+            checkStorageStatus();
             
             // Check URL params
             const urlParams = new URLSearchParams(window.location.search);
@@ -760,16 +765,52 @@ Your history text here..."></textarea>
                 currentGuideId = id;
                 loadFromLibrary(id);
             }
+        });
+
+        // Check storage status
+        function checkStorageStatus() {
+            const storageType = document.querySelector('input[name="storage"]:checked').value;
+            const statusDiv = document.getElementById('storageStatus');
             
-            // Debug: Check localStorage
-            console.log('Current localStorage keys:', Object.keys(localStorage));
-            console.log('Audioguides in storage:', localStorage.getItem('cloudguide_audioguides'));
+            if (storageType === 'cloudinary') {
+                // Check if server has Cloudinary configured
+                fetch('/api/upload-to-cloudinary', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        audioData: 'test',
+                        fileName: 'test.mp3'
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.url && !data.url.includes('mock-cloudinary')) {
+                        statusDiv.className = 'storage-status success';
+                        statusDiv.textContent = '✅ Cloudinary is configured and ready';
+                    } else {
+                        statusDiv.className = 'storage-status warning';
+                        statusDiv.textContent = '⚠️ Cloudinary not configured on server - using mock URLs';
+                    }
+                    statusDiv.style.display = 'block';
+                })
+                .catch(error => {
+                    statusDiv.className = 'storage-status warning';
+                    statusDiv.textContent = '⚠️ Could not verify Cloudinary status';
+                    statusDiv.style.display = 'block';
+                });
+            } else {
+                statusDiv.style.display = 'none';
+            }
+        }
+
+        // Update storage status when option changes
+        document.querySelectorAll('input[name="storage"]').forEach(radio => {
+            radio.addEventListener('change', checkStorageStatus);
         });
 
         // Check API configuration
         async function checkAPIConfiguration() {
             try {
-                // First check if the multilingual endpoint exists
                 const response = await fetch('/api/multilingual-tts', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -785,8 +826,6 @@ Your history text here..."></textarea>
                 
                 if (response.status === 500 || response.status === 501) {
                     const data = await response.json();
-                    console.log('API Configuration issue:', data);
-                    
                     if (data.error && data.error.includes('not configured')) {
                         showAPIStatus('warning', 'OpenAI API key may not be configured. Audio generation might not work.');
                         apiConfigured = false;
@@ -821,18 +860,18 @@ Your history text here..."></textarea>
             alert.style.display = 'block';
         }
 
-        // Upload audio to Cloudinary
-        async function uploadToCloudinary(audioData, fileName) {
+        // Upload audio to storage (local or Cloudinary via API)
+        async function uploadAudioToStorage(audioData, fileName) {
             const storageType = document.querySelector('input[name="storage"]:checked').value;
             
             if (storageType === 'local') {
                 // Just return the base64 data URL for local storage
                 console.log('Using local storage for audio');
-                return audioData;
+                return { url: audioData, isCloudinary: false };
             }
             
             try {
-                console.log('Uploading to Cloudinary:', fileName);
+                console.log('Uploading to Cloudinary via API:', fileName);
                 
                 const response = await fetch('/api/upload-to-cloudinary', {
                     method: 'POST',
@@ -845,19 +884,30 @@ Your history text here..."></textarea>
                 
                 if (response.ok) {
                     const data = await response.json();
-                    console.log('Cloudinary upload successful:', data.url);
-                    return data.url;
+                    console.log('Upload response:', data);
+                    
+                    // Check if it's a real URL or mock
+                    const isRealCloudinary = data.url && !data.url.includes('mock-cloudinary');
+                    
+                    if (!isRealCloudinary) {
+                        showMessage('⚠️ Using mock Cloudinary URL (configure server for real uploads)', 'warning');
+                    }
+                    
+                    return { 
+                        url: data.url, 
+                        isCloudinary: isRealCloudinary 
+                    };
                 } else {
-                    console.error('Cloudinary upload failed, using local storage');
-                    return audioData;
+                    console.error('Upload failed, using local storage');
+                    return { url: audioData, isCloudinary: false };
                 }
             } catch (error) {
-                console.error('Cloudinary upload error:', error);
-                return audioData; // Fallback to base64 data URL
+                console.error('Upload error:', error);
+                return { url: audioData, isCloudinary: false };
             }
         }
 
-        // Generate audio with better error handling and Cloudinary upload
+        // Generate audio with storage integration
         async function generateAudio(chapter) {
             const language = document.getElementById('audioLanguage').value;
             const speed = parseFloat(document.getElementById('speed').value);
@@ -888,7 +938,6 @@ Your history text here..."></textarea>
                 if (!response.ok && response.status === 500) {
                     console.log('Multilingual TTS failed, trying OpenAI fallback...');
                     
-                    // Only fallback for English
                     if (language.startsWith('en-')) {
                         response = await fetch('/api/openai-tts', {
                             method: 'POST',
@@ -910,10 +959,14 @@ Your history text here..."></textarea>
                     const data = await response.json();
                     
                     if (data.audioUrl || data.audioData) {
-                        // Upload to Cloudinary if selected
+                        // Upload to storage
                         loadingText.textContent = `Storing audio for ${chapter.shortTitle || chapter.title}...`;
                         const fileName = `${chapter.shortTitle || chapter.title}`.replace(/[^a-z0-9]/gi, '_') + `_${language}.mp3`;
-                        const audioUrl = await uploadToCloudinary(data.audioUrl || data.audioData, fileName);
+                        
+                        const storageResult = await uploadAudioToStorage(
+                            data.audioUrl || data.audioData, 
+                            fileName
+                        );
                         
                         // Update chapter status
                         chapter.status = 'completed';
@@ -924,11 +977,11 @@ Your history text here..."></textarea>
                             name: fileName,
                             chapter: chapter.title,
                             language: language,
-                            url: audioUrl,
+                            url: storageResult.url,
                             provider: data.provider || 'openai',
                             stopNumber: chapter.stopNumber || chapter.id,
                             size: 'Generated',
-                            isCloudinary: audioUrl.includes('cloudinary.com'),
+                            isCloudinary: storageResult.isCloudinary,
                             warning: data.warning
                         };
                         
@@ -945,7 +998,8 @@ Your history text here..."></textarea>
                         if (data.warning) {
                             showMessage(`✅ Audio generated! ${data.warning}`, 'warning');
                         } else {
-                            showMessage(`✅ Audio generated successfully!`, 'success');
+                            const storageInfo = storageResult.isCloudinary ? '☁️ Stored in cloud' : '💾 Stored locally';
+                            showMessage(`✅ Audio generated successfully! ${storageInfo}`, 'success');
                         }
                     }
                 } else {
@@ -1017,7 +1071,6 @@ Your history text here..."></textarea>
             const exists = library.find(g => g.id == guideId);
             
             if (!exists && currentGuideData) {
-                // Add the current guide to library if it doesn't exist
                 const guideToSave = {
                     id: guideId,
                     title: currentGuideData.title || 'Untitled Guide',
@@ -1043,7 +1096,6 @@ Your history text here..."></textarea>
                 return;
             }
 
-            // If no guide ID, create one
             if (!currentGuideId) {
                 currentGuideId = Date.now().toString();
                 console.log('Created new guide ID:', currentGuideId);
@@ -1108,7 +1160,6 @@ Your history text here..."></textarea>
             // Select first 3 chapters by default
             chapters.slice(0, 3).forEach(ch => ch.selected = true);
 
-            // Save current guide data
             currentGuideData = {
                 title: 'Manual Entry',
                 content: text,
@@ -1338,7 +1389,6 @@ Your history text here..."></textarea>
                 // Set the language if it exists
                 if (guide.language) {
                     const langSelect = document.getElementById('audioLanguage');
-                    // Try to match language
                     Array.from(langSelect.options).forEach(option => {
                         if (option.text.toLowerCase().includes(guide.language.toLowerCase())) {
                             langSelect.value = option.value;
@@ -1388,7 +1438,6 @@ Your history text here..."></textarea>
             }
 
             libraryGrid.innerHTML = audioguides.map(guide => {
-                // Check if this guide has saved audio files
                 const savedAudioFiles = localStorage.getItem(`cloudguide_audio_${guide.id}`);
                 let audioCount = 0;
                 try {
@@ -1403,7 +1452,6 @@ Your history text here..."></textarea>
                     ? `<span style="color: #48bb78;">🎵 ${audioCount} audio files</span>`
                     : '<span style="color: #f6ad55;">No audio generated</span>';
                 
-                // Better handling of title
                 const title = guide.title || guide.location || 'Untitled Guide';
                 const location = guide.location || guide.title || 'Unknown Location';
                 const language = guide.language || 'English';
