@@ -779,6 +779,9 @@ Your history text here..."></textarea>
                 <button class="generate-btn" id="generateAll" onclick="generateAll()" style="background: #667eea;">
                     🎬 Generate All Selected Chapters
                 </button>
+                <button class="btn btn-secondary" onclick="clearAllAudioData()" style="margin-left: auto; padding: 16px;">
+                    🗑️ Clear Storage
+                </button>
             </div>
 
             <!-- Loading -->
@@ -827,28 +830,49 @@ Your history text here..."></textarea>
                 return;
             }
             
-            // Get existing files or create new array
-            let savedAudioFiles = JSON.parse(localStorage.getItem(`cloudguide_audio_${guideId}`) || '[]');
-            
-            // Add the new audio file
-            savedAudioFiles.push({
-                name: audioFile.name,
-                url: audioFile.url,
-                dataUrl: audioFile.url, // Store the actual URL
-                size: audioFile.size || 'Generated',
-                stopNumber: audioFile.stopNumber || savedAudioFiles.length + 1,
-                chapterTitle: audioFile.chapter,
-                language: audioFile.language,
-                provider: audioFile.provider || 'openai',
-                generatedAt: new Date().toISOString()
-            });
-            
-            // Save back to localStorage
-            localStorage.setItem(`cloudguide_audio_${guideId}`, JSON.stringify(savedAudioFiles));
-            console.log(`✅ Saved audio file ${audioFile.name} for guide ${guideId}. Total files: ${savedAudioFiles.length}`);
-            
-            // Show success message
-            showMessage(`Audio file saved: ${audioFile.name}`, 'success');
+            try {
+                // Get existing files or create new array
+                let savedAudioFiles = JSON.parse(localStorage.getItem(`cloudguide_audio_${guideId}`) || '[]');
+                
+                // Only save metadata and Cloudinary URL, NOT huge data URLs
+                savedAudioFiles.push({
+                    name: audioFile.name,
+                    url: audioFile.cloudinaryUrl || audioFile.url,
+                    dataUrl: audioFile.cloudinaryUrl || 'CLOUDINARY', // Don't store huge data URLs
+                    size: audioFile.size || 'Generated',
+                    stopNumber: audioFile.stopNumber || savedAudioFiles.length + 1,
+                    chapterTitle: audioFile.chapter,
+                    language: audioFile.language,
+                    provider: audioFile.provider || 'openai',
+                    generatedAt: new Date().toISOString(),
+                    isCloudinary: !!audioFile.cloudinaryUrl
+                });
+                
+                // Save back to localStorage
+                localStorage.setItem(`cloudguide_audio_${guideId}`, JSON.stringify(savedAudioFiles));
+                console.log(`✅ Saved audio file ${audioFile.name} for guide ${guideId}. Total files: ${savedAudioFiles.length}`);
+                
+            } catch (error) {
+                if (error.name === 'QuotaExceededError') {
+                    console.error('❌ localStorage is full! Clearing old data...');
+                    clearOldAudioData();
+                    // Try again
+                    try {
+                        const savedAudioFiles = JSON.parse(localStorage.getItem(`cloudguide_audio_${guideId}`) || '[]');
+                        savedAudioFiles.push({
+                            name: audioFile.name,
+                            url: audioFile.cloudinaryUrl || 'LOCAL_ONLY',
+                            size: 'Cloudinary',
+                            stopNumber: audioFile.stopNumber || savedAudioFiles.length + 1,
+                            chapterTitle: audioFile.chapter
+                        });
+                        localStorage.setItem(`cloudguide_audio_${guideId}`, JSON.stringify(savedAudioFiles));
+                        console.log('✅ Saved after clearing old data');
+                    } catch (e) {
+                        showMessage('Storage full! Audio uploaded but not saved locally.', 'warning');
+                    }
+                }
+            }
         }
 
         function clearSavedAudioFiles(guideId) {
@@ -862,6 +886,56 @@ Your history text here..."></textarea>
             if (!guideId) return [];
             const saved = localStorage.getItem(`cloudguide_audio_${guideId}`);
             return saved ? JSON.parse(saved) : [];
+        }
+
+        // CRITICAL: Clear old audio data if localStorage is full
+        function clearOldAudioData() {
+            console.log('Clearing old audio data to free up space...');
+            const keys = Object.keys(localStorage);
+            keys.forEach(key => {
+                if (key.startsWith('cloudguide_audio_')) {
+                    try {
+                        const data = localStorage.getItem(key);
+                        // Clear if data is huge (>100KB)
+                        if (data && data.length > 100000) {
+                            console.log(`Clearing large audio data: ${key} (${(data.length/1024/1024).toFixed(2)} MB)`);
+                            localStorage.removeItem(key);
+                        }
+                    } catch (e) {
+                        console.error('Error clearing:', e);
+                    }
+                }
+            });
+        }
+
+        // Upload to Cloudinary using YOUR EXISTING BACKEND API
+        async function uploadAudioToCloudinary(audioUrl, fileName) {
+            try {
+                console.log(`Uploading ${fileName} to Cloudinary via backend API...`);
+                
+                const response = await fetch('/api/upload-to-cloudinary', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        audioData: audioUrl,
+                        fileName: fileName.replace(/[^a-z0-9]/gi, '_')
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success && data.url) {
+                    console.log('✅ Uploaded to Cloudinary:', data.url);
+                    return data.url;
+                } else {
+                    console.error('Cloudinary upload failed:', data.error || 'Unknown error');
+                    return null;
+                }
+            } catch (error) {
+                console.error('Upload error:', error);
+                return null;
+            }
         }
 
         // TTS Text Preprocessing Function (keeping all your existing preprocessing)
@@ -1378,11 +1452,24 @@ Leonardo da Vinci's masterpiece from the 16th century. The painting measures 77c
                 clearSavedAudioFiles(currentGuideId);
             }
             
+            // Check localStorage space before starting
+            try {
+                const test = 'x'.repeat(100000); // 100KB test
+                localStorage.setItem('test_space', test);
+                localStorage.removeItem('test_space');
+            } catch (e) {
+                if (confirm('Storage is nearly full. Clear old audio data to continue?')) {
+                    clearOldAudioData();
+                } else {
+                    return;
+                }
+            }
+            
             for (let chapter of selected) {
                 await generateAudio(chapter);
             }
             
-            showMessage(`✅ All ${selected.length} audio files generated and saved!`, 'success');
+            showMessage(`✅ All ${selected.length} audio files generated and uploaded!`, 'success');
         }
 
         // Function to split text into chunks
