@@ -1,4 +1,4 @@
-// api/claude.js - Claude Sonnet 4 as Primary Model
+// api/claude.js - With Batch Processing for Timeout Prevention
 export default async function handler(req, res) {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -22,9 +22,11 @@ export default async function handler(req, res) {
       customPrompt = '',
       numStops = 10, 
       stopLength = 900,  // 900 words per stop
+      batchStart = 1,    // For batch processing - which stop to start from
+      batchSize = 4,     // How many stops to generate in this batch
       includeCoordinates = false,
       websiteRefs = [],
-      preferredModel = 'claude-sonnet-4-20250514' // SONNET 4 AS DEFAULT
+      preferredModel = 'claude-sonnet-4-20250514' // Sonnet 4 for best quality
     } = req.body;
 
     if (!destination) {
@@ -40,76 +42,102 @@ export default async function handler(req, res) {
       });
     }
 
-    console.log(`Generating ${numStops} stops for ${destination} with model: ${preferredModel}`);
+    // Calculate actual stops to generate in this batch
+    const stopsToGenerate = Math.min(batchSize, numStops - batchStart + 1);
+    const batchEnd = batchStart + stopsToGenerate - 1;
+    
+    console.log(`Generating stops ${batchStart}-${batchEnd} of ${numStops} for ${destination}`);
 
-    // Build comprehensive prompt
-    let prompt = `Create a professional ${numStops}-stop audioguide for ${destination}.
+    // Build prompt for this specific batch
+    let prompt = `You are creating part of a larger audioguide for ${destination}.
+This batch should contain stops ${batchStart} through ${batchEnd} (${stopsToGenerate} stops total).
 
-Guide Type: ${guideType}
-Style: ${style}
-Audience: ${audience}
-Words per stop: approximately ${stopLength} words (THIS IS CRITICAL - EACH STOP MUST BE ${stopLength} WORDS)
-${includeCoordinates ? 'Include GPS coordinates [GPS: lat, long] for each stop' : ''}`;
+CONTEXT:
+- Total audioguide will have ${numStops} stops
+- Guide Type: ${guideType}
+- Style: ${style}
+- Audience: ${audience}
+- Words per stop: EXACTLY ${stopLength} words (THIS IS CRITICAL)`;
 
-    // Add city-specific requirements
-    if (guideType === 'city') {
+    // Add specific content guidance based on stop numbers
+    if (batchStart === 1) {
       prompt += `
 
-CITY GUIDE REQUIREMENTS:
-🏛️ INTRODUCTION: Overview of the city's character, significance, and what makes it special
-📚 HISTORY: Key historical periods, events, and figures that shaped the city
-💡 LOCAL TIPS: Practical visitor advice (transport, customs, best times to visit, local etiquette)
-🍽️ MUST EATS: Essential local foods, signature dishes, and where to find authentic versions
-🎭 CULTURE: Local traditions, festivals, and cultural insights`;
+FIRST BATCH - Include these essential stops:
+- STOP 1: Introduction/Overview of ${destination}
+- STOP 2: Historical Background
+- STOP 3-${batchEnd}: Main attractions/exhibits`;
+    } else if (batchEnd === numStops) {
+      prompt += `
+
+FINAL BATCH - Include concluding elements:
+- Continue with attractions/exhibits
+- Final stop should include: practical tips, closing thoughts, and farewell`;
+    } else {
+      prompt += `
+
+MIDDLE BATCH - Continue with:
+- Main attractions, exhibits, or points of interest
+- Maintain consistent style with previous sections`;
+    }
+
+    // Add city-specific requirements if needed
+    if (guideType === 'city' && batchStart <= 5) {
+      prompt += `
+
+CITY GUIDE ELEMENTS to include where appropriate:
+🏛️ Architecture and landmarks
+📚 Historical events and figures
+💡 Local tips and customs
+🍽️ Food and dining recommendations
+🎭 Cultural insights and traditions`;
     }
 
     prompt += `
-${customPrompt ? `Special requirements: ${customPrompt}` : ''}`;
+${customPrompt ? `\nAdditional requirements: ${customPrompt}` : ''}
 
-    // Add website references if provided
-    if (websiteRefs && websiteRefs.length > 0) {
-      prompt += `
+CRITICAL FORMAT REQUIREMENTS:
+1. Generate EXACTLY ${stopsToGenerate} stops
+2. Number them as STOP ${batchStart}, STOP ${batchStart + 1}, etc.
+3. Each stop MUST be EXACTLY ${stopLength} words
+4. Use professional audioguide language
+5. Include specific details, dates, facts, and stories
 
-REFERENCE SOURCES: ${websiteRefs.join(', ')}`;
-    }
-
-    prompt += `
-
-CRITICAL REQUIREMENTS:
-1. Create EXACTLY ${numStops} stops
-2. Each stop MUST be approximately ${stopLength} words (not shorter!)
-3. Use engaging, professional audioguide language
-4. Include specific details, stories, and interesting facts
-5. Natural, conversational tone suitable for audio narration
-
-Format each stop EXACTLY as:
-STOP [number]: [Descriptive Title]
+FORMAT:
+STOP ${batchStart}: [Descriptive Title]
 ------------------------------
-[${stopLength} words of detailed, engaging content]
+[EXACTLY ${stopLength} words of detailed, engaging content]
 
-Begin generating all ${numStops} stops now:`;
+${stopsToGenerate > 1 ? `STOP ${batchStart + 1}: [Descriptive Title]
+------------------------------
+[EXACTLY ${stopLength} words of detailed, engaging content]` : ''}
 
-    // CLAUDE MODELS - SONNET 4 FIRST FOR BEST VALUE
+Generate the ${stopsToGenerate} stops now:`;
+
+    // Model selection - try Sonnet 4 first, then fallbacks
     const modelOptions = [
-      'claude-sonnet-4-20250514',      // Claude Sonnet 4 - BEST cost/quality balance
-      'claude-3-5-sonnet-20241022',    // Claude 3.5 Sonnet (good fallback)
-      'claude-opus-4-20250805',        // Claude Opus 4 (highest quality, more expensive)
-      'claude-3-opus-20240229',        // Claude 3 Opus (older high quality)
-      'claude-3-sonnet-20240229',      // Claude 3 Sonnet (older balanced)
+      'claude-sonnet-4-20250514',      // Best value
+      'claude-3-5-sonnet-20241022',    // Fast and good
+      'claude-3-opus-20240229',        // High quality
+      'claude-3-sonnet-20240229',      // Balanced fallback
     ];
 
     let successfulResponse = null;
     let lastError = null;
     let modelUsed = '';
 
-    // Try the preferred model first, then fallback to others
+    // Set timeout for API call (9 seconds to be safe with Vercel's 10s limit)
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 9000);
+
+    // Try models in order
     const modelsToTry = preferredModel ? 
       [preferredModel, ...modelOptions.filter(m => m !== preferredModel)] : 
       modelOptions;
 
     for (const model of modelsToTry) {
       try {
-        console.log(`Attempting with Claude model: ${model}`);
+        console.log(`Attempting with model: ${model}`);
         
         const response = await fetch('https://api.anthropic.com/v1/messages', {
           method: 'POST',
@@ -120,14 +148,17 @@ Begin generating all ${numStops} stops now:`;
           },
           body: JSON.stringify({
             model: model,
-            max_tokens: 8192,
+            max_tokens: 4096,
             temperature: 0.7,
             messages: [{
               role: 'user',
               content: prompt
             }]
-          })
+          }),
+          signal: controller.signal
         });
+
+        clearTimeout(timeoutId);
 
         const responseText = await response.text();
         console.log(`Response status for ${model}: ${response.status}`);
@@ -137,44 +168,53 @@ Begin generating all ${numStops} stops now:`;
             const data = JSON.parse(responseText);
             successfulResponse = data;
             modelUsed = model;
-            console.log(`Success with Claude model: ${model}`);
+            console.log(`Success with model: ${model}`);
             break;
           } catch (parseError) {
-            console.error(`Failed to parse response for ${model}:`, parseError);
+            console.error(`Failed to parse response:`, parseError);
             lastError = {
               status: response.status,
-              message: 'Invalid JSON response from Claude API'
+              message: 'Invalid JSON response'
             };
           }
         } else {
-          console.log(`Model ${model} failed:`, responseText.substring(0, 200));
+          console.log(`Model ${model} failed`);
+          
+          // Check for auth errors
+          if (response.status === 401) {
+            return res.status(401).json({ 
+              error: 'Invalid API key',
+              solution: 'Check your CLAUDE_API_KEY in Vercel environment variables'
+            });
+          }
+          
+          // Check for rate limiting
+          if (response.status === 429) {
+            return res.status(429).json({ 
+              error: 'Rate limited',
+              solution: 'Please wait a moment and try again'
+            });
+          }
           
           try {
             const errorData = JSON.parse(responseText);
             lastError = {
               status: response.status,
-              message: errorData.error?.message || errorData.message || responseText
+              message: errorData.error?.message || errorData.message || 'API Error'
             };
-            
-            // If it's an auth error, stop trying other models
-            if (response.status === 401) {
-              console.error('Authentication failed - check your CLAUDE_API_KEY');
-              break;
-            }
-            
-            // If rate limited, stop trying
-            if (response.status === 429) {
-              console.error('Rate limited - wait before trying again');
-              break;
-            }
           } catch (e) {
             lastError = {
               status: response.status,
-              message: responseText
+              message: responseText.substring(0, 200)
             };
           }
         }
       } catch (error) {
+        if (error.name === 'AbortError') {
+          console.log('Request timeout - trying next model');
+          lastError = { message: 'Request timeout - try fewer stops' };
+          continue;
+        }
         console.error(`Error with model ${model}:`, error);
         lastError = {
           status: 500,
@@ -185,27 +225,12 @@ Begin generating all ${numStops} stops now:`;
 
     // Check if we got a successful response
     if (!successfulResponse) {
-      console.error('All Claude models failed. Last error:', lastError);
-      
-      let errorMessage = 'Failed to generate content with Claude API';
-      let errorDetails = {};
-      
-      if (lastError) {
-        errorMessage = lastError.message || errorMessage;
-        
-        if (lastError.status === 401) {
-          errorDetails.suggestion = 'Check your CLAUDE_API_KEY in Vercel environment variables';
-        } else if (lastError.status === 429) {
-          errorDetails.suggestion = 'Rate limit exceeded. Please wait a moment and try again';
-        } else if (errorMessage.includes('model_not_found')) {
-          errorDetails.suggestion = 'Model not found. Try: claude-sonnet-4-20250514 or claude-3-5-sonnet-20241022';
-        }
-      }
+      console.error('All models failed. Last error:', lastError);
       
       return res.status(500).json({ 
-        error: errorMessage,
-        ...errorDetails,
-        availableModels: modelOptions
+        error: 'Failed to generate content',
+        details: lastError?.message || 'Unknown error',
+        suggestion: 'Try generating fewer stops or wait a moment'
       });
     }
 
@@ -215,28 +240,27 @@ Begin generating all ${numStops} stops now:`;
     // Determine model display name
     let modelDisplayName = 'Claude';
     if (modelUsed.includes('sonnet-4')) {
-      modelDisplayName = 'Claude Sonnet 4 (Best Value - Recommended)';
+      modelDisplayName = 'Claude Sonnet 4 (Best Value)';
     } else if (modelUsed.includes('opus-4')) {
-      modelDisplayName = 'Claude Opus 4 (Highest Quality)';
-    } else if (modelUsed.includes('sonnet-20241022')) {
+      modelDisplayName = 'Claude Opus 4 (Premium)';
+    } else if (modelUsed.includes('3-5-sonnet')) {
       modelDisplayName = 'Claude 3.5 Sonnet';
-    } else if (modelUsed.includes('opus-20240229')) {
+    } else if (modelUsed.includes('opus')) {
       modelDisplayName = 'Claude 3 Opus';
-    } else if (modelUsed.includes('sonnet-20240229')) {
+    } else if (modelUsed.includes('sonnet')) {
       modelDisplayName = 'Claude 3 Sonnet';
-    } else if (modelUsed.includes('haiku')) {
-      modelDisplayName = 'Claude 3 Haiku (Fast)';
     }
     
-    // Format the response
+    // Format the response for this batch
+    const batchInfo = `Batch: Stops ${batchStart}-${batchEnd} of ${numStops}`;
+    
     const formattedContent = `AUDIOGUIDE: ${destination.toUpperCase()}
 ===================================================
 
 Generated with: ${modelDisplayName}
-Model: ${modelUsed}
+${batchInfo}
 Guide Type: ${guideType}
 Style: ${style}
-Total Stops: ${numStops}
 Words per Stop: ${stopLength}
 
 ===================================================
@@ -244,17 +268,22 @@ Words per Stop: ${stopLength}
 ${generatedContent}
 
 ===================================================
-© CloudGuide Premium - www.cloudguide.me`;
+© CloudGuide - www.cloudguide.me`;
 
     const wordCount = generatedContent.split(/\s+/).length;
 
-    // Return success response
+    // Return success response with batch info
     return res.status(200).json({
       success: true,
       content: formattedContent,
       rawContent: generatedContent,
       destination: destination,
-      stops: numStops,
+      batch: {
+        start: batchStart,
+        end: batchEnd,
+        size: stopsToGenerate,
+        total: numStops
+      },
       model: modelDisplayName,
       modelVersion: modelUsed,
       wordCount: wordCount
