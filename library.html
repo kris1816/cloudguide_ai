@@ -548,6 +548,65 @@
             color: #e53e3e;
         }
 
+        /* Translation Modal */
+        .translation-modal {
+            max-width: 600px;
+        }
+
+        .translation-form {
+            margin-top: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 14px;
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+        }
+
+        .translation-progress {
+            display: none;
+            padding: 20px;
+            background: #f7fafc;
+            border-radius: 6px;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .translation-progress.active {
+            display: block;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #e2e8f0;
+            border-top: 3px solid #48bb78;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         /* Footer */
         .footer-section {
             margin-top: 40px;
@@ -756,7 +815,61 @@
                     <button class="btn btn-secondary" onclick="closeModal()">Close</button>
                     <button class="btn btn-primary" onclick="copyContent()">Copy Text</button>
                     <button class="btn btn-primary" onclick="downloadContent()">Download</button>
+                    <button class="btn btn-primary" onclick="openTranslationModal()">🌐 Translate</button>
                     <button class="btn btn-primary" onclick="openInAudio()">Generate Audio</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Translation Modal -->
+        <div class="modal" id="translationModal">
+            <div class="modal-content translation-modal">
+                <div class="modal-header">
+                    <h2 class="modal-title">Translate Audioguide</h2>
+                    <button class="close-modal" onclick="closeTranslationModal()">&times;</button>
+                </div>
+                <div class="translation-form">
+                    <div class="form-group">
+                        <label class="form-label">From Language</label>
+                        <select id="fromLanguage" class="form-select">
+                            <option value="English">English</option>
+                            <option value="Spanish">Spanish</option>
+                            <option value="French">French</option>
+                            <option value="German">German</option>
+                            <option value="Italian">Italian</option>
+                            <option value="Portuguese">Portuguese</option>
+                            <option value="Chinese">Chinese</option>
+                            <option value="Japanese">Japanese</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">To Language</label>
+                        <select id="toLanguage" class="form-select">
+                            <option value="Spanish">Spanish</option>
+                            <option value="English">English</option>
+                            <option value="French">French</option>
+                            <option value="German">German</option>
+                            <option value="Italian">Italian</option>
+                            <option value="Portuguese">Portuguese</option>
+                            <option value="Chinese">Chinese</option>
+                            <option value="Japanese">Japanese</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Translation Service</label>
+                        <select id="translationService" class="form-select">
+                            <option value="openai">OpenAI (Best Quality)</option>
+                            <option value="deepseek">DeepSeek (Budget)</option>
+                            <option value="groq">Groq (Fast)</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="translateGuide()" style="width: 100%;">
+                        Start Translation
+                    </button>
+                </div>
+                <div class="translation-progress" id="translationProgress">
+                    <div class="spinner"></div>
+                    <div>Translating... Please wait...</div>
                 </div>
             </div>
         </div>
@@ -797,8 +910,12 @@
             // Close modal on click outside
             window.addEventListener('click', function(event) {
                 const modal = document.getElementById('viewModal');
+                const translationModal = document.getElementById('translationModal');
                 if (event.target === modal) {
                     closeModal();
+                }
+                if (event.target === translationModal) {
+                    closeTranslationModal();
                 }
             });
         }
@@ -914,6 +1031,9 @@
                             <button class="action-btn" onclick="viewGuide(${guide.id})">
                                 <span>👁️</span> View
                             </button>
+                            <button class="action-btn" onclick="translateGuideQuick(${guide.id})">
+                                <span>🌐</span> Translate
+                            </button>
                             <button class="action-btn" onclick="openAudioGenerator(${guide.id})">
                                 <span>🎙️</span> Audio
                             </button>
@@ -938,6 +1058,9 @@
             document.getElementById('modalTitle').textContent = guide.title || 'Audioguide Content';
             document.getElementById('modalContent').textContent = guide.content || 'No content available';
             document.getElementById('viewModal').classList.add('active');
+            
+            // Set from language in translation modal
+            document.getElementById('fromLanguage').value = guide.language || 'English';
         }
 
         // Open audio generator
@@ -977,6 +1100,102 @@
             
             showToast('Audioguide deleted', 'success');
             loadLibrary();
+        }
+
+        // Quick translate from card
+        function translateGuideQuick(id) {
+            const guide = audioguides.find(g => g.id === id);
+            if (!guide) return;
+            
+            currentViewingGuide = guide;
+            document.getElementById('fromLanguage').value = guide.language || 'English';
+            document.getElementById('translationModal').classList.add('active');
+        }
+
+        // Open translation modal from view modal
+        function openTranslationModal() {
+            document.getElementById('viewModal').classList.remove('active');
+            document.getElementById('translationModal').classList.add('active');
+        }
+
+        // Close translation modal
+        function closeTranslationModal() {
+            document.getElementById('translationModal').classList.remove('active');
+            document.getElementById('translationProgress').classList.remove('active');
+        }
+
+        // Translate guide
+        async function translateGuide() {
+            if (!currentViewingGuide) {
+                showToast('No guide selected', 'error');
+                return;
+            }
+
+            const fromLang = document.getElementById('fromLanguage').value;
+            const toLang = document.getElementById('toLanguage').value;
+            const service = document.getElementById('translationService').value;
+
+            if (fromLang === toLang) {
+                showToast('Please select different languages', 'error');
+                return;
+            }
+
+            // Show progress
+            document.getElementById('translationProgress').classList.add('active');
+
+            try {
+                // Determine API endpoint based on service
+                let apiEndpoint = '';
+                if (service === 'openai') {
+                    apiEndpoint = '/api/translate-openai';
+                } else if (service === 'deepseek') {
+                    apiEndpoint = '/api/translate-deepseek';
+                } else if (service === 'groq') {
+                    apiEndpoint = '/api/translate-groq';
+                }
+
+                const response = await fetch(apiEndpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        text: currentViewingGuide.content,
+                        fromLanguage: fromLang,
+                        toLanguage: toLang
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Translation failed');
+                }
+
+                const data = await response.json();
+
+                // Save translated guide
+                const translatedGuide = {
+                    ...currentViewingGuide,
+                    id: Date.now(),
+                    title: `${currentViewingGuide.title} (${toLang})`,
+                    language: toLang,
+                    content: data.translatedText,
+                    date: new Date().toISOString(),
+                    translatedFrom: fromLang
+                };
+
+                audioguides.unshift(translatedGuide);
+                localStorage.setItem('cloudguide_audioguides', JSON.stringify(audioguides));
+
+                showToast(`Translated to ${toLang}!`, 'success');
+                closeTranslationModal();
+                loadLibrary();
+
+            } catch (error) {
+                console.error('Translation error:', error);
+                showToast('Translation failed: ' + error.message, 'error');
+            } finally {
+                document.getElementById('translationProgress').classList.remove('active');
+            }
         }
 
         // Filter by language
