@@ -737,6 +737,14 @@
             <button class="generate-btn" id="generateBtn" onclick="generateGuide()">
                 Generate Audioguide
             </button>
+            
+            <!-- Test Button for debugging -->
+            <div style="margin-top: 10px; text-align: center;">
+                <button style="padding: 8px 16px; background: #718096; color: white; border: none; border-radius: 6px; font-size: 11px; cursor: pointer;" 
+                        onclick="testGenerate()">
+                    Test with Sample Data (No API)
+                </button>
+            </div>
 
             <!-- Progress Bar -->
             <div class="progress-container" id="progressContainer">
@@ -981,10 +989,16 @@
                 
                 // CRITICAL: Save to localStorage for Library
                 const savedGuide = saveToLibrary(location, language, tourType, stops, audioguideContent);
-                console.log('✅ Audioguide saved to library with ID:', savedGuide.id);
                 
-                // Also save the last generated guide ID for easy reference
-                localStorage.setItem('lastGeneratedGuideId', savedGuide.id.toString());
+                if (!savedGuide || !savedGuide.id) {
+                    console.error('❌ Failed to save guide to library!');
+                    alert('Warning: The audioguide was generated but may not have been saved to your library.');
+                } else {
+                    console.log('✅ Audioguide saved to library with ID:', savedGuide.id);
+                    
+                    // Also save the last generated guide ID for easy reference
+                    localStorage.setItem('lastGeneratedGuideId', savedGuide.id.toString());
+                }
                 
                 // Download the file
                 downloadAudioguide(audioguideContent, location);
@@ -1119,21 +1133,28 @@
         }
 
         function saveToLibrary(location, language, tourType, stops, content) {
+            console.log('Starting saveToLibrary function...');
+            console.log('Parameters:', { location, language, tourType, stops, contentLength: content ? content.length : 0 });
+            
             // Get existing audioguides
             var audioguides = [];
             var stored = localStorage.getItem('cloudguide_audioguides');
+            
+            console.log('Current localStorage content:', stored ? stored.substring(0, 100) + '...' : 'empty');
+            
             if (stored) {
                 try {
                     audioguides = JSON.parse(stored);
+                    console.log('Parsed existing audioguides:', audioguides.length);
                 } catch (e) {
                     console.error('Error parsing stored audioguides:', e);
                     audioguides = [];
                 }
             }
             
-            // Create new guide with guaranteed unique ID
+            // Create new guide with guaranteed unique ID (use timestamp string to avoid number issues)
             var newGuide = {
-                id: Date.now() + Math.random(), // Ensure uniqueness
+                id: Date.now().toString(), // Use string ID to avoid number precision issues
                 title: location,
                 location: location,
                 language: language,
@@ -1145,29 +1166,44 @@
                 wordCount: content ? content.split(/\s+/).length : 0
             };
             
+            console.log('Created new guide object:', newGuide);
+            
             // Add to beginning of array
             audioguides.unshift(newGuide);
+            console.log('Total guides after adding:', audioguides.length);
             
             // Keep only last 50 audioguides
             if (audioguides.length > 50) {
                 audioguides = audioguides.slice(0, 50);
+                console.log('Trimmed to 50 guides');
             }
             
             // Save back to localStorage
             try {
-                localStorage.setItem('cloudguide_audioguides', JSON.stringify(audioguides));
-                console.log('✅ Successfully saved audioguide to library:', newGuide);
+                var dataToSave = JSON.stringify(audioguides);
+                console.log('Attempting to save data, size:', dataToSave.length);
                 
-                // Verify it was saved
+                localStorage.setItem('cloudguide_audioguides', dataToSave);
+                console.log('✅ localStorage.setItem completed');
+                
+                // Immediate verification
                 var verification = localStorage.getItem('cloudguide_audioguides');
                 if (verification) {
-                    var verifyParsed = JSON.parse(verification);
-                    var foundGuide = verifyParsed.find(g => g.id === newGuide.id);
-                    if (foundGuide) {
-                        console.log('✅ Verification successful - guide is in localStorage');
-                    } else {
-                        console.error('❌ Verification failed - guide not found after saving');
+                    console.log('✅ Verification: Data exists in localStorage');
+                    try {
+                        var verifyParsed = JSON.parse(verification);
+                        console.log('✅ Verification: Can parse data, guides count:', verifyParsed.length);
+                        var foundGuide = verifyParsed.find(function(g) { return g.id === newGuide.id; });
+                        if (foundGuide) {
+                            console.log('✅ Verification: Found our new guide in localStorage!');
+                        } else {
+                            console.error('❌ Verification: Guide not found after saving');
+                        }
+                    } catch (e) {
+                        console.error('❌ Verification: Cannot parse saved data:', e);
                     }
+                } else {
+                    console.error('❌ Verification: No data in localStorage after saving');
                 }
             } catch (e) {
                 console.error('Error saving to localStorage:', e);
@@ -1176,6 +1212,9 @@
                     audioguides = audioguides.slice(0, 10);
                     localStorage.setItem('cloudguide_audioguides', JSON.stringify(audioguides));
                     console.log('Storage was full - kept only 10 most recent guides');
+                    alert('Storage is full. Keeping only 10 most recent guides.');
+                } else {
+                    alert('Error saving audioguide: ' + e.message);
                 }
             }
             
@@ -1183,6 +1222,8 @@
         }
 
         async function generateAudioguideContent(location, language, tourType, totalStops, context, aiModel, useFile) {
+            console.log('Starting content generation for:', location);
+            
             var content = 'AUDIOGUIDE: ' + location.toUpperCase() + '\n';
             content += '=' + '='.repeat(50) + '\n\n';
             content += 'Language: ' + language + '\n';
@@ -1236,6 +1277,8 @@
             
             updateProgress(100, 'Audioguide completed!', 5);
             
+            console.log('Content generation complete, length:', content.length);
+            
             return content;
         }
 
@@ -1244,15 +1287,15 @@
             // In production, this would be replaced with actual AI-generated content
             
             const samples = {
-                introduction: `Welcome to ${location}. This remarkable destination offers visitors an unforgettable journey through history, culture, and human achievement. As you explore today, you will discover the many layers of significance that make this place truly special. The architecture, the stories, and the atmosphere all combine to create an experience that will stay with you long after your visit.`,
+                introduction: `Welcome to ${location}. This remarkable destination offers visitors an unforgettable journey through history, culture, and human achievement. As you explore today, you will discover the many layers of significance that make this place truly special. The architecture, the stories, and the atmosphere all combine to create an experience that will stay with you long after your visit. Every corner tells a story, every artifact holds memories of the past, and every view offers a new perspective on human creativity and ingenuity.`,
                 
-                history: `The history of ${location} spans centuries of human civilization. From its earliest foundations to the present day, this site has witnessed the rise and fall of empires, the creation of masterpieces, and the preservation of cultural heritage. Each stone, each artifact, tells a story of human ambition, creativity, and resilience.`,
+                history: `The history of ${location} spans centuries of human civilization. From its earliest foundations to the present day, this site has witnessed the rise and fall of empires, the creation of masterpieces, and the preservation of cultural heritage. Each stone, each artifact, tells a story of human ambition, creativity, and resilience. Through wars and peace, prosperity and hardship, this location has stood as a testament to the enduring spirit of human achievement and the importance of preserving our collective memory.`,
                 
-                attraction: `This particular section of ${location} represents one of the most significant aspects of the site. Notice the intricate details that have been preserved through the centuries. The craftsmanship on display here demonstrates the skill and dedication of the artisans who created these works. Take a moment to appreciate both the grand design and the subtle elements that might otherwise go unnoticed.`,
+                attraction: `This particular section of ${location} represents one of the most significant aspects of the site. Notice the intricate details that have been preserved through the centuries. The craftsmanship on display here demonstrates the skill and dedication of the artisans who created these works. Take a moment to appreciate both the grand design and the subtle elements that might otherwise go unnoticed. The interplay of light and shadow, the carefully chosen materials, and the symbolic elements all contribute to the profound impact of this remarkable space.`,
                 
-                cuisine: `The culinary traditions of ${location} reflect centuries of cultural exchange and local innovation. Visitors should not miss the opportunity to sample authentic local dishes that have been perfected over generations. From traditional recipes passed down through families to modern interpretations of classic flavors, the food here tells its own story of the region.`,
+                cuisine: `The culinary traditions of ${location} reflect centuries of cultural exchange and local innovation. Visitors should not miss the opportunity to sample authentic local dishes that have been perfected over generations. From traditional recipes passed down through families to modern interpretations of classic flavors, the food here tells its own story of the region. The markets burst with fresh ingredients, the restaurants showcase time-honored techniques, and street vendors offer quick tastes of local favorites that capture the essence of this place.`,
                 
-                tips: `To make the most of your visit to ${location}, consider arriving early to avoid crowds. Purchase tickets in advance when possible, and allow sufficient time to explore thoroughly. Comfortable walking shoes are essential, as you'll be covering considerable ground. Don't forget to bring water and sun protection during warmer months.`
+                tips: `To make the most of your visit to ${location}, consider arriving early to avoid crowds. Purchase tickets in advance when possible, and allow sufficient time to explore thoroughly. Comfortable walking shoes are essential, as you'll be covering considerable ground. Don't forget to bring water and sun protection during warmer months. Photography is usually permitted, but be respectful of any restrictions. Take time to sit and absorb the atmosphere rather than rushing through. The best experiences often come from unexpected discoveries and quiet moments of reflection.`
             };
             
             return samples[type] || samples.attraction;
@@ -1269,6 +1312,96 @@
             document.body.removeChild(a);
             window.URL.revokeObjectURL(url);
         }
+
+        // Test function for quick testing without API
+        async function testGenerate() {
+            console.log('Starting test generation...');
+            
+            // Set test values
+            document.getElementById('location').value = 'Test Museum ' + Date.now();
+            
+            var location = document.getElementById('location').value;
+            var language = document.getElementById('language').value;
+            var tourType = document.getElementById('tourType').value;
+            var stops = parseInt(document.getElementById('stops').value);
+            
+            // Show loading
+            document.getElementById('generateBtn').disabled = true;
+            document.getElementById('loading').classList.add('active');
+            document.getElementById('success').classList.remove('active');
+
+            try {
+                // Generate sample content
+                var audioguideContent = await generateAudioguideContent(location, language, tourType, stops, '', 'test', false);
+                
+                console.log('Generated content length:', audioguideContent.length);
+                
+                // Save to library
+                const savedGuide = saveToLibrary(location, language, tourType, stops, audioguideContent);
+                
+                if (!savedGuide || !savedGuide.id) {
+                    alert('Failed to save guide!');
+                } else {
+                    console.log('✅ Test guide saved with ID:', savedGuide.id);
+                    
+                    // Update success message
+                    document.getElementById('success').innerHTML = `
+                        ✓ TEST audioguide generated and saved to library!
+                        <div style="margin-top: 15px;">
+                            <a href="library.html" style="color: white; text-decoration: underline;">View in Library</a> | 
+                            <a href="audio.html?id=${savedGuide.id}" style="color: white; text-decoration: underline;">Generate Audio</a>
+                        </div>
+                    `;
+                    document.getElementById('success').classList.add('active');
+                    
+                    // Download file
+                    downloadAudioguide(audioguideContent, location);
+                    
+                    // Debug check
+                    debugStorage();
+                }
+                
+            } catch (error) {
+                console.error('Test generation error:', error);
+                alert('Test generation failed: ' + error.message);
+            } finally {
+                document.getElementById('generateBtn').disabled = false;
+                document.getElementById('loading').classList.remove('active');
+                document.getElementById('progressContainer').classList.remove('active');
+            }
+        }
+
+        // Debug function - can be called from browser console
+        function debugStorage() {
+            console.log('=== CloudGuide Storage Debug ===');
+            console.log('localStorage keys:', Object.keys(localStorage));
+            
+            var guides = localStorage.getItem('cloudguide_audioguides');
+            if (guides) {
+                try {
+                    var parsed = JSON.parse(guides);
+                    console.log('Number of audioguides:', parsed.length);
+                    console.log('Audioguides:', parsed);
+                    
+                    if (parsed.length > 0) {
+                        console.log('First guide:', parsed[0]);
+                        console.log('First guide content length:', parsed[0].content ? parsed[0].content.length : 'no content');
+                    }
+                } catch (e) {
+                    console.error('Error parsing audioguides:', e);
+                    console.log('Raw data:', guides.substring(0, 200));
+                }
+            } else {
+                console.log('No audioguides found in localStorage');
+            }
+            
+            var lastId = localStorage.getItem('lastGeneratedGuideId');
+            console.log('Last generated guide ID:', lastId);
+            console.log('=== End Debug ===');
+        }
+        
+        // Make debug function available globally
+        window.debugStorage = debugStorage;
     </script>
 </body>
 </html>
