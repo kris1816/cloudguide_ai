@@ -430,6 +430,15 @@
             color: white;
         }
 
+        .btn-info {
+            background: #3182ce;
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: #2c5282;
+        }
+
         .generate-section {
             display: flex;
             gap: 15px;
@@ -492,6 +501,17 @@
             gap: 10px;
         }
 
+        .cloud-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            background: #dbeafe;
+            color: #1e40af;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
         /* Alert */
         .alert {
             padding: 15px;
@@ -509,6 +529,12 @@
             background: #dbeafe;
             border: 1px solid #3b82f6;
             color: #1e40af;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            border: 1px solid #10b981;
+            color: #065f46;
         }
 
         /* Loading */
@@ -605,6 +631,11 @@
 
         <!-- Main Content -->
         <div class="main-container">
+            <!-- Cloud Storage Status Alert -->
+            <div class="alert alert-info" id="cloudStorageAlert">
+                <strong>☁️ Cloud Storage Enabled:</strong> Audio files will be automatically uploaded to cloud storage for permanent access and easy sharing.
+            </div>
+
             <!-- Tabs -->
             <div class="tabs">
                 <button class="tab-btn active" onclick="switchTab('text')">Direct Text Input</button>
@@ -787,16 +818,16 @@ Your history text here..."></textarea>
             <!-- Loading -->
             <div class="loading" id="loading">
                 <div class="spinner"></div>
-                <div>Generating audio... Please wait...</div>
+                <div id="loadingText">Generating audio... Please wait...</div>
             </div>
 
             <!-- Generated Files -->
             <div class="files-section" id="filesSection" style="display: none;">
                 <h3 class="section-title">🎵 Generated Audio Files</h3>
                 <div id="fileList"></div>
-                <div style="margin-top: 20px; padding: 15px; background: #f0fff4; border: 1px solid #48bb78; border-radius: 6px;">
-                    <strong>✅ Audio files are automatically saved!</strong><br>
-                    <small>You can now proceed to the <a href="upload.html" style="color: #48bb78;">Upload page</a> to submit them to CloudGuide CMS.</small>
+                <div class="alert alert-success" style="margin-top: 20px;">
+                    <strong>✅ Audio files are automatically saved to cloud storage!</strong><br>
+                    <small>You can now proceed to the <a href="upload.html" style="color: #065f46; font-weight: 600;">Upload page</a> to submit them to CloudGuide CMS.</small>
                 </div>
             </div>
         </div>
@@ -823,55 +854,72 @@ Your history text here..."></textarea>
         let currentGuideId = null;
         let currentAudioPlayer = null;
 
-        // CRITICAL: Audio persistence functions - SAVES AUDIO TO LOCALSTORAGE
+        // Upload to Cloudinary function
+        async function uploadAudioToCloudinary(audioDataUrl, fileName) {
+            try {
+                console.log(`Uploading ${fileName} to Cloudinary...`);
+                
+                const response = await fetch('/api/upload-to-cloudinary', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        audioData: audioDataUrl,
+                        fileName: fileName.replace(/[^a-z0-9]/gi, '_')
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success && data.url) {
+                    console.log('✅ Uploaded to Cloudinary:', data.url);
+                    return data.url;
+                } else {
+                    console.error('Cloudinary upload failed, will use local storage');
+                    return null;
+                }
+            } catch (error) {
+                console.error('Upload error:', error);
+                return null;
+            }
+        }
+
+        // OPTIMIZED: Save only metadata and Cloudinary URLs
         function saveAudioForUpload(guideId, audioFile) {
             if (!guideId) {
                 console.error('No guide ID provided for saving audio');
-                return;
+                return false;
             }
             
             try {
-                // Get existing files or create new array
                 let savedAudioFiles = JSON.parse(localStorage.getItem(`cloudguide_audio_${guideId}`) || '[]');
                 
-                // Only save metadata and Cloudinary URL, NOT huge data URLs
-                savedAudioFiles.push({
+                // Store only lightweight metadata
+                const audioMetadata = {
                     name: audioFile.name,
                     url: audioFile.cloudinaryUrl || audioFile.url,
-                    dataUrl: audioFile.cloudinaryUrl || 'CLOUDINARY', // Don't store huge data URLs
-                    size: audioFile.size || 'Generated',
-                    stopNumber: audioFile.stopNumber || savedAudioFiles.length + 1,
-                    chapterTitle: audioFile.chapter,
-                    language: audioFile.language,
+                    cloudinaryUrl: audioFile.cloudinaryUrl,
+                    chapter: audioFile.chapter,
+                    language: audioFile.language || 'en-US',
                     provider: audioFile.provider || 'openai',
-                    generatedAt: new Date().toISOString(),
-                    isCloudinary: !!audioFile.cloudinaryUrl
-                });
+                    stopNumber: audioFile.stopNumber || savedAudioFiles.length + 1,
+                    size: audioFile.cloudinaryUrl ? 'Cloud' : 'Local',
+                    generatedAt: new Date().toISOString()
+                };
                 
-                // Save back to localStorage
+                savedAudioFiles.push(audioMetadata);
                 localStorage.setItem(`cloudguide_audio_${guideId}`, JSON.stringify(savedAudioFiles));
-                console.log(`✅ Saved audio file ${audioFile.name} for guide ${guideId}. Total files: ${savedAudioFiles.length}`);
+                console.log(`✅ Saved audio metadata for ${audioFile.name}`);
                 
+                return true;
             } catch (error) {
+                console.error('Error saving audio metadata:', error);
                 if (error.name === 'QuotaExceededError') {
-                    console.error('❌ localStorage is full! Clearing old data...');
                     clearOldAudioData();
-                    // Try again
-                    try {
-                        const savedAudioFiles = JSON.parse(localStorage.getItem(`cloudguide_audio_${guideId}`) || '[]');
-                        savedAudioFiles.push({
-                            name: audioFile.name,
-                            url: audioFile.cloudinaryUrl || 'LOCAL_ONLY',
-                            size: 'Cloudinary',
-                            stopNumber: audioFile.stopNumber || savedAudioFiles.length + 1,
-                            chapterTitle: audioFile.chapter
-                        });
-                        localStorage.setItem(`cloudguide_audio_${guideId}`, JSON.stringify(savedAudioFiles));
-                        console.log('✅ Saved after clearing old data');
-                    } catch (e) {
-                        showMessage('Storage full! Audio uploaded but not saved locally.', 'warning');
-                    }
+                    showMessage('Storage full! Cleared old data. Please try again.', 'warning');
                 }
+                return false;
             }
         }
 
@@ -888,57 +936,36 @@ Your history text here..."></textarea>
             return saved ? JSON.parse(saved) : [];
         }
 
-        // CRITICAL: Clear old audio data if localStorage is full
         function clearOldAudioData() {
             console.log('Clearing old audio data to free up space...');
             const keys = Object.keys(localStorage);
             keys.forEach(key => {
                 if (key.startsWith('cloudguide_audio_')) {
-                    try {
-                        const data = localStorage.getItem(key);
-                        // Clear if data is huge (>100KB)
-                        if (data && data.length > 100000) {
-                            console.log(`Clearing large audio data: ${key} (${(data.length/1024/1024).toFixed(2)} MB)`);
-                            localStorage.removeItem(key);
-                        }
-                    } catch (e) {
-                        console.error('Error clearing:', e);
+                    const data = localStorage.getItem(key);
+                    // Only clear if it contains data URLs (large data)
+                    if (data && data.includes('data:audio')) {
+                        console.log(`Clearing large audio data: ${key}`);
+                        localStorage.removeItem(key);
                     }
                 }
             });
         }
 
-        // Upload to Cloudinary using YOUR EXISTING BACKEND API
-        async function uploadAudioToCloudinary(audioUrl, fileName) {
-            try {
-                console.log(`Uploading ${fileName} to Cloudinary via backend API...`);
-                
-                const response = await fetch('/api/upload-to-cloudinary', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        audioData: audioUrl,
-                        fileName: fileName.replace(/[^a-z0-9]/gi, '_')
-                    })
+        function clearAllAudioData() {
+            if (confirm('Clear all stored audio data? This will remove all saved audio files from local storage.')) {
+                const keys = Object.keys(localStorage);
+                keys.forEach(key => {
+                    if (key.startsWith('cloudguide_audio_')) {
+                        localStorage.removeItem(key);
+                    }
                 });
-
-                const data = await response.json();
-                if (data.success && data.url) {
-                    console.log('✅ Uploaded to Cloudinary:', data.url);
-                    return data.url;
-                } else {
-                    console.error('Cloudinary upload failed:', data.error || 'Unknown error');
-                    return null;
-                }
-            } catch (error) {
-                console.error('Upload error:', error);
-                return null;
+                generatedFiles = [];
+                renderFiles();
+                showMessage('All audio data cleared', 'success');
             }
         }
 
-        // TTS Text Preprocessing Function (keeping all your existing preprocessing)
+        // TTS Text Preprocessing Function
         function preprocessTextForTTS(text, language = 'en-US') {
             if (!document.getElementById('enableTTSOptimization').checked) {
                 return text;
@@ -1059,14 +1086,6 @@ Your history text here..."></textarea>
             // Add pauses after abbreviations
             processed = processed.replace(/\b(Dr|Mr|Mrs|Ms|Prof|St)\./g, '$1');
 
-            // Fix common mispronunciations based on language
-            if (language.startsWith('en-')) {
-                processed = processed.replace(/\bÉ/g, 'E');
-                processed = processed.replace(/\bé/g, 'e');
-                processed = processed.replace(/\bà/g, 'a');
-                processed = processed.replace(/\bè/g, 'e');
-            }
-
             return processed;
         }
 
@@ -1127,7 +1146,7 @@ Your history text here..."></textarea>
             }
         }
 
-        // Parse chapters (keeping your existing parsing logic)
+        // Parse chapters
         function parseChapters() {
             const text = document.getElementById('textInput').value.trim();
             if (!text) {
@@ -1235,42 +1254,6 @@ Your history text here..."></textarea>
             }
 
             console.log('Total chapters found:', chapters.length);
-
-            if (chapters.length === 0) {
-                console.log('No chapters found with primary method, trying alternative parsing...');
-                
-                const numberedLines = [];
-                lines.forEach((line, index) => {
-                    if (line.match(/^\d+\.\s+/)) {
-                        numberedLines.push({ line, index });
-                    }
-                });
-                
-                if (numberedLines.length > 1) {
-                    console.log('Found', numberedLines.length, 'numbered sections');
-                    
-                    numberedLines.forEach((item, idx) => {
-                        const match = item.line.match(/^(\d+)\.\s+(.+)/);
-                        if (match) {
-                            const startIdx = item.index;
-                            const endIdx = idx < numberedLines.length - 1 ? numberedLines[idx + 1].index : lines.length;
-                            
-                            const content = lines.slice(startIdx + 1, endIdx).join('\n').trim();
-                            
-                            chapters.push({
-                                id: chapters.length + 1,
-                                fileNumber: match[1],
-                                title: `Section ${match[1]}: ${match[2].trim()}`,
-                                shortTitle: match[2].trim(),
-                                content: content,
-                                selected: false,
-                                status: 'pending',
-                                type: 'section'
-                            });
-                        }
-                    });
-                }
-            }
 
             if (chapters.length === 0) {
                 chapters = [{
@@ -1452,24 +1435,15 @@ Leonardo da Vinci's masterpiece from the 16th century. The painting measures 77c
                 clearSavedAudioFiles(currentGuideId);
             }
             
-            // Check localStorage space before starting
-            try {
-                const test = 'x'.repeat(100000); // 100KB test
-                localStorage.setItem('test_space', test);
-                localStorage.removeItem('test_space');
-            } catch (e) {
-                if (confirm('Storage is nearly full. Clear old audio data to continue?')) {
-                    clearOldAudioData();
-                } else {
-                    return;
+            for (let chapter of selected) {
+                await generateAudio(chapter);
+                // Small delay between generations to avoid rate limiting
+                if (selected.indexOf(chapter) < selected.length - 1) {
+                    await new Promise(resolve => setTimeout(resolve, 1000));
                 }
             }
             
-            for (let chapter of selected) {
-                await generateAudio(chapter);
-            }
-            
-            showMessage(`✅ All ${selected.length} audio files generated and uploaded!`, 'success');
+            showMessage(`✅ All ${selected.length} audio files generated and uploaded to cloud!`, 'success');
         }
 
         // Function to split text into chunks
@@ -1522,14 +1496,10 @@ Leonardo da Vinci's masterpiece from the 16th century. The painting measures 77c
                 }
             }
             
-            chunks.forEach((chunk, i) => {
-                console.log(`Chunk ${i + 1}: ${chunk.length} chars`);
-            });
-            
             return chunks;
         }
 
-        // Generate audio for a chapter
+        // ENHANCED: Generate audio with Cloudinary upload
         async function generateAudio(chapter) {
             const language = document.getElementById('audioLanguage').value;
             const speed = parseFloat(document.getElementById('speed').value);
@@ -1556,6 +1526,7 @@ Leonardo da Vinci's masterpiece from the 16th century. The painting measures 77c
             
             // Show loading
             document.getElementById('loading').classList.add('active');
+            const loadingText = document.getElementById('loadingText');
             document.getElementById('generateSingle').disabled = true;
             document.getElementById('generateAll').disabled = true;
             
@@ -1567,13 +1538,11 @@ Leonardo da Vinci's masterpiece from the 16th century. The painting measures 77c
                     const chunk = textChunks[i];
                     console.log(`Generating chunk ${i + 1}/${textChunks.length}, length: ${chunk.length}`);
                     
-                    // Show progress
-                    const loadingDiv = document.getElementById('loading');
-                    const loadingText = loadingDiv.querySelector('div:last-child');
-                    if (loadingText) {
-                        loadingText.textContent = textChunks.length > 1 
-                            ? `Generating audio... Part ${i + 1} of ${textChunks.length}`
-                            : `Generating audio for ${chapter.shortTitle || chapter.title}...`;
+                    // Update loading message
+                    if (textChunks.length > 1) {
+                        loadingText.textContent = `Generating audio... Part ${i + 1} of ${textChunks.length}`;
+                    } else {
+                        loadingText.textContent = `Generating audio for ${chapter.shortTitle || chapter.title}...`;
                     }
                     
                     const response = await fetch('/api/multilingual-tts', {
@@ -1611,25 +1580,34 @@ Leonardo da Vinci's masterpiece from the 16th century. The painting measures 77c
                 // Use the first URL (or combine if multiple)
                 let finalAudioUrl = audioUrls[0];
                 
+                // Update loading message for cloud upload
+                loadingText.textContent = 'Uploading to cloud storage...';
+                
+                // Upload to Cloudinary
+                const fileName = `${chapter.shortTitle || chapter.title}`.replace(/[^a-z0-9]/gi, '_') + `_${language}.mp3`;
+                const cloudinaryUrl = await uploadAudioToCloudinary(finalAudioUrl, fileName);
+                
                 // Update chapter status
                 chapter.status = 'completed';
                 renderChapters();
                 
-                // Create file object
+                // Create file object with both URLs
                 const file = {
-                    name: `${chapter.shortTitle || chapter.title}`.replace(/[^a-z0-9]/gi, '_') + `_${language}.mp3`,
+                    name: fileName,
                     chapter: chapter.title,
                     language: language,
-                    url: finalAudioUrl,
+                    localUrl: finalAudioUrl,  // Keep for preview
+                    cloudinaryUrl: cloudinaryUrl, // Store for permanent access
+                    url: cloudinaryUrl || finalAudioUrl, // Fallback
                     provider: 'openai',
                     stopNumber: chapter.stopNumber || chapter.fileNumber || chapter.id,
-                    size: 'Generated'
+                    size: cloudinaryUrl ? 'Cloud' : 'Local'
                 };
                 
-                // Add to generated files
+                // Add to generated files for preview
                 generatedFiles.push(file);
                 
-                // CRITICAL: Save audio file for upload page - THIS IS THE FIX!
+                // Save to localStorage (only metadata and Cloudinary URL)
                 if (currentGuideId) {
                     saveAudioForUpload(currentGuideId, file);
                 } else {
@@ -1645,10 +1623,14 @@ Leonardo da Vinci's masterpiece from the 16th century. The painting measures 77c
                 renderFiles();
                 
                 // Show success message
-                if (audioUrls.length > 1) {
-                    showMessage(`✅ Audio generated for "${chapter.shortTitle || chapter.title}" (${audioUrls.length} parts)`, 'success');
+                if (cloudinaryUrl) {
+                    if (audioUrls.length > 1) {
+                        showMessage(`✅ Audio generated and uploaded to cloud! (${audioUrls.length} parts)`, 'success');
+                    } else {
+                        showMessage(`✅ Audio generated and uploaded to cloud!`, 'success');
+                    }
                 } else {
-                    showMessage(`✅ Audio generated for "${chapter.shortTitle || chapter.title}"`, 'success');
+                    showMessage(`✅ Audio generated (local storage only)`, 'warning');
                 }
                 
             } catch (error) {
@@ -1661,11 +1643,7 @@ Leonardo da Vinci's masterpiece from the 16th century. The painting measures 77c
                 document.getElementById('generateSingle').disabled = false;
                 document.getElementById('generateAll').disabled = false;
                 // Reset loading text
-                const loadingDiv = document.getElementById('loading');
-                const loadingText = loadingDiv.querySelector('div:last-child');
-                if (loadingText) {
-                    loadingText.textContent = 'Generating audio... Please wait...';
-                }
+                loadingText.textContent = 'Generating audio... Please wait...';
             }
         }
 
@@ -1691,7 +1669,7 @@ Leonardo da Vinci's masterpiece from the 16th century. The painting measures 77c
                 messageDiv.style.background = '#f59e0b';
                 messageDiv.style.color = 'white';
             } else if (type === 'info') {
-                messageDiv.style.background = '#3b82f6';
+                messageDiv.style.background = '#3182ce';
                 messageDiv.style.color = 'white';
             } else {
                 messageDiv.style.background = '#e53e3e';
@@ -1706,28 +1684,56 @@ Leonardo da Vinci's masterpiece from the 16th century. The painting measures 77c
             }, 5000);
         }
 
-        // Render files
+        // ENHANCED: Render files with cloud status
         function renderFiles() {
             if (generatedFiles.length === 0) return;
             
             document.getElementById('filesSection').style.display = 'block';
-            document.getElementById('fileList').innerHTML = generatedFiles.map((file, index) => `
-                <div class="file-item">
-                    <div class="file-info">
-                        <div style="font-size: 1.5em;">🎵</div>
-                        <div>
-                            <div style="font-weight: 600;">${file.name}</div>
-                            <div style="font-size: 0.85em; color: #718096;">
-                                ${file.chapter} • ${file.language} • ${file.provider}
+            document.getElementById('fileList').innerHTML = generatedFiles.map((file, index) => {
+                const isCloudStored = !!file.cloudinaryUrl;
+                const playUrl = file.localUrl || file.cloudinaryUrl || file.url;
+                
+                return `
+                    <div class="file-item">
+                        <div class="file-info">
+                            <div style="font-size: 1.5em;">🎵</div>
+                            <div>
+                                <div style="font-weight: 600;">
+                                    ${file.name}
+                                    ${isCloudStored ? '<span class="cloud-badge">☁️ Cloud</span>' : ''}
+                                </div>
+                                <div style="font-size: 0.85em; color: #718096;">
+                                    ${file.chapter} • ${file.language} • ${file.provider}
+                                </div>
                             </div>
                         </div>
+                        <div class="file-actions">
+                            <button class="btn btn-primary audio-play-btn" onclick="playAudio('${playUrl}', this)">Play</button>
+                            <button class="btn btn-secondary" onclick="downloadAudio('${playUrl}', '${file.name}')">Download</button>
+                            ${isCloudStored ? `
+                                <button class="btn btn-info" onclick="copyCloudinaryUrl('${file.cloudinaryUrl}')">Copy URL</button>
+                            ` : ''}
+                        </div>
                     </div>
-                    <div class="file-actions">
-                        <button class="btn btn-primary audio-play-btn" onclick="playAudio('${file.url}', this)">Play</button>
-                        <button class="btn btn-secondary" onclick="downloadAudio('${file.url}', '${file.name}')">Download</button>
-                    </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
+        }
+
+        // Helper function to copy Cloudinary URL
+        function copyCloudinaryUrl(url) {
+            navigator.clipboard.writeText(url).then(() => {
+                showMessage('📋 Cloud URL copied to clipboard!', 'success');
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+                // Fallback for older browsers
+                const textarea = document.createElement('textarea');
+                textarea.value = url;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                showMessage('📋 Cloud URL copied to clipboard!', 'success');
+            });
         }
 
         // Play/Stop audio
@@ -1855,11 +1861,14 @@ Leonardo da Vinci's masterpiece from the 16th century. The painting measures 77c
                 if (savedAudioFiles.length > 0) {
                     generatedFiles = savedAudioFiles.map(audio => ({
                         name: audio.name,
-                        chapter: audio.chapterTitle || 'Unknown',
+                        chapter: audio.chapter || 'Unknown',
                         language: audio.language || 'en-US',
-                        url: audio.url || audio.dataUrl,
+                        url: audio.url || audio.cloudinaryUrl,
+                        cloudinaryUrl: audio.cloudinaryUrl,
+                        localUrl: null, // We don't have local URLs anymore
                         provider: audio.provider || 'openai',
-                        stopNumber: audio.stopNumber
+                        stopNumber: audio.stopNumber,
+                        size: audio.size || 'Cloud'
                     }));
                     
                     showMessage(`Loaded ${savedAudioFiles.length} previously generated audio files`, 'info');
