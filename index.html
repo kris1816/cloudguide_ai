@@ -1001,11 +1001,12 @@
             try {
                 let content = '';
                 
-                // If using Claude and stops > 12, use batch processing
-                if (selectedModel === 'claude' && stops > 12) {
+                // Generate content based on selected model
+                if (selectedModel === 'claude') {
+                    // Use batch processing for Claude
                     content = await generateClaudeBatch(location, language, stops, tourType, guideType, audience, style);
                 } else {
-                    // Regular API call
+                    // Regular single API call for other models
                     content = await callAPI(location, language, stops, tourType, guideType, audience, style);
                 }
 
@@ -1016,19 +1017,23 @@
                 // Format content
                 const formattedContent = formatAudioguideContent(content, location, language, tourType, stops);
                 
-                // Save to library
+                // CRITICAL: Save to library
                 const savedGuide = saveToLibrary(location, language, tourType, stops, formattedContent, selectedModel);
                 
                 if (savedGuide) {
                     // Download the file
                     downloadAudioguide(formattedContent, location);
                     
-                    // Update success message
+                    // Update success message with ID
                     document.getElementById('generateAudioLink').href = `audio.html?id=${savedGuide.id}`;
                     document.getElementById('successMessage').classList.add('active');
                     
-                    console.log('✅ Guide saved successfully:', savedGuide.id);
-                    console.log('Total guides in library:', JSON.parse(localStorage.getItem('cloudguide_audioguides')).length);
+                    console.log('✅ SAVE SUCCESSFUL - Guide ID:', savedGuide.id);
+                    
+                    // Verify it's in storage
+                    const allGuides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
+                    console.log('Total guides in library:', allGuides.length);
+                    console.log('Latest guide:', allGuides[0]?.title);
                 } else {
                     throw new Error('Failed to save guide to library');
                 }
@@ -1043,15 +1048,13 @@
             }
         }
 
-        // Regular API call
+        // Regular API call for non-Claude models
         async function callAPI(location, language, stops, tourType, guideType, audience, style) {
             let apiUrl = '';
             let requestBody = {};
             
-            // Update loading text based on model
             document.getElementById('loadingText').textContent = `Generating with ${selectedModel.toUpperCase()}...`;
             
-            // Configure API based on selected model with 900 words per stop requirement
             switch (selectedModel) {
                 case 'openai':
                     apiUrl = '/api/openai';
@@ -1061,20 +1064,16 @@
 REQUIREMENTS:
 - Language: ${language}
 - Tour Type: ${tourType}
-- Guide Type: ${guideType}
-- Target Audience: ${audience}
-- Style: ${style}
+- Each stop MUST be approximately 900 words
+- Professional audioguide language
+- Include specific dates, facts, and stories
 
-CRITICAL: Each stop MUST be approximately 900 words. This is essential for professional audioguides.
-
-Create exactly ${stops} stops with comprehensive information about ${location}. 
-
-Format each stop as:
-STOP [number]: [Title]
+Create exactly ${stops} stops. Format as:
+STOP 1: [Title]
 ------------------------------
-[900 words of detailed, engaging content]
+[900 words of content]
 
-Start generating now:`,
+Generate all ${stops} stops now:`,
                         max_tokens: 4000,
                         temperature: 0.8
                     };
@@ -1093,103 +1092,93 @@ Start generating now:`,
                 case 'deepseek':
                     apiUrl = '/api/deepseek';
                     requestBody = {
-                        prompt: `Create an audioguide for ${location} with ${stops} stops. Each stop must be 900 words. Language: ${language}. Style: ${tourType}.`,
+                        prompt: `Create an audioguide for ${location} with ${stops} stops, each 900 words, in ${language}`,
                         location: location,
                         duration: stops + ' stops',
                         interests: tourType
                     };
                     break;
-                    
-                case 'claude':
-                    apiUrl = '/api/claude';
-                    requestBody = {
-                        destination: location,
-                        guideType: guideType,
-                        audience: audience,
-                        style: style,
-                        numStops: stops,
-                        stopLength: 900, // 900 words per stop
-                        preferredModel: 'claude-sonnet-4-20250514' // Use Sonnet 4 for best value
-                    };
-                    break;
             }
 
-            console.log(`Calling ${selectedModel} API...`);
             const response = await fetch(apiUrl, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(requestBody)
             });
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.error || `API returned ${response.status}`);
+                throw new Error(errorData.error || `API error ${response.status}`);
             }
 
             const data = await response.json();
             
-            // Extract content based on model response format
-            let content = '';
+            // Extract content
             if (selectedModel === 'openai') {
-                content = data.choices?.[0]?.message?.content || '';
+                return data.choices?.[0]?.message?.content || '';
             } else if (selectedModel === 'deepseek') {
-                content = data.content || data.generated_text || '';
+                return data.content || data.generated_text || '';
             } else {
-                content = data.content || data.rawContent || '';
+                return data.content || '';
             }
-
-            return content;
         }
 
-        // Batch processing for Claude with many stops
+        // Batch processing for Claude
         async function generateClaudeBatch(location, language, stops, tourType, guideType, audience, style) {
-            console.log(`Generating ${stops} stops in batches with Claude...`);
-            let fullContent = '';
-            const batchSize = 4;
-            const batches = Math.ceil(stops / batchSize);
+            console.log(`Generating ${stops} stops with Claude in batches...`);
             
-            for (let i = 0; i < batches; i++) {
-                const startStop = i * batchSize + 1;
-                const endStop = Math.min(startStop + batchSize - 1, stops);
-                const currentBatchSize = endStop - startStop + 1;
+            let fullContent = '';
+            const batchSize = 4; // 4 stops per batch to avoid timeout
+            const totalBatches = Math.ceil(stops / batchSize);
+            
+            for (let batch = 0; batch < totalBatches; batch++) {
+                const batchStart = (batch * batchSize) + 1;
+                const stopsInBatch = Math.min(batchSize, stops - (batch * batchSize));
                 
                 updateProgress(
-                    (i / batches) * 100,
-                    `Generating stops ${startStop}-${endStop} of ${stops}...`
+                    (batch / totalBatches) * 100,
+                    `Generating stops ${batchStart} to ${batchStart + stopsInBatch - 1} of ${stops}...`
                 );
                 
-                const response = await fetch('/api/claude', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        destination: location,
-                        guideType: guideType,
-                        audience: audience,
-                        style: style,
-                        numStops: currentBatchSize,
-                        stopLength: 900,
-                        customPrompt: `This is part ${i + 1} of ${batches}. Generate stops ${startStop} to ${endStop} for ${location}.`,
-                        preferredModel: 'claude-sonnet-4-20250514' // Use Sonnet 4 for best value
-                    })
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`Batch ${i + 1} failed`);
-                }
-                
-                const data = await response.json();
-                const batchContent = data.content || data.rawContent || '';
-                
-                // Add batch content to full content
-                fullContent += batchContent + '\n\n';
-                
-                // Small delay between batches to avoid rate limiting
-                if (i < batches - 1) {
-                    await new Promise(resolve => setTimeout(resolve, 1000));
+                try {
+                    const response = await fetch('/api/claude', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            destination: location,
+                            guideType: guideType,
+                            audience: audience,
+                            style: style,
+                            numStops: stops,
+                            stopLength: 900,
+                            batchStart: batchStart,
+                            batchSize: stopsInBatch,
+                            preferredModel: 'claude-sonnet-4-20250514'
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || `Batch ${batch + 1} failed`);
+                    }
+                    
+                    const data = await response.json();
+                    const batchContent = data.rawContent || data.content || '';
+                    
+                    // Add content to full guide
+                    fullContent += batchContent;
+                    if (batch < totalBatches - 1) {
+                        fullContent += '\n\n';
+                    }
+                    
+                    // Small delay between batches
+                    if (batch < totalBatches - 1) {
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                    }
+                    
+                } catch (error) {
+                    console.error(`Batch ${batch + 1} error:`, error);
+                    throw error;
                 }
             }
             
@@ -1199,12 +1188,10 @@ Start generating now:`,
 
         // Format audioguide content
         function formatAudioguideContent(content, location, language, tourType, stops) {
-            // If content already has proper formatting, use it
             if (content.includes('AUDIOGUIDE:')) {
                 return content;
             }
             
-            // Otherwise, format it properly
             let formatted = `AUDIOGUIDE: ${location.toUpperCase()}\n`;
             formatted += '='.repeat(60) + '\n\n';
             formatted += `Language: ${language}\n`;
@@ -1220,25 +1207,20 @@ Start generating now:`,
             return formatted;
         }
 
-        // Save to library - CRITICAL FUNCTION
+        // CRITICAL: Save to library function
         function saveToLibrary(location, language, tourType, stops, content, model) {
             try {
-                console.log('=== SAVING TO LIBRARY ===');
+                console.log('=== LIBRARY SAVE START ===');
                 
-                // Get existing guides or initialize empty array
+                // Get existing guides
                 let audioguides = [];
                 const stored = localStorage.getItem('cloudguide_audioguides');
                 if (stored) {
-                    try {
-                        audioguides = JSON.parse(stored);
-                        console.log('Existing guides found:', audioguides.length);
-                    } catch (e) {
-                        console.error('Error parsing existing guides, starting fresh:', e);
-                        audioguides = [];
-                    }
+                    audioguides = JSON.parse(stored);
+                    console.log('Found existing guides:', audioguides.length);
                 }
 
-                // Create new guide object
+                // Create new guide with all required fields
                 const newGuide = {
                     id: Date.now().toString(),
                     title: location,
@@ -1253,19 +1235,12 @@ Start generating now:`,
                     wordCount: content.split(/\s+/).length
                 };
 
-                console.log('New guide created:', {
-                    id: newGuide.id,
-                    title: newGuide.title,
-                    wordCount: newGuide.wordCount
-                });
-
-                // Add to beginning of array (most recent first)
+                // Add to beginning
                 audioguides.unshift(newGuide);
 
-                // Limit to 50 guides to avoid storage issues
+                // Keep max 50 guides
                 if (audioguides.length > 50) {
                     audioguides = audioguides.slice(0, 50);
-                    console.log('Trimmed to 50 guides');
                 }
 
                 // Save to localStorage
@@ -1273,21 +1248,22 @@ Start generating now:`,
                 
                 // Verify save
                 const verification = localStorage.getItem('cloudguide_audioguides');
-                if (verification) {
-                    const parsed = JSON.parse(verification);
-                    const found = parsed.find(g => g.id === newGuide.id);
-                    if (found) {
-                        console.log('✅ SAVE VERIFIED - Guide found in storage');
-                        console.log('Total guides now:', parsed.length);
-                        return newGuide;
-                    } else {
-                        console.error('❌ SAVE FAILED - Guide not found after save');
-                    }
+                const verified = JSON.parse(verification);
+                const found = verified.find(g => g.id === newGuide.id);
+                
+                if (found) {
+                    console.log('✅ SAVE VERIFIED');
+                    console.log('Guide ID:', newGuide.id);
+                    console.log('Title:', newGuide.title);
+                    console.log('Total guides:', verified.length);
+                    return newGuide;
+                } else {
+                    console.error('❌ SAVE VERIFICATION FAILED');
+                    return null;
                 }
 
             } catch (error) {
-                console.error('CRITICAL ERROR saving to library:', error);
-                showError('Failed to save guide: ' + error.message);
+                console.error('CRITICAL SAVE ERROR:', error);
                 return null;
             }
         }
@@ -1303,7 +1279,6 @@ Start generating now:`,
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-            console.log('File downloaded');
         }
 
         // Show error message
