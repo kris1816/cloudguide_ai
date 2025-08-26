@@ -556,6 +556,22 @@
             display: block;
         }
 
+        /* Storage Warning */
+        .storage-warning {
+            display: none;
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            color: #92400e;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 13px;
+        }
+
+        .storage-warning.active {
+            display: block;
+        }
+
         /* Footer Section */
         .footer-section {
             margin-top: 40px;
@@ -645,6 +661,13 @@
             <h1 class="hero-title">AI Audioguide Generator</h1>
             <p class="hero-subtitle">Create Professional Audioguides for Museums and Cultural Heritage Sites</p>
         </section>
+
+        <!-- Storage Warning -->
+        <div class="storage-warning" id="storageWarning">
+            <strong>⚠️ localStorage Issue Detected</strong><br>
+            If you're opening files directly (file://), use a local web server instead.<br>
+            <small>Run: python -m http.server 8000 or use VS Code Live Server</small>
+        </div>
 
         <!-- Main Content -->
         <div class="main-container">
@@ -862,17 +885,56 @@
 
         // Initialize on page load
         window.addEventListener('DOMContentLoaded', function() {
-            console.log('CloudGuide Generator Initialized');
+            console.log('=== CloudGuide Generator Initialized ===');
+            console.log('URL:', window.location.href);
+            console.log('Protocol:', window.location.protocol);
             
-            // Only initialize library if it truly doesn't exist
-            const existingData = localStorage.getItem('cloudguide_audioguides');
-            if (existingData === null) {
-                console.log('Initializing empty library for first-time use');
-                localStorage.setItem('cloudguide_audioguides', '[]');
-            }
+            // Check for localStorage issues
+            checkLocalStorageAccess();
             
+            // Initialize library if needed
+            initializeLibrary();
+            
+            // Check library status
             checkLibraryStatus();
         });
+
+        // Check localStorage access
+        function checkLocalStorageAccess() {
+            try {
+                const testKey = 'cg_test_' + Date.now();
+                localStorage.setItem(testKey, 'test');
+                const value = localStorage.getItem(testKey);
+                localStorage.removeItem(testKey);
+                
+                if (value !== 'test') {
+                    throw new Error('localStorage test failed');
+                }
+                
+                console.log('✅ localStorage is working properly');
+                
+                // Check for file:// protocol
+                if (window.location.protocol === 'file:') {
+                    console.warn('⚠️ Running from file:// protocol - localStorage may not be shared between pages');
+                    document.getElementById('storageWarning').classList.add('active');
+                }
+                
+            } catch (error) {
+                console.error('❌ localStorage access error:', error);
+                document.getElementById('storageWarning').classList.add('active');
+            }
+        }
+
+        // Initialize library
+        function initializeLibrary() {
+            const existingData = localStorage.getItem('cloudguide_audioguides');
+            if (existingData === null || existingData === undefined) {
+                console.log('Initializing empty library for first-time use');
+                localStorage.setItem('cloudguide_audioguides', '[]');
+            } else {
+                console.log('Library already exists');
+            }
+        }
 
         // Debug function to check library status
         function checkLibraryStatus() {
@@ -881,7 +943,6 @@
                 const data = localStorage.getItem('cloudguide_audioguides');
                 if (!data) {
                     console.log('No library data found');
-                    // DON'T automatically initialize here - only do it when actually needed
                     return;
                 }
                 
@@ -895,6 +956,11 @@
                         date: guides[0].date,
                         wordCount: guides[0].wordCount
                     });
+                    
+                    // Show first few guides
+                    guides.slice(0, 3).forEach((g, i) => {
+                        console.log(`Guide ${i+1}:`, g.title, `(${g.id})`);
+                    });
                 }
                 
                 const size = new Blob([data]).size;
@@ -902,7 +968,6 @@
                 
             } catch (error) {
                 console.error('Library check error:', error);
-                // DON'T reset the library here either
             }
         }
 
@@ -913,14 +978,15 @@
                 if (!data) {
                     return [];
                 }
-                return JSON.parse(data);
+                const parsed = JSON.parse(data);
+                return Array.isArray(parsed) ? parsed : [];
             } catch (error) {
                 console.error('Error reading library:', error);
                 return [];
             }
         }
 
-        // Test function to verify localStorage is working
+        // Test localStorage functionality
         function testLocalStorage() {
             console.log('=== LOCALSTORAGE TEST ===');
             
@@ -950,14 +1016,58 @@
                 }
             }
             
+            // Check all keys
+            console.log('All localStorage keys:', Object.keys(localStorage));
+            
             // Cleanup
             localStorage.removeItem('test_key');
         }
 
-        // Make functions available globally for debugging
+        // Export library for backup
+        function exportLibrary() {
+            const guides = getLibraryData();
+            const backup = {
+                version: '1.0',
+                exportDate: new Date().toISOString(),
+                guides: guides,
+                totalGuides: guides.length
+            };
+            
+            const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `cloudguide_library_backup_${Date.now()}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            console.log(`Exported ${guides.length} guides`);
+        }
+
+        // Import library from backup
+        function importLibrary(jsonString) {
+            try {
+                const backup = JSON.parse(jsonString);
+                if (backup.guides && Array.isArray(backup.guides)) {
+                    localStorage.setItem('cloudguide_audioguides', JSON.stringify(backup.guides));
+                    console.log(`Imported ${backup.guides.length} guides`);
+                    checkLibraryStatus();
+                    return true;
+                }
+            } catch (error) {
+                console.error('Import failed:', error);
+                return false;
+            }
+        }
+
+        // Make functions globally available
         window.checkLibraryStatus = checkLibraryStatus;
         window.testLocalStorage = testLocalStorage;
         window.getLibraryData = getLibraryData;
+        window.exportLibrary = exportLibrary;
+        window.importLibrary = importLibrary;
 
         // Model selection
         function selectModel(model) {
@@ -1029,7 +1139,7 @@
         }
 
         // Drag and drop
-        window.addEventListener('DOMContentLoaded', function() {
+        const setupDragAndDrop = () => {
             const uploadArea = document.getElementById('uploadArea');
             if (!uploadArea) return;
             
@@ -1052,7 +1162,9 @@
                     handleFileUpload({ target: { files: files } });
                 }
             });
-        });
+        };
+        
+        setupDragAndDrop();
 
         // Update progress
         function updateProgress(percentage, status) {
@@ -1062,7 +1174,7 @@
             document.getElementById('progressStatus').textContent = status;
         }
 
-        // MAIN GENERATE FUNCTION WITH IMPROVED LIBRARY SAVING
+        // MAIN GENERATE FUNCTION
         async function generateGuide() {
             console.log('=== STARTING GENERATION ===');
             
@@ -1141,33 +1253,14 @@ Content generation failed. Please try again.
                 content = formatAudioguideContent(content, location, language, tourType, stops);
             }
 
-            // ALWAYS SAVE TO LIBRARY (IMPROVED VERSION)
+            // SAVE TO LIBRARY
             console.log('=== SAVING TO LIBRARY ===');
             let savedGuide = null;
             
             try {
-                // Get existing guides with proper error handling
-                let audioguides = [];
-                const existingData = localStorage.getItem('cloudguide_audioguides');
-                
-                if (existingData !== null && existingData !== undefined) {
-                    try {
-                        const parsed = JSON.parse(existingData);
-                        if (Array.isArray(parsed)) {
-                            audioguides = parsed;
-                            console.log(`Found ${audioguides.length} existing guides`);
-                        } else {
-                            console.warn('Library data is not an array, initializing new array');
-                            audioguides = [];
-                        }
-                    } catch (parseError) {
-                        console.error('Parse error, creating new library:', parseError);
-                        audioguides = [];
-                    }
-                } else {
-                    console.log('No existing library, creating new one');
-                    audioguides = [];
-                }
+                // Get existing guides
+                const audioguides = getLibraryData();
+                console.log(`Found ${audioguides.length} existing guides`);
                 
                 // Create new guide object
                 const timestamp = Date.now();
@@ -1191,39 +1284,24 @@ Content generation failed. Please try again.
                 // Add to beginning of array
                 audioguides.unshift(savedGuide);
                 
-                // Limit to 50 guides to prevent storage issues
+                // Limit to 50 guides
                 if (audioguides.length > 50) {
                     const removed = audioguides.length - 50;
-                    audioguides = audioguides.slice(0, 50);
-                    console.log(`Trimmed ${removed} old guides, keeping 50`);
+                    audioguides.splice(50);
+                    console.log(`Trimmed ${removed} old guides`);
                 }
                 
                 // Save to localStorage
-                const jsonString = JSON.stringify(audioguides);
-                localStorage.setItem('cloudguide_audioguides', jsonString);
+                localStorage.setItem('cloudguide_audioguides', JSON.stringify(audioguides));
                 console.log(`Saved ${audioguides.length} guides to localStorage`);
                 
-                // Verify the save worked
-                const verification = localStorage.getItem('cloudguide_audioguides');
-                if (verification) {
-                    try {
-                        const verifyParsed = JSON.parse(verification);
-                        const found = verifyParsed.find(g => g.id === savedGuide.id);
-                        if (found) {
-                            console.log('✅ SAVE VERIFIED - Guide found:', found.id);
-                        } else {
-                            console.error('❌ SAVE FAILED - Guide not found after save');
-                            // Try saving again
-                            console.log('Attempting to save again...');
-                            localStorage.setItem('cloudguide_audioguides', jsonString);
-                            savedGuide = null;
-                        }
-                    } catch (verifyError) {
-                        console.error('Verification parse error:', verifyError);
-                        savedGuide = null;
-                    }
+                // Verify the save
+                const verification = getLibraryData();
+                const found = verification.find(g => g.id === savedGuide.id);
+                if (found) {
+                    console.log('✅ SAVE VERIFIED - Guide found:', found.id);
                 } else {
-                    console.error('Could not verify save - localStorage returned null');
+                    console.error('❌ Save verification failed');
                     savedGuide = null;
                 }
                 
@@ -1233,7 +1311,7 @@ Content generation failed. Please try again.
                 savedGuide = null;
             }
 
-            // Download file if we have content
+            // Download file
             if (content) {
                 try {
                     downloadAudioguide(content, location);
@@ -1260,7 +1338,7 @@ Content generation failed. Please try again.
                 `;
                 document.getElementById('successMessage').classList.add('active');
             } else {
-                showError('Failed to save audioguide to library. Please check the console for errors.');
+                showError('Failed to save audioguide to library. Check console for details.');
             }
 
             // Reset UI
@@ -1268,8 +1346,8 @@ Content generation failed. Please try again.
             document.getElementById('loading').classList.remove('active');
             document.getElementById('progressContainer').classList.remove('active');
             
-            // Final library check
-            console.log('Final library check:');
+            // Final check
+            console.log('=== GENERATION COMPLETE ===');
             checkLibraryStatus();
         }
 
@@ -1557,6 +1635,14 @@ Continue for all ${stops} stops.`,
                 document.getElementById('errorMessage').classList.remove('active');
             }, 5000);
         }
+
+        // Help functions in console
+        console.log('=== Available Debug Commands ===');
+        console.log('checkLibraryStatus() - Check library status');
+        console.log('testLocalStorage() - Test localStorage functionality');
+        console.log('getLibraryData() - Get all guides');
+        console.log('exportLibrary() - Export library to file');
+        console.log('importLibrary(json) - Import library from JSON string');
     </script>
 </body>
 </html>
