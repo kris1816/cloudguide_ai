@@ -1109,7 +1109,7 @@ Start generating now:`,
                         style: style,
                         numStops: stops,
                         stopLength: 900, // 900 words per stop
-                        preferredModel: 'claude-3-5-sonnet-20241022'
+                        preferredModel: 'claude-sonnet-4-20250514' // Use Sonnet 4 for best value
                     };
                     break;
             }
@@ -1173,7 +1173,7 @@ Start generating now:`,
                         numStops: currentBatchSize,
                         stopLength: 900,
                         customPrompt: `This is part ${i + 1} of ${batches}. Generate stops ${startStop} to ${endStop} for ${location}.`,
-                        preferredModel: 'claude-3-5-sonnet-20241022'
+                        preferredModel: 'claude-sonnet-4-20250514' // Use Sonnet 4 for best value
                     })
                 });
                 
