@@ -425,6 +425,11 @@
             background: #cbd5e0;
         }
 
+        .btn-danger {
+            background: #e53e3e;
+            color: white;
+        }
+
         .generate-section {
             display: flex;
             gap: 15px;
@@ -786,6 +791,10 @@ Your history text here..."></textarea>
             <div class="files-section" id="filesSection" style="display: none;">
                 <h3 class="section-title">🎵 Generated Audio Files</h3>
                 <div id="fileList"></div>
+                <div style="margin-top: 20px; padding: 15px; background: #f0fff4; border: 1px solid #48bb78; border-radius: 6px;">
+                    <strong>✅ Audio files are automatically saved!</strong><br>
+                    <small>You can now proceed to the <a href="upload.html" style="color: #48bb78;">Upload page</a> to submit them to CloudGuide CMS.</small>
+                </div>
             </div>
         </div>
 
@@ -808,8 +817,54 @@ Your history text here..."></textarea>
         let chapters = [];
         let selectedVoice = 'alloy';
         let generatedFiles = [];
+        let currentGuideId = null;
+        let currentAudioPlayer = null;
 
-        // TTS Text Preprocessing Function
+        // CRITICAL: Audio persistence functions - SAVES AUDIO TO LOCALSTORAGE
+        function saveAudioForUpload(guideId, audioFile) {
+            if (!guideId) {
+                console.error('No guide ID provided for saving audio');
+                return;
+            }
+            
+            // Get existing files or create new array
+            let savedAudioFiles = JSON.parse(localStorage.getItem(`cloudguide_audio_${guideId}`) || '[]');
+            
+            // Add the new audio file
+            savedAudioFiles.push({
+                name: audioFile.name,
+                url: audioFile.url,
+                dataUrl: audioFile.url, // Store the actual URL
+                size: audioFile.size || 'Generated',
+                stopNumber: audioFile.stopNumber || savedAudioFiles.length + 1,
+                chapterTitle: audioFile.chapter,
+                language: audioFile.language,
+                provider: audioFile.provider || 'openai',
+                generatedAt: new Date().toISOString()
+            });
+            
+            // Save back to localStorage
+            localStorage.setItem(`cloudguide_audio_${guideId}`, JSON.stringify(savedAudioFiles));
+            console.log(`✅ Saved audio file ${audioFile.name} for guide ${guideId}. Total files: ${savedAudioFiles.length}`);
+            
+            // Show success message
+            showMessage(`Audio file saved: ${audioFile.name}`, 'success');
+        }
+
+        function clearSavedAudioFiles(guideId) {
+            if (guideId) {
+                localStorage.removeItem(`cloudguide_audio_${guideId}`);
+                console.log(`Cleared saved audio files for guide ${guideId}`);
+            }
+        }
+
+        function loadSavedAudioFiles(guideId) {
+            if (!guideId) return [];
+            const saved = localStorage.getItem(`cloudguide_audio_${guideId}`);
+            return saved ? JSON.parse(saved) : [];
+        }
+
+        // TTS Text Preprocessing Function (keeping all your existing preprocessing)
         function preprocessTextForTTS(text, language = 'en-US') {
             if (!document.getElementById('enableTTSOptimization').checked) {
                 return text;
@@ -843,7 +898,7 @@ Your history text here..."></textarea>
             processed = processed.replace(/WWII\b/gi, 'World War Two');
             processed = processed.replace(/WWI\b/gi, 'World War One');
 
-            // Decades conversion (90s → nineties, 1960s → nineteen sixties)
+            // Decades conversion
             processed = processed.replace(/\b(\d{2})s\b/g, (match, decade) => {
                 const decadeWords = {
                     '20': 'twenties', '30': 'thirties', '40': 'forties',
@@ -869,7 +924,7 @@ Your history text here..."></textarea>
                 return match;
             });
 
-            // Century formatting (21st → twenty-first century)
+            // Century formatting
             processed = processed.replace(/\b(\d{1,2})(st|nd|rd|th)\s+century\b/gi, (match, num) => {
                 const ordinal = getOrdinalWord(parseInt(num));
                 return `${ordinal} century`;
@@ -889,7 +944,7 @@ Your history text here..."></textarea>
             processed = processed.replace(/(\d+)°F\b/g, '$1 degrees Fahrenheit');
             processed = processed.replace(/(\d+)°/g, '$1 degrees');
 
-            // Time formatting (3:30 PM → three thirty P M)
+            // Time formatting
             processed = processed.replace(/\b(\d{1,2}):(\d{2})\s*(AM|PM|am|pm)\b/g, (match, hour, minute, period) => {
                 const h = parseInt(hour);
                 const m = parseInt(minute);
@@ -915,9 +970,8 @@ Your history text here..."></textarea>
                 processed = processed.replace(new RegExp(original, 'g'), replacement);
             }
 
-            // Handle parenthetical translations (jamón (ham) → jamón, which means ham)
+            // Handle parenthetical translations
             processed = processed.replace(/\b(\w+)\s*\(([^)]+)\)/g, (match, word, translation) => {
-                // Only apply to non-numeric content
                 if (!/^\d/.test(translation)) {
                     return `${word}, which means ${translation},`;
                 }
@@ -933,7 +987,6 @@ Your history text here..."></textarea>
 
             // Fix common mispronunciations based on language
             if (language.startsWith('en-')) {
-                // English-specific fixes
                 processed = processed.replace(/\bÉ/g, 'E');
                 processed = processed.replace(/\bé/g, 'e');
                 processed = processed.replace(/\bà/g, 'a');
@@ -943,7 +996,7 @@ Your history text here..."></textarea>
             return processed;
         }
 
-        // Helper function to get ordinal number
+        // Helper functions
         function getOrdinal(num) {
             const ordinals = {
                 1: 'first', 2: 'second', 3: 'third', 4: 'fourth', 5: 'fifth',
@@ -955,7 +1008,6 @@ Your history text here..."></textarea>
             return ordinals[num] || `${num}th`;
         }
 
-        // Helper function to get ordinal word
         function getOrdinalWord(num) {
             const ordinals = {
                 1: 'first', 2: 'second', 3: 'third', 4: 'fourth', 5: 'fifth',
@@ -967,7 +1019,6 @@ Your history text here..."></textarea>
             return ordinals[num] || `${num}th`;
         }
 
-        // Helper function to convert numbers to words
         function getNumberWord(num) {
             const words = {
                 0: 'zero', 1: 'one', 2: 'two', 3: 'three', 4: 'four',
@@ -1002,7 +1053,7 @@ Your history text here..."></textarea>
             }
         }
 
-        // Enhanced chapter parser that handles multiple formats
+        // Parse chapters (keeping your existing parsing logic)
         function parseChapters() {
             const text = document.getElementById('textInput').value.trim();
             if (!text) {
@@ -1021,19 +1072,12 @@ Your history text here..."></textarea>
             for (let i = 0; i < lines.length; i++) {
                 const line = lines[i];
                 
-                // More flexible FILE format detection
-                // Matches: "FILE 01:", "## FILE 01:", "4. Heraklion:", numbered sections with location names
                 const fileMatch = line.match(/^(?:#{1,3}\s*)?(?:FILE\s+)?(\d+)[\.:]\s*(.+)/i);
                 const stopMatch = line.match(/^STOP\s+(\d+):\s*(.+)/i);
-                
-                // Also check for numbered sections with descriptive titles (like your Crete guide)
                 const numberedSectionMatch = line.match(/^(\d+)\.\s+(?:\*\*)?(?:\[)?([^\]]+?)(?:\])?(?:\*\*)?(?:\.|:)?/);
-                
-                // Check if this looks like a chapter heading (has location-related keywords)
                 const isLikelyChapter = line.match(/^(\d+)\.\s+.*(?:Heraklion|Chania|Lasithi|Matala|Rethymno|Eastern Crete|FILE|STOP)/i);
                 
                 if ((fileMatch && line.includes('FILE')) || (numberedSectionMatch && isLikelyChapter)) {
-                    // Save previous chapter if exists
                     if (currentChapter) {
                         currentChapter.content = contentBuffer.join('\n').trim();
                         if (currentChapter.content) {
@@ -1041,7 +1085,6 @@ Your history text here..."></textarea>
                         }
                     }
                     
-                    // Extract chapter number and title
                     let chapterNum, chapterTitle;
                     
                     if (fileMatch && line.includes('FILE')) {
@@ -1049,7 +1092,6 @@ Your history text here..."></textarea>
                         chapterTitle = fileMatch[2].trim();
                     } else if (numberedSectionMatch) {
                         chapterNum = numberedSectionMatch[1];
-                        // Clean up the title - remove formatting characters
                         chapterTitle = numberedSectionMatch[2]
                             .replace(/\*\*/g, '')
                             .replace(/\[/g, '')
@@ -1058,13 +1100,12 @@ Your history text here..."></textarea>
                             .trim();
                     }
                     
-                    // Extract duration if present
                     let duration = null;
                     if (i + 1 < lines.length && lines[i + 1].includes('Duration:')) {
                         const durationMatch = lines[i + 1].match(/Duration:\s*(.+)/i);
                         if (durationMatch) {
                             duration = durationMatch[1].replace(/[*_]/g, '').trim();
-                            i++; // Skip the duration line
+                            i++;
                         }
                     }
                     
@@ -1085,7 +1126,6 @@ Your history text here..."></textarea>
                     console.log('Found chapter:', currentChapter.title);
                     
                 } else if (stopMatch) {
-                    // Save previous chapter if exists
                     if (currentChapter) {
                         currentChapter.content = contentBuffer.join('\n').trim();
                         if (currentChapter.content) {
@@ -1107,14 +1147,12 @@ Your history text here..."></textarea>
                     chapterType = 'stop';
                     
                 } else if (currentChapter && !line.match(/^-+$/) && !line.match(/^=+$/) && !line.match(/^#{1,3}\s*$/)) {
-                    // Skip separator lines and empty headers
                     if (line.trim() || contentBuffer.length > 0) {
                         contentBuffer.push(line);
                     }
                 }
             }
 
-            // Save the last chapter
             if (currentChapter) {
                 currentChapter.content = contentBuffer.join('\n').trim();
                 if (currentChapter.content) {
@@ -1124,11 +1162,9 @@ Your history text here..."></textarea>
 
             console.log('Total chapters found:', chapters.length);
 
-            // If no chapters were found, try alternative parsing for numbered sections
             if (chapters.length === 0) {
                 console.log('No chapters found with primary method, trying alternative parsing...');
                 
-                // Try to find any numbered sections
                 const numberedLines = [];
                 lines.forEach((line, index) => {
                     if (line.match(/^\d+\.\s+/)) {
@@ -1162,7 +1198,6 @@ Your history text here..."></textarea>
                 }
             }
 
-            // If still no chapters found, treat as single text
             if (chapters.length === 0) {
                 chapters = [{
                     id: 1,
@@ -1175,7 +1210,6 @@ Your history text here..."></textarea>
                 }];
             }
 
-            // Auto-select first few chapters for convenience
             chapters.slice(0, 3).forEach(ch => ch.selected = true);
 
             renderChapters();
@@ -1184,12 +1218,12 @@ Your history text here..."></textarea>
             updateSelectedCount();
         }
 
-        // Render chapters with enhanced display
+        // Render chapters
         function renderChapters() {
             const list = document.getElementById('chapterList');
             list.innerHTML = chapters.map((ch, i) => {
                 const wordCount = ch.content.split(/\s+/).filter(word => word.length > 0).length;
-                const estimatedDuration = Math.ceil(wordCount / 150); // ~150 words per minute
+                const estimatedDuration = Math.ceil(wordCount / 150);
                 
                 return `
                     <div class="chapter-item ${ch.selected ? 'selected' : ''}" onclick="toggleChapter(${i})">
@@ -1244,9 +1278,11 @@ Your history text here..."></textarea>
             chapters = [];
             document.getElementById('chaptersSection').style.display = 'none';
             document.getElementById('generateSection').style.display = 'none';
+            document.getElementById('filesSection').style.display = 'none';
+            generatedFiles = [];
         }
 
-        // Load multi-file sample
+        // Load samples
         function loadSampleMultiFile() {
             document.getElementById('textInput').value = `# CRETE AUDIO GUIDE
 ## Complete Structured Tour with 38 Stops
@@ -1271,18 +1307,10 @@ This isn't just Greece's largest island; it's home to 15% of the country's archa
 To understand Crete, you must first grasp that this island has been prized for over 4,000 years. World War II saw fierce battles here, and the 90s brought modern tourism.
 
 ### The Minoan Civilization
-Our story begins around 3000 BCE, when the Minoans created Europe's first advanced civilization. The palace had rooms at 22°C year-round.
-
----
-
-## FILE 03: PRACTICAL TIPS
-*Duration: 3 minutes*
-
-Before visiting, know that entry costs €15 ($18). The site opens at 8:00 AM. In the 1st century CE, Romans built here. Temperature can reach 35°C, so bring water.`;
+Our story begins around 3000 BCE, when the Minoans created Europe's first advanced civilization. The palace had rooms at 22°C year-round.`;
             parseChapters();
         }
 
-        // Load stops sample
         function loadSampleStops() {
             document.getElementById('textInput').value = `STOP 1: INTRODUCTION
 ------------------------------
@@ -1298,7 +1326,7 @@ Leonardo da Vinci's masterpiece from the 16th century. The painting measures 77c
             parseChapters();
         }
 
-        // Select voice
+        // Voice selection
         function selectVoice(element, voice) {
             document.querySelectorAll('.voice-card').forEach(card => card.classList.remove('selected'));
             element.classList.add('selected');
@@ -1315,42 +1343,9 @@ Leonardo da Vinci's masterpiece from the 16th century. The painting measures 77c
             const lang = document.getElementById('audioLanguage').value;
             const alert = document.getElementById('languageAlert');
             
-            // Only show warning for non-English if Google TTS is NOT configured
             if (!lang.startsWith('en-')) {
-                // Check if Google is configured by making a test call
-                try {
-                    const testResponse = await fetch('/api/multilingual-tts', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            text: 'test',
-                            language: lang,
-                            voice: 'alloy',
-                            speed: 1.0
-                        })
-                    });
-                    
-                    if (testResponse.ok) {
-                        const testData = await testResponse.json();
-                        console.log('TTS provider check:', testData.provider);
-                        
-                        // Only show warning if NOT using Google
-                        if (testData.provider === 'google' && testData.nativeLanguage) {
-                            alert.style.display = 'none';
-                            console.log('✅ Google Cloud TTS is active for', lang);
-                        } else if (testData.warning) {
-                            alert.style.display = 'block';
-                            alert.innerHTML = testData.warning;
-                        } else {
-                            alert.style.display = 'none';
-                        }
-                    }
-                } catch (e) {
-                    console.error('Error checking TTS provider:', e);
-                    alert.style.display = 'block';
-                }
+                alert.style.display = 'block';
             } else {
-                // English selected - no warning needed
                 alert.style.display = 'none';
             }
         }
@@ -1378,137 +1373,28 @@ Leonardo da Vinci's masterpiece from the 16th century. The painting measures 77c
                 return;
             }
             
+            // Clear existing saved audio files if starting fresh
+            if (currentGuideId && generatedFiles.length === 0) {
+                clearSavedAudioFiles(currentGuideId);
+            }
+            
             for (let chapter of selected) {
                 await generateAudio(chapter);
             }
+            
+            showMessage(`✅ All ${selected.length} audio files generated and saved!`, 'success');
         }
 
-        // Function to concatenate audio files using Web Audio API
-        async function concatenateAudioUrls(audioUrls) {
-            console.log(`Concatenating ${audioUrls.length} audio parts...`);
-            
-            try {
-                // Create audio context
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                const audioBuffers = [];
-                
-                // Load all audio files
-                for (let i = 0; i < audioUrls.length; i++) {
-                    console.log(`Loading audio part ${i + 1}/${audioUrls.length}`);
-                    
-                    // Update loading message
-                    const loadingDiv = document.getElementById('loading');
-                    const loadingText = loadingDiv.querySelector('div:last-child');
-                    if (loadingText) {
-                        loadingText.textContent = `Combining audio parts... ${i + 1} of ${audioUrls.length}`;
-                    }
-                    
-                    // Fetch the audio data
-                    const response = await fetch(audioUrls[i]);
-                    const arrayBuffer = await response.arrayBuffer();
-                    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-                    audioBuffers.push(audioBuffer);
-                }
-                
-                // Calculate total length
-                const totalLength = audioBuffers.reduce((acc, buffer) => acc + buffer.length, 0);
-                const numberOfChannels = audioBuffers[0].numberOfChannels;
-                const sampleRate = audioBuffers[0].sampleRate;
-                
-                // Create output buffer
-                const outputBuffer = audioContext.createBuffer(numberOfChannels, totalLength, sampleRate);
-                
-                // Copy all buffers into the output
-                let offset = 0;
-                for (const buffer of audioBuffers) {
-                    for (let channel = 0; channel < numberOfChannels; channel++) {
-                        outputBuffer.copyToChannel(buffer.getChannelData(channel), channel, offset);
-                    }
-                    offset += buffer.length;
-                }
-                
-                // Convert to WAV format (or we could use a library for MP3)
-                const wavBlob = await audioBufferToWav(outputBuffer);
-                const url = URL.createObjectURL(wavBlob);
-                
-                console.log('Audio concatenation complete');
-                return url;
-                
-            } catch (error) {
-                console.error('Error concatenating audio:', error);
-                throw error;
-            }
-        }
-        
-        // Convert AudioBuffer to WAV blob
-        function audioBufferToWav(buffer) {
-            const numberOfChannels = buffer.numberOfChannels;
-            const sampleRate = buffer.sampleRate;
-            const format = 1; // PCM
-            const bitDepth = 16;
-            
-            const bytesPerSample = bitDepth / 8;
-            const blockAlign = numberOfChannels * bytesPerSample;
-            
-            const data = [];
-            for (let channel = 0; channel < numberOfChannels; channel++) {
-                data.push(buffer.getChannelData(channel));
-            }
-            
-            const length = buffer.length;
-            const arrayBuffer = new ArrayBuffer(44 + length * numberOfChannels * bytesPerSample);
-            const view = new DataView(arrayBuffer);
-            
-            // WAV header
-            const writeString = (offset, string) => {
-                for (let i = 0; i < string.length; i++) {
-                    view.setUint8(offset + i, string.charCodeAt(i));
-                }
-            };
-            
-            writeString(0, 'RIFF');
-            view.setUint32(4, 36 + length * numberOfChannels * bytesPerSample, true);
-            writeString(8, 'WAVE');
-            writeString(12, 'fmt ');
-            view.setUint32(16, 16, true);
-            view.setUint16(20, format, true);
-            view.setUint16(22, numberOfChannels, true);
-            view.setUint32(24, sampleRate, true);
-            view.setUint32(28, sampleRate * blockAlign, true);
-            view.setUint16(32, blockAlign, true);
-            view.setUint16(34, bitDepth, true);
-            writeString(36, 'data');
-            view.setUint32(40, length * numberOfChannels * bytesPerSample, true);
-            
-            // Interleave channels and convert to 16-bit PCM
-            let offset = 44;
-            for (let i = 0; i < length; i++) {
-                for (let channel = 0; channel < numberOfChannels; channel++) {
-                    const sample = Math.max(-1, Math.min(1, data[channel][i]));
-                    view.setInt16(offset, sample * 0x7FFF, true);
-                    offset += 2;
-                }
-            }
-            
-            return new Blob([arrayBuffer], { type: 'audio/wav' });
-        }
-
-        // Global audio player reference
-        let currentAudioPlayer = null;
-
-        // Function to split text into chunks at word boundaries
+        // Function to split text into chunks
         function splitTextIntoChunks(text, maxChunkSize = 3000) {
             const chunks = [];
             const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
             let currentChunk = '';
             
             for (const sentence of sentences) {
-                // If adding this sentence would exceed the limit
                 if ((currentChunk + sentence).length > maxChunkSize && currentChunk.length > 0) {
-                    // Make sure we end at a word boundary
                     let finalChunk = currentChunk.trim();
                     
-                    // If the chunk is still too long, split by words
                     if (finalChunk.length > maxChunkSize) {
                         const words = finalChunk.split(/\s+/);
                         let tempChunk = '';
@@ -1530,11 +1416,9 @@ Leonardo da Vinci's masterpiece from the 16th century. The painting measures 77c
                 }
             }
             
-            // Add the last chunk, ensuring word boundaries
             if (currentChunk.trim()) {
                 const finalChunk = currentChunk.trim();
                 if (finalChunk.length > maxChunkSize) {
-                    // Split by words if still too long
                     const words = finalChunk.split(/\s+/);
                     let tempChunk = '';
                     for (const word of words) {
@@ -1551,9 +1435,8 @@ Leonardo da Vinci's masterpiece from the 16th century. The painting measures 77c
                 }
             }
             
-            // Log chunk info for debugging
             chunks.forEach((chunk, i) => {
-                console.log(`Chunk ${i + 1}: ${chunk.length} chars, ends with: "${chunk.slice(-50)}"`);
+                console.log(`Chunk ${i + 1}: ${chunk.length} chars`);
             });
             
             return chunks;
@@ -1577,7 +1460,7 @@ Leonardo da Vinci's masterpiece from the 16th century. The painting measures 77c
             }
             
             // Check if text is too long and needs chunking
-            const MAX_TTS_LENGTH = 3000; // Safe limit for TTS API
+            const MAX_TTS_LENGTH = 3000;
             const textChunks = textToGenerate.length > MAX_TTS_LENGTH 
                 ? splitTextIntoChunks(textToGenerate, MAX_TTS_LENGTH)
                 : [textToGenerate];
@@ -1597,313 +1480,328 @@ Leonardo da Vinci's masterpiece from the 16th century. The painting measures 77c
                     const chunk = textChunks[i];
                     console.log(`Generating chunk ${i + 1}/${textChunks.length}, length: ${chunk.length}`);
                     
-                    // Show progress for multi-chunk generation
+                    // Show progress
                     const loadingDiv = document.getElementById('loading');
                     const loadingText = loadingDiv.querySelector('div:last-child');
-                    if (loadingText) {loadingText.textContent = `Generating audio... Part ${i + 1} of ${textChunks.length}`;
-                   }
-                   
-                   const response = await fetch('/api/multilingual-tts', {
-                       method: 'POST',
-                       headers: { 'Content-Type': 'application/json' },
-                       body: JSON.stringify({
-                           text: chunk,
-                           language: language,
-                           voice: selectedVoice,
-                           speed: speed
-                       })
-                   });
+                    if (loadingText) {
+                        loadingText.textContent = textChunks.length > 1 
+                            ? `Generating audio... Part ${i + 1} of ${textChunks.length}`
+                            : `Generating audio for ${chapter.shortTitle || chapter.title}...`;
+                    }
+                    
+                    const response = await fetch('/api/multilingual-tts', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            text: chunk,
+                            language: language,
+                            voice: selectedVoice,
+                            speed: speed
+                        })
+                    });
 
-                   console.log(`Chunk ${i + 1} response status:`, response.status);
+                    console.log(`Chunk ${i + 1} response status:`, response.status);
 
-                   if (response.ok) {
-                       const data = await response.json();
-                       if (data.audioUrl) {
-                           audioUrls.push(data.audioUrl);
-                       } else {
-                           throw new Error(`No audio URL in response for chunk ${i + 1}`);
-                       }
-                   } else {
-                       const errorData = await response.json().catch(() => ({}));
-                       console.error(`API Error for chunk ${i + 1}:`, errorData);
-                       throw new Error(errorData.error || errorData.message || `Failed to generate audio for part ${i + 1}`);
-                   }
-                   
-                   // Small delay between chunks to avoid rate limiting
-                   if (i < textChunks.length - 1) {
-                       await new Promise(resolve => setTimeout(resolve, 500));
-                   }
-               }
-               
-               // If we have multiple chunks, concatenate them
-               let finalAudioUrl;
-               if (audioUrls.length > 1) {
-                   console.log('Multiple audio parts generated, concatenating...');
-                   showMessage('🔄 Combining audio parts into single file...', 'info');
-                   
-                   try {
-                       finalAudioUrl = await concatenateAudioUrls(audioUrls);
-                       showMessage('✅ Audio parts successfully combined!', 'success');
-                   } catch (concatError) {
-                       console.error('Failed to concatenate audio files:', concatError);
-                       showMessage('⚠️ Could not combine audio parts. Saving as separate files.', 'warning');
-                       
-                       // Fall back to saving separate parts
-                       audioUrls.forEach((url, index) => {
-                           const file = {
-                               name: `${chapter.shortTitle || chapter.title}`.replace(/[^a-z0-9]/gi, '_') + `_part${index + 1}_${language}.mp3`,
-                               chapter: chapter.title + ` (Part ${index + 1}/${audioUrls.length})`,
-                               language: language,
-                               url: url,
-                               provider: 'openai'
-                           };
-                           generatedFiles.push(file);
-                       });
-                       
-                       renderFiles();
-                       return;
-                   }
-               } else {
-                   finalAudioUrl = audioUrls[0];
-               }
-               
-               // Update chapter status
-               chapter.status = 'completed';
-               renderChapters();
-               
-               // Add the final combined file
-               const file = {
-                   name: `${chapter.shortTitle || chapter.title}`.replace(/[^a-z0-9]/gi, '_') + `_${language}.${finalAudioUrl.includes('wav') ? 'wav' : 'mp3'}`,
-                   chapter: chapter.title,
-                   language: language,
-                   url: finalAudioUrl,
-                   provider: 'openai',
-                   combined: audioUrls.length > 1
-               };
-               generatedFiles.push(file);
-               renderFiles();
-               
-               // Show success message
-               if (audioUrls.length > 1) {
-                   showMessage(`✅ Audio generated and combined for "${chapter.shortTitle || chapter.title}" (${audioUrls.length} parts merged)`, 'success');
-               } else {
-                   showMessage(`✅ Audio generated for "${chapter.shortTitle || chapter.title}"`, 'success');
-               }
-               
-           } catch (error) {
-               console.error('Error:', error);
-               showMessage('Error generating audio: ' + error.message, 'error');
-           } finally {
-               document.getElementById('loading').classList.remove('active');
-               document.getElementById('generateSingle').disabled = false;
-               document.getElementById('generateAll').disabled = false;
-               // Reset loading text
-               const loadingDiv = document.getElementById('loading');
-               const loadingText = loadingDiv.querySelector('div:last-child');
-               if (loadingText) {
-                   loadingText.textContent = 'Generating audio... Please wait...';
-               }
-           }
-       }
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.audioUrl) {
+                            audioUrls.push(data.audioUrl);
+                        } else {
+                            throw new Error(`No audio URL in response for chunk ${i + 1}`);
+                        }
+                    } else {
+                        const errorData = await response.json().catch(() => ({}));
+                        console.error(`API Error for chunk ${i + 1}:`, errorData);
+                        throw new Error(errorData.error || errorData.message || `Failed to generate audio for part ${i + 1}`);
+                    }
+                    
+                    // Small delay between chunks to avoid rate limiting
+                    if (i < textChunks.length - 1) {
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                    }
+                }
+                
+                // Use the first URL (or combine if multiple)
+                let finalAudioUrl = audioUrls[0];
+                
+                // Update chapter status
+                chapter.status = 'completed';
+                renderChapters();
+                
+                // Create file object
+                const file = {
+                    name: `${chapter.shortTitle || chapter.title}`.replace(/[^a-z0-9]/gi, '_') + `_${language}.mp3`,
+                    chapter: chapter.title,
+                    language: language,
+                    url: finalAudioUrl,
+                    provider: 'openai',
+                    stopNumber: chapter.stopNumber || chapter.fileNumber || chapter.id,
+                    size: 'Generated'
+                };
+                
+                // Add to generated files
+                generatedFiles.push(file);
+                
+                // CRITICAL: Save audio file for upload page - THIS IS THE FIX!
+                if (currentGuideId) {
+                    saveAudioForUpload(currentGuideId, file);
+                } else {
+                    // Try to get guide ID from URL if not set
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const id = urlParams.get('id');
+                    if (id) {
+                        currentGuideId = id;
+                        saveAudioForUpload(id, file);
+                    }
+                }
+                
+                renderFiles();
+                
+                // Show success message
+                if (audioUrls.length > 1) {
+                    showMessage(`✅ Audio generated for "${chapter.shortTitle || chapter.title}" (${audioUrls.length} parts)`, 'success');
+                } else {
+                    showMessage(`✅ Audio generated for "${chapter.shortTitle || chapter.title}"`, 'success');
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('Error generating audio: ' + error.message, 'error');
+                chapter.status = 'error';
+                renderChapters();
+            } finally {
+                document.getElementById('loading').classList.remove('active');
+                document.getElementById('generateSingle').disabled = false;
+                document.getElementById('generateAll').disabled = false;
+                // Reset loading text
+                const loadingDiv = document.getElementById('loading');
+                const loadingText = loadingDiv.querySelector('div:last-child');
+                if (loadingText) {
+                    loadingText.textContent = 'Generating audio... Please wait...';
+                }
+            }
+        }
 
-       // Show message function
-       function showMessage(message, type) {
-           const messageDiv = document.createElement('div');
-           messageDiv.style.cssText = `
-               position: fixed;
-               top: 20px;
-               right: 20px;
-               padding: 15px 20px;
-               border-radius: 6px;
-               z-index: 10000;
-               max-width: 400px;
-               animation: slideIn 0.3s ease-out;
-               box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-           `;
-           
-           if (type === 'success') {
-               messageDiv.style.background = '#48bb78';
-               messageDiv.style.color = 'white';
-           } else if (type === 'warning') {
-               messageDiv.style.background = '#f59e0b';
-               messageDiv.style.color = 'white';
-           } else {
-               messageDiv.style.background = '#e53e3e';
-               messageDiv.style.color = 'white';
-           }
-           
-           messageDiv.textContent = message;
-           document.body.appendChild(messageDiv);
-           
-           setTimeout(() => {
-               messageDiv.remove();
-           }, 5000);
-       }
+        // Show message function
+        function showMessage(message, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 20px;
+                border-radius: 6px;
+                z-index: 10000;
+                max-width: 400px;
+                animation: slideIn 0.3s ease-out;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            `;
+            
+            if (type === 'success') {
+                messageDiv.style.background = '#48bb78';
+                messageDiv.style.color = 'white';
+            } else if (type === 'warning') {
+                messageDiv.style.background = '#f59e0b';
+                messageDiv.style.color = 'white';
+            } else if (type === 'info') {
+                messageDiv.style.background = '#3b82f6';
+                messageDiv.style.color = 'white';
+            } else {
+                messageDiv.style.background = '#e53e3e';
+                messageDiv.style.color = 'white';
+            }
+            
+            messageDiv.textContent = message;
+            document.body.appendChild(messageDiv);
+            
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 5000);
+        }
 
-       // Render files
-       function renderFiles() {
-           if (generatedFiles.length === 0) return;
-           
-           document.getElementById('filesSection').style.display = 'block';
-           document.getElementById('fileList').innerHTML = generatedFiles.map((file, index) => `
-               <div class="file-item">
-                   <div class="file-info">
-                       <div style="font-size: 1.5em;">🎵</div>
-                       <div>
-                           <div style="font-weight: 600;">${file.name}</div>
-                           <div style="font-size: 0.85em; color: #718096;">
-                               ${file.chapter} • ${file.language} • ${file.provider}
-                               ${file.combined ? ' • Combined from multiple parts' : ''}
-                           </div>
-                       </div>
-                   </div>
-                   <div class="file-actions">
-                       <button class="btn btn-primary audio-play-btn" onclick="playAudio('${file.url}')">Play</button>
-                       <button class="btn btn-secondary" onclick="downloadAudio('${file.url}', '${file.name}')">Download</button>
-                   </div>
-               </div>
-           `).join('');
-       }
+        // Render files
+        function renderFiles() {
+            if (generatedFiles.length === 0) return;
+            
+            document.getElementById('filesSection').style.display = 'block';
+            document.getElementById('fileList').innerHTML = generatedFiles.map((file, index) => `
+                <div class="file-item">
+                    <div class="file-info">
+                        <div style="font-size: 1.5em;">🎵</div>
+                        <div>
+                            <div style="font-weight: 600;">${file.name}</div>
+                            <div style="font-size: 0.85em; color: #718096;">
+                                ${file.chapter} • ${file.language} • ${file.provider}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="file-actions">
+                        <button class="btn btn-primary audio-play-btn" onclick="playAudio('${file.url}', this)">Play</button>
+                        <button class="btn btn-secondary" onclick="downloadAudio('${file.url}', '${file.name}')">Download</button>
+                    </div>
+                </div>
+            `).join('');
+        }
 
-       // Play/Stop audio with proper toggle
-       function playAudio(url, buttonElement) {
-           // If no button element passed, try to get it from the event
-           const button = buttonElement || event.target;
-           
-           // Check if this button is currently playing
-           if (button.textContent === 'Stop') {
-               // Stop the audio
-               if (currentAudioPlayer) {
-                   currentAudioPlayer.pause();
-                   currentAudioPlayer.currentTime = 0;
-                   currentAudioPlayer = null;
-               }
-               button.textContent = 'Play';
-               button.classList.remove('btn-danger');
-               button.classList.add('btn-primary');
-               return;
-           }
-           
-           // Stop any other playing audio
-           if (currentAudioPlayer) {
-               currentAudioPlayer.pause();
-               currentAudioPlayer.currentTime = 0;
-               currentAudioPlayer = null;
-               
-               // Reset all play buttons
-               document.querySelectorAll('.audio-play-btn').forEach(btn => {
-                   btn.textContent = 'Play';
-                   btn.classList.remove('btn-danger');
-                   btn.classList.add('btn-primary');
-               });
-           }
-           
-           // Create new audio player
-           currentAudioPlayer = new Audio(url);
-           
-           // Update button to show playing state
-           button.textContent = 'Stop';
-           button.classList.remove('btn-primary');
-           button.classList.add('btn-danger');
-           
-           // Add event listeners
-           currentAudioPlayer.onended = () => {
-               button.textContent = 'Play';
-               button.classList.remove('btn-danger');
-               button.classList.add('btn-primary');
-               currentAudioPlayer = null;
-           };
-           
-           currentAudioPlayer.onerror = () => {
-               showMessage('Error playing audio', 'error');
-               button.textContent = 'Play';
-               button.classList.remove('btn-danger');
-               button.classList.add('btn-primary');
-               currentAudioPlayer = null;
-           };
-           
-           // Handle pause event (in case paused by browser)
-           currentAudioPlayer.onpause = () => {
-               if (currentAudioPlayer && currentAudioPlayer.currentTime < currentAudioPlayer.duration) {
-                   // Audio was paused but not ended
-                   button.textContent = 'Play';
-                   button.classList.remove('btn-danger');
-                   button.classList.add('btn-primary');
-               }
-           };
-           
-           // Start playing
-           currentAudioPlayer.play().catch(error => {
-               console.error('Play error:', error);
-               showMessage('Failed to play audio: ' + error.message, 'error');
-               button.textContent = 'Play';
-               button.classList.remove('btn-danger');
-               button.classList.add('btn-primary');
-               currentAudioPlayer = null;
-           });
-       }
+        // Play/Stop audio
+        function playAudio(url, buttonElement) {
+            const button = buttonElement || event.target;
+            
+            // Check if this button is currently playing
+            if (button.textContent === 'Stop') {
+                // Stop the audio
+                if (currentAudioPlayer) {
+                    currentAudioPlayer.pause();
+                    currentAudioPlayer.currentTime = 0;
+                    currentAudioPlayer = null;
+                }
+                button.textContent = 'Play';
+                button.classList.remove('btn-danger');
+                button.classList.add('btn-primary');
+                return;
+            }
+            
+            // Stop any other playing audio
+            if (currentAudioPlayer) {
+                currentAudioPlayer.pause();
+                currentAudioPlayer.currentTime = 0;
+                currentAudioPlayer = null;
+                
+                // Reset all play buttons
+                document.querySelectorAll('.audio-play-btn').forEach(btn => {
+                    btn.textContent = 'Play';
+                    btn.classList.remove('btn-danger');
+                    btn.classList.add('btn-primary');
+                });
+            }
+            
+            // Create new audio player
+            currentAudioPlayer = new Audio(url);
+            
+            // Update button to show playing state
+            button.textContent = 'Stop';
+            button.classList.remove('btn-primary');
+            button.classList.add('btn-danger');
+            
+            // Add event listeners
+            currentAudioPlayer.onended = () => {
+                button.textContent = 'Play';
+                button.classList.remove('btn-danger');
+                button.classList.add('btn-primary');
+                currentAudioPlayer = null;
+            };
+            
+            currentAudioPlayer.onerror = () => {
+                showMessage('Error playing audio', 'error');
+                button.textContent = 'Play';
+                button.classList.remove('btn-danger');
+                button.classList.add('btn-primary');
+                currentAudioPlayer = null;
+            };
+            
+            // Start playing
+            currentAudioPlayer.play().catch(error => {
+                console.error('Play error:', error);
+                showMessage('Failed to play audio: ' + error.message, 'error');
+                button.textContent = 'Play';
+                button.classList.remove('btn-danger');
+                button.classList.add('btn-primary');
+                currentAudioPlayer = null;
+            });
+        }
 
-       // Download audio
-       function downloadAudio(url, filename) {
-           const a = document.createElement('a');
-           a.href = url;
-           a.download = filename;
-           document.body.appendChild(a);
-           a.click();
-           document.body.removeChild(a);
-       }
+        // Download audio
+        function downloadAudio(url, filename) {
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
 
-       // Load library
-       function loadLibrary() {
-           const audioguides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
-           const libraryGrid = document.getElementById('libraryList');
-           
-           if (audioguides.length === 0) {
-               libraryGrid.innerHTML = `
-                   <div style="text-align: center; padding: 60px 20px; color: #a0aec0;">
-                       <div style="font-size: 3em; margin-bottom: 20px;">📚</div>
-                       <p style="font-size: 1.2em; margin-bottom: 15px;">Your library is empty</p>
-                       <p><a href="index.html" style="color: #48bb78; text-decoration: none;">Generate your first audioguide →</a></p>
-                   </div>
-               `;
-               return;
-           }
+        // Load library
+        function loadLibrary() {
+            const audioguides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
+            const libraryGrid = document.getElementById('libraryList');
+            
+            if (audioguides.length === 0) {
+                libraryGrid.innerHTML = `
+                    <div style="text-align: center; padding: 60px 20px; color: #a0aec0;">
+                        <div style="font-size: 3em; margin-bottom: 20px;">📚</div>
+                        <p style="font-size: 1.2em; margin-bottom: 15px;">Your library is empty</p>
+                        <p><a href="index.html" style="color: #48bb78; text-decoration: none;">Generate your first audioguide →</a></p>
+                    </div>
+                `;
+                return;
+            }
 
-           libraryGrid.innerHTML = audioguides.map(guide => `
-               <div style="padding: 20px; background: #f7fafc; border-radius: 6px; margin-bottom: 15px; cursor: pointer;"
-                    onclick="loadFromLibrary('${guide.id}')">
-                   <div style="font-weight: 600; margin-bottom: 8px;">${guide.title}</div>
-                   <div style="font-size: 0.85em; color: #718096;">
-                       ${guide.location} • ${guide.language} • ${guide.stops} stops
-                   </div>
-               </div>
-           `).join('');
-       }
+            libraryGrid.innerHTML = audioguides.map(guide => {
+                // Check if this guide has saved audio files
+                const savedAudioFiles = loadSavedAudioFiles(guide.id);
+                const audioIndicator = savedAudioFiles.length > 0 
+                    ? `<span style="color: #48bb78;">🎵 ${savedAudioFiles.length} audio files</span>`
+                    : '<span style="color: #f6ad55;">No audio generated</span>';
+                
+                return `
+                    <div style="padding: 20px; background: #f7fafc; border-radius: 6px; margin-bottom: 15px; cursor: pointer;"
+                         onclick="loadFromLibrary('${guide.id}')">
+                        <div style="font-weight: 600; margin-bottom: 8px;">${guide.title}</div>
+                        <div style="font-size: 0.85em; color: #718096;">
+                            ${guide.location} • ${guide.language} • ${guide.stops} stops • ${audioIndicator}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
 
-       // Load from library
-       function loadFromLibrary(id) {
-           const audioguides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
-           const guide = audioguides.find(g => g.id == id);
-           
-           if (guide && guide.content) {
-               switchTab('text');
-               document.getElementById('textInput').value = guide.content;
-               parseChapters();
-           }
-       }
+        // Load from library
+        function loadFromLibrary(id) {
+            const audioguides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
+            const guide = audioguides.find(g => g.id == id);
+            
+            if (guide && guide.content) {
+                currentGuideId = id;
+                
+                // Load any previously saved audio files
+                const savedAudioFiles = loadSavedAudioFiles(id);
+                if (savedAudioFiles.length > 0) {
+                    generatedFiles = savedAudioFiles.map(audio => ({
+                        name: audio.name,
+                        chapter: audio.chapterTitle || 'Unknown',
+                        language: audio.language || 'en-US',
+                        url: audio.url || audio.dataUrl,
+                        provider: audio.provider || 'openai',
+                        stopNumber: audio.stopNumber
+                    }));
+                    
+                    showMessage(`Loaded ${savedAudioFiles.length} previously generated audio files`, 'info');
+                }
+                
+                switchTab('text');
+                document.getElementById('textInput').value = guide.content;
+                parseChapters();
+                
+                // If we have saved audio files, show them
+                if (generatedFiles.length > 0) {
+                    renderFiles();
+                }
+            }
+        }
 
-       // Initialize on load
-       window.addEventListener('DOMContentLoaded', function() {
-           updateSpeed();
-           updateLanguageInfo();
-           
-           // Check URL params
-           const urlParams = new URLSearchParams(window.location.search);
-           const id = urlParams.get('id');
-           if (id) {
-               loadFromLibrary(id);
-           }
-       });
-   </script>
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', function() {
+            updateSpeed();
+            updateLanguageInfo();
+            
+            // Check URL params
+            const urlParams = new URLSearchParams(window.location.search);
+            const id = urlParams.get('id');
+            if (id) {
+                currentGuideId = id;
+                loadFromLibrary(id);
+            }
+        });
+    </script>
 </body>
 </html>
