@@ -556,22 +556,6 @@
             display: block;
         }
 
-        /* Storage Warning */
-        .storage-warning {
-            display: none;
-            background: #fef3c7;
-            border: 1px solid #f59e0b;
-            color: #92400e;
-            padding: 15px;
-            border-radius: 6px;
-            margin-bottom: 20px;
-            font-size: 13px;
-        }
-
-        .storage-warning.active {
-            display: block;
-        }
-
         /* Footer Section */
         .footer-section {
             margin-top: 40px;
@@ -661,13 +645,6 @@
             <h1 class="hero-title">AI Audioguide Generator</h1>
             <p class="hero-subtitle">Create Professional Audioguides for Museums and Cultural Heritage Sites</p>
         </section>
-
-        <!-- Storage Warning -->
-        <div class="storage-warning" id="storageWarning">
-            <strong>⚠️ localStorage Issue Detected</strong><br>
-            If you're opening files directly (file://), use a local web server instead.<br>
-            <small>Run: python -m http.server 8000 or use VS Code Live Server</small>
-        </div>
 
         <!-- Main Content -->
         <div class="main-container">
@@ -848,7 +825,7 @@
 
             <!-- Success Message -->
             <div class="success-message" id="successMessage">
-                <div>✓ Audioguide generated successfully and saved to your library!</div>
+                <div>✓ Audioguide generated successfully and saved!</div>
                 <div style="margin-top: 15px;">
                     <a href="library.html" style="color: white; text-decoration: underline;">View in Library</a> | 
                     <a href="audio.html" id="generateAudioLink" style="color: white; text-decoration: underline;">Generate Audio</a>
@@ -886,188 +863,12 @@
         // Initialize on page load
         window.addEventListener('DOMContentLoaded', function() {
             console.log('=== CloudGuide Generator Initialized ===');
-            console.log('URL:', window.location.href);
-            console.log('Protocol:', window.location.protocol);
             
-            // Check for localStorage issues
-            checkLocalStorageAccess();
-            
-            // Initialize library if needed
-            initializeLibrary();
-            
-            // Check library status
-            checkLibraryStatus();
+            // Initialize empty guides list if not exists
+            if (!localStorage.getItem('cloudguide_guides')) {
+                localStorage.setItem('cloudguide_guides', JSON.stringify([]));
+            }
         });
-
-        // Check localStorage access
-        function checkLocalStorageAccess() {
-            try {
-                const testKey = 'cg_test_' + Date.now();
-                localStorage.setItem(testKey, 'test');
-                const value = localStorage.getItem(testKey);
-                localStorage.removeItem(testKey);
-                
-                if (value !== 'test') {
-                    throw new Error('localStorage test failed');
-                }
-                
-                console.log('✅ localStorage is working properly');
-                
-                // Check for file:// protocol
-                if (window.location.protocol === 'file:') {
-                    console.warn('⚠️ Running from file:// protocol - localStorage may not be shared between pages');
-                    document.getElementById('storageWarning').classList.add('active');
-                }
-                
-            } catch (error) {
-                console.error('❌ localStorage access error:', error);
-                document.getElementById('storageWarning').classList.add('active');
-            }
-        }
-
-        // Initialize library
-        function initializeLibrary() {
-            const existingData = localStorage.getItem('cloudguide_audioguides');
-            if (existingData === null || existingData === undefined) {
-                console.log('Initializing empty library for first-time use');
-                localStorage.setItem('cloudguide_audioguides', '[]');
-            } else {
-                console.log('Library already exists');
-            }
-        }
-
-        // Debug function to check library status
-        function checkLibraryStatus() {
-            console.log('=== LIBRARY STATUS CHECK ===');
-            try {
-                const data = localStorage.getItem('cloudguide_audioguides');
-                if (!data) {
-                    console.log('No library data found');
-                    return;
-                }
-                
-                const guides = JSON.parse(data);
-                console.log(`Library has ${guides.length} guides`);
-                
-                if (guides.length > 0) {
-                    console.log('Latest guide:', {
-                        id: guides[0].id,
-                        title: guides[0].title,
-                        date: guides[0].date,
-                        wordCount: guides[0].wordCount
-                    });
-                    
-                    // Show first few guides
-                    guides.slice(0, 3).forEach((g, i) => {
-                        console.log(`Guide ${i+1}:`, g.title, `(${g.id})`);
-                    });
-                }
-                
-                const size = new Blob([data]).size;
-                console.log(`Storage used: ${(size / 1024).toFixed(2)} KB`);
-                
-            } catch (error) {
-                console.error('Library check error:', error);
-            }
-        }
-
-        // Helper to safely get library data
-        function getLibraryData() {
-            try {
-                const data = localStorage.getItem('cloudguide_audioguides');
-                if (!data) {
-                    return [];
-                }
-                const parsed = JSON.parse(data);
-                return Array.isArray(parsed) ? parsed : [];
-            } catch (error) {
-                console.error('Error reading library:', error);
-                return [];
-            }
-        }
-
-        // Test localStorage functionality
-        function testLocalStorage() {
-            console.log('=== LOCALSTORAGE TEST ===');
-            
-            // Test write
-            localStorage.setItem('test_key', 'test_value');
-            
-            // Test read
-            const value = localStorage.getItem('test_key');
-            console.log('Test write/read:', value === 'test_value' ? 'PASSED' : 'FAILED');
-            
-            // Check library
-            const library = localStorage.getItem('cloudguide_audioguides');
-            console.log('Library data exists:', library !== null);
-            if (library) {
-                try {
-                    const parsed = JSON.parse(library);
-                    console.log('Library contains', parsed.length, 'guides');
-                    parsed.forEach((guide, index) => {
-                        console.log(`Guide ${index + 1}:`, {
-                            id: guide.id,
-                            title: guide.title,
-                            date: guide.date
-                        });
-                    });
-                } catch (e) {
-                    console.error('Library data is corrupted:', e);
-                }
-            }
-            
-            // Check all keys
-            console.log('All localStorage keys:', Object.keys(localStorage));
-            
-            // Cleanup
-            localStorage.removeItem('test_key');
-        }
-
-        // Export library for backup
-        function exportLibrary() {
-            const guides = getLibraryData();
-            const backup = {
-                version: '1.0',
-                exportDate: new Date().toISOString(),
-                guides: guides,
-                totalGuides: guides.length
-            };
-            
-            const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `cloudguide_library_backup_${Date.now()}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            
-            console.log(`Exported ${guides.length} guides`);
-        }
-
-        // Import library from backup
-        function importLibrary(jsonString) {
-            try {
-                const backup = JSON.parse(jsonString);
-                if (backup.guides && Array.isArray(backup.guides)) {
-                    localStorage.setItem('cloudguide_audioguides', JSON.stringify(backup.guides));
-                    console.log(`Imported ${backup.guides.length} guides`);
-                    checkLibraryStatus();
-                    return true;
-                }
-            } catch (error) {
-                console.error('Import failed:', error);
-                return false;
-            }
-        }
-
-        // Make functions globally available
-        window.checkLibraryStatus = checkLibraryStatus;
-        window.testLocalStorage = testLocalStorage;
-        window.getLibraryData = getLibraryData;
-        window.exportLibrary = exportLibrary;
-        window.importLibrary = importLibrary;
 
         // Model selection
         function selectModel(model) {
@@ -1174,6 +975,31 @@
             document.getElementById('progressStatus').textContent = status;
         }
 
+        // Save to Cloudinary
+        async function saveToCloudinary(guideData) {
+            try {
+                const jsonContent = JSON.stringify(guideData);
+                const base64Content = btoa(unescape(encodeURIComponent(jsonContent)));
+                
+                const response = await fetch('/api/upload-to-cloudinary', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        audioData: `data:application/json;base64,${base64Content}`,
+                        fileName: `guide_${guideData.id}.json`
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    return data.url;
+                }
+            } catch (error) {
+                console.error('Cloudinary upload error:', error);
+            }
+            return null;
+        }
+
         // MAIN GENERATE FUNCTION
         async function generateGuide() {
             console.log('=== STARTING GENERATION ===');
@@ -1231,21 +1057,6 @@
             } catch (error) {
                 console.error('API Error:', error);
                 showError('API Error: ' + error.message);
-                
-                // Create minimal fallback content
-                content = `AUDIOGUIDE: ${location.toUpperCase()}
-===================================================
-
-Error: ${error.message}
-Generated: ${new Date().toLocaleDateString()}
-
-===================================================
-
-STOP 1: Introduction
-------------------------------
-Content generation failed. Please try again.
-
-===================================================`;
             }
 
             // Format content if needed
@@ -1253,102 +1064,64 @@ Content generation failed. Please try again.
                 content = formatAudioguideContent(content, location, language, tourType, stops);
             }
 
-            // SAVE TO LIBRARY
-            console.log('=== SAVING TO LIBRARY ===');
-            let savedGuide = null;
+            // Create guide object
+            const timestamp = Date.now();
+            const guideData = {
+                id: 'guide_' + timestamp,
+                title: location,
+                location: location,
+                language: language,
+                tourType: tourType,
+                stops: stops,
+                date: new Date().toISOString(),
+                content: content,
+                type: 'generated',
+                model: selectedModel,
+                wordCount: content.split(/\s+/).filter(w => w.length > 0).length,
+                apiSuccess: apiSuccess
+            };
+
+            // Save to Cloudinary
+            console.log('Saving to Cloudinary...');
+            const cloudinaryUrl = await saveToCloudinary(guideData);
             
-            try {
-                // Get existing guides
-                const audioguides = getLibraryData();
-                console.log(`Found ${audioguides.length} existing guides`);
+            if (cloudinaryUrl) {
+                console.log('✅ Saved to Cloudinary:', cloudinaryUrl);
+                guideData.cloudinaryUrl = cloudinaryUrl;
                 
-                // Create new guide object
-                const timestamp = Date.now();
-                savedGuide = {
-                    id: 'guide_' + timestamp,
-                    title: location,
-                    location: location,
-                    language: language,
-                    tourType: tourType,
-                    stops: stops,
-                    date: new Date().toISOString(),
-                    content: content,
-                    type: 'generated',
-                    model: selectedModel,
-                    wordCount: content.split(/\s+/).filter(w => w.length > 0).length,
-                    apiSuccess: apiSuccess
-                };
+                // Save reference to localStorage
+                const guides = JSON.parse(localStorage.getItem('cloudguide_guides') || '[]');
+                guides.unshift({
+                    id: guideData.id,
+                    title: guideData.title,
+                    location: guideData.location,
+                    language: guideData.language,
+                    stops: guideData.stops,
+                    date: guideData.date,
+                    cloudinaryUrl: cloudinaryUrl,
+                    model: guideData.model
+                });
                 
-                console.log('Creating guide:', savedGuide.id);
-                
-                // Add to beginning of array
-                audioguides.unshift(savedGuide);
-                
-                // Limit to 50 guides
-                if (audioguides.length > 50) {
-                    const removed = audioguides.length - 50;
-                    audioguides.splice(50);
-                    console.log(`Trimmed ${removed} old guides`);
+                // Keep only last 100 references
+                if (guides.length > 100) {
+                    guides.splice(100);
                 }
                 
-                // Save to localStorage
-                localStorage.setItem('cloudguide_audioguides', JSON.stringify(audioguides));
-                console.log(`Saved ${audioguides.length} guides to localStorage`);
+                localStorage.setItem('cloudguide_guides', JSON.stringify(guides));
                 
-                // Verify the save
-                const verification = getLibraryData();
-                const found = verification.find(g => g.id === savedGuide.id);
-                if (found) {
-                    console.log('✅ SAVE VERIFIED - Guide found:', found.id);
-                } else {
-                    console.error('❌ Save verification failed');
-                    savedGuide = null;
-                }
-                
-            } catch (saveError) {
-                console.error('CRITICAL SAVE ERROR:', saveError);
-                alert('Failed to save to library: ' + saveError.message);
-                savedGuide = null;
-            }
-
-            // Download file
-            if (content) {
-                try {
-                    downloadAudioguide(content, location);
-                    console.log('File downloaded');
-                } catch (downloadError) {
-                    console.error('Download error:', downloadError);
-                }
-            }
-
-            // Show result message
-            if (savedGuide) {
-                document.getElementById('generateAudioLink').href = `audio.html?id=${savedGuide.id}`;
-                
-                const statusText = apiSuccess 
-                    ? '✓ Audioguide generated successfully and saved to your library!'
-                    : '✓ Audioguide saved to library (with errors - please try again)';
-                    
-                document.getElementById('successMessage').innerHTML = `
-                    <div>${statusText}</div>
-                    <div style="margin-top: 15px;">
-                        <a href="library.html" style="color: white; text-decoration: underline;">View in Library</a> | 
-                        <a href="audio.html?id=${savedGuide.id}" style="color: white; text-decoration: underline;">Generate Audio</a>
-                    </div>
-                `;
+                // Show success
+                document.getElementById('generateAudioLink').href = `audio.html?id=${guideData.id}`;
                 document.getElementById('successMessage').classList.add('active');
             } else {
-                showError('Failed to save audioguide to library. Check console for details.');
+                // Fallback: download as file
+                downloadAudioguide(content, location);
+                showError('Could not save to cloud. Downloaded as file instead.');
             }
 
             // Reset UI
             document.getElementById('generateBtn').disabled = false;
             document.getElementById('loading').classList.remove('active');
             document.getElementById('progressContainer').classList.remove('active');
-            
-            // Final check
-            console.log('=== GENERATION COMPLETE ===');
-            checkLibraryStatus();
         }
 
         // Generate Claude content in batches
@@ -1392,37 +1165,16 @@ Content generation failed. Please try again.
                     if (!response.ok) {
                         console.error(`Batch ${batch + 1} failed:`, responseText);
                         
-                        let errorMessage = `Batch ${batch + 1} failed`;
-                        try {
-                            const errorData = JSON.parse(responseText);
-                            errorMessage = errorData.error || errorData.message || errorMessage;
-                        } catch (e) {
-                            errorMessage = responseText.substring(0, 100);
-                        }
-                        
                         if (batch === 0) {
-                            throw new Error(errorMessage);
+                            throw new Error('Failed to generate content');
                         } else {
-                            console.log(`Continuing with ${batch} successful batches`);
                             break;
                         }
                     }
 
-                    let data;
-                    try {
-                        data = JSON.parse(responseText);
-                    } catch (parseError) {
-                        console.error('Failed to parse batch response:', parseError);
-                        throw new Error(`Failed to parse batch ${batch + 1} response`);
-                    }
-
+                    const data = JSON.parse(responseText);
                     const batchContent = data.rawContent || data.content || '';
                     
-                    if (!batchContent) {
-                        throw new Error(`No content in batch ${batch + 1}`);
-                    }
-                    
-                    // Add batch content
                     if (batch === 0) {
                         allContent = batchContent;
                     } else {
@@ -1430,9 +1182,8 @@ Content generation failed. Please try again.
                         allContent += '\n\n' + contentOnly;
                     }
                     
-                    console.log(`Batch ${batch + 1} completed (${batchContent.length} chars)`);
+                    console.log(`Batch ${batch + 1} completed`);
                     
-                    // Small delay between batches
                     if (batch < numBatches - 1) {
                         await new Promise(resolve => setTimeout(resolve, 1000));
                     }
@@ -1446,72 +1197,32 @@ Content generation failed. Please try again.
                 }
             }
             
-            if (!allContent) {
-                throw new Error('No content generated from any batch');
-            }
-            
             updateProgress(100, 'Finalizing audioguide...');
-            console.log(`Generated ${allContent.length} total characters`);
-            
             return allContent;
         }
 
         // Single Claude API call
         async function callClaudeAPI(location, language, stops, tourType, guideType, audience, style) {
-            console.log(`Calling Claude API for ${stops} stops...`);
-            
-            try {
-                const response = await fetch('/api/claude', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        destination: location,
-                        guideType: guideType,
-                        audience: audience,
-                        style: style,
-                        numStops: stops,
-                        stopLength: 900,
-                        preferredModel: 'claude-3-5-sonnet-20241022'
-                    })
-                });
+            const response = await fetch('/api/claude', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    destination: location,
+                    guideType: guideType,
+                    audience: audience,
+                    style: style,
+                    numStops: stops,
+                    stopLength: 900,
+                    preferredModel: 'claude-3-5-sonnet-20241022'
+                })
+            });
 
-                const responseText = await response.text();
-                console.log('Claude API response status:', response.status);
-
-                if (!response.ok) {
-                    console.error('Claude API error response:', responseText);
-                    
-                    let errorMessage = 'Claude API failed';
-                    try {
-                        const errorData = JSON.parse(responseText);
-                        errorMessage = errorData.error || errorData.message || errorMessage;
-                    } catch (e) {
-                        errorMessage = responseText.substring(0, 200);
-                    }
-                    
-                    throw new Error(errorMessage);
-                }
-
-                let data;
-                try {
-                    data = JSON.parse(responseText);
-                } catch (parseError) {
-                    console.error('Failed to parse Claude response:', parseError);
-                    throw new Error('Invalid response from Claude API');
-                }
-
-                const content = data.content || data.rawContent || '';
-                if (!content) {
-                    throw new Error('No content in Claude response');
-                }
-
-                console.log('Claude API success, received', content.length, 'characters');
-                return content;
-
-            } catch (error) {
-                console.error('Claude API error:', error);
-                throw error;
+            if (!response.ok) {
+                throw new Error('Claude API failed');
             }
+
+            const data = await response.json();
+            return data.content || data.rawContent || '';
         }
 
         // Other APIs
@@ -1519,25 +1230,11 @@ Content generation failed. Please try again.
             let apiUrl = '';
             let requestBody = {};
             
-            document.getElementById('loadingText').textContent = `Generating with ${selectedModel.toUpperCase()}...`;
-            
             switch (selectedModel) {
                 case 'openai':
                     apiUrl = '/api/openai';
                     requestBody = {
-                        prompt: `Create a detailed ${stops}-stop audioguide for ${location}.
-Language: ${language}
-Tour Type: ${tourType}
-Each stop should be approximately 900 words.
-
-Create exactly ${stops} stops with comprehensive information.
-
-Format as:
-STOP 1: [Title]
-------------------------------
-[Detailed content - 900 words]
-
-Continue for all ${stops} stops.`,
+                        prompt: `Create a detailed ${stops}-stop audioguide for ${location}. Language: ${language}`,
                         max_tokens: 4000,
                         temperature: 0.8
                     };
@@ -1557,14 +1254,11 @@ Continue for all ${stops} stops.`,
                     apiUrl = '/api/deepseek';
                     requestBody = {
                         prompt: `Create audioguide for ${location}, ${stops} stops, ${language}`,
-                        location: location,
-                        duration: stops + ' stops',
-                        interests: tourType
+                        location: location
                     };
                     break;
             }
 
-            console.log(`Calling ${selectedModel} API...`);
             const response = await fetch(apiUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -1572,59 +1266,48 @@ Continue for all ${stops} stops.`,
             });
 
             if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error || `${selectedModel} API failed`);
+                throw new Error(`${selectedModel} API failed`);
             }
 
             const data = await response.json();
             
-            // Extract content based on model
             if (selectedModel === 'openai') {
                 return data.choices?.[0]?.message?.content || '';
-            } else if (selectedModel === 'deepseek') {
-                return data.content || data.generated_text || '';
             } else {
-                return data.content || '';
+                return data.content || data.generated_text || '';
             }
         }
 
         // Format content
         function formatAudioguideContent(content, location, language, tourType, stops) {
-            if (content.includes('AUDIOGUIDE:')) {
-                return content;
-            }
-            
-            let formatted = `AUDIOGUIDE: ${location.toUpperCase()}\n`;
-            formatted += '='.repeat(60) + '\n\n';
-            formatted += `Language: ${language}\n`;
-            formatted += `Tour Type: ${tourType}\n`;
-            formatted += `Total Stops: ${stops}\n`;
-            formatted += `Generated: ${new Date().toLocaleDateString()}\n`;
-            formatted += `AI Model: ${selectedModel.toUpperCase()}\n\n`;
-            formatted += '='.repeat(60) + '\n\n';
-            formatted += content;
-            formatted += '\n\n' + '='.repeat(60) + '\n';
-            formatted += '© CloudGuide - www.cloudguide.me\n';
-            
-            return formatted;
+            return `AUDIOGUIDE: ${location.toUpperCase()}
+===================================================
+
+Language: ${language}
+Tour Type: ${tourType}
+Total Stops: ${stops}
+Generated: ${new Date().toLocaleDateString()}
+AI Model: ${selectedModel.toUpperCase()}
+
+===================================================
+
+${content}
+
+===================================================
+© CloudGuide - www.cloudguide.me`;
         }
 
         // Download file
         function downloadAudioguide(content, location) {
-            try {
-                const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `CloudGuide_${location.replace(/[^a-z0-9]/gi, '_')}.txt`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                console.log('File downloaded successfully');
-            } catch (error) {
-                console.error('Download error:', error);
-            }
+            const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `CloudGuide_${location.replace(/[^a-z0-9]/gi, '_')}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         }
 
         // Show error
@@ -1635,14 +1318,6 @@ Continue for all ${stops} stops.`,
                 document.getElementById('errorMessage').classList.remove('active');
             }, 5000);
         }
-
-        // Help functions in console
-        console.log('=== Available Debug Commands ===');
-        console.log('checkLibraryStatus() - Check library status');
-        console.log('testLocalStorage() - Test localStorage functionality');
-        console.log('getLibraryData() - Get all guides');
-        console.log('exportLibrary() - Export library to file');
-        console.log('importLibrary(json) - Import library from JSON string');
     </script>
 </body>
 </html>
