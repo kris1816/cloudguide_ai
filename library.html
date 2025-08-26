@@ -103,7 +103,23 @@
             margin: 0 auto;
         }
 
-        /* Stats Bar */
+        /* Storage Warning */
+        .storage-warning {
+            display: none;
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            color: #92400e;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 13px;
+        }
+
+        .storage-warning.active {
+            display: block;
+        }
+
+        /* Stats Container */
         .stats-container {
             background: white;
             border-radius: 8px;
@@ -218,6 +234,30 @@
             background: #48bb78;
             color: white;
             border-color: #48bb78;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .import-export-btn {
+            padding: 8px 18px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s;
+        }
+
+        .import-export-btn:hover {
+            background: #5a67d8;
+            transform: translateY(-1px);
         }
 
         .view-toggle {
@@ -548,63 +588,22 @@
             color: #e53e3e;
         }
 
-        /* Translation Modal */
-        .translation-modal {
-            max-width: 600px;
-        }
-
-        .translation-form {
+        /* Import Form */
+        .import-form {
             margin-top: 20px;
         }
 
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #4a5568;
-            font-size: 14px;
-        }
-
-        .form-select {
+        .import-textarea {
             width: 100%;
-            padding: 10px;
+            min-height: 200px;
+            padding: 15px;
             border: 1px solid #e2e8f0;
             border-radius: 6px;
-            font-size: 14px;
-            background: white;
-            cursor: pointer;
-        }
-
-        .translation-progress {
-            display: none;
-            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
             background: #f7fafc;
-            border-radius: 6px;
-            text-align: center;
-            margin-top: 20px;
-        }
-
-        .translation-progress.active {
-            display: block;
-        }
-
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid #e2e8f0;
-            border-top: 3px solid #48bb78;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            resize: vertical;
+            margin-bottom: 15px;
         }
 
         /* Footer */
@@ -747,6 +746,13 @@
             <p class="hero-subtitle">Access, manage and share your complete collection of AI-generated audioguides</p>
         </section>
 
+        <!-- Storage Warning -->
+        <div class="storage-warning" id="storageWarning">
+            <strong>⚠️ localStorage Issue Detected</strong><br>
+            If you're not seeing your guides, you may be using file:// protocol.<br>
+            Use a local web server: python -m http.server 8000 or VS Code Live Server
+        </div>
+
         <!-- Stats Container -->
         <div class="stats-container">
             <div class="stats-grid">
@@ -789,6 +795,11 @@
                     <button class="filter-btn" onclick="filterByLanguage('Italian')">Italian</button>
                 </div>
                 
+                <div class="action-buttons">
+                    <button class="import-export-btn" onclick="showImportModal()">📥 Import</button>
+                    <button class="import-export-btn" onclick="exportLibrary()">📤 Export</button>
+                </div>
+                
                 <div class="view-toggle">
                     <button class="view-btn active" onclick="setViewMode('grid')" title="Grid View">⚏</button>
                     <button class="view-btn" onclick="setViewMode('list')" title="List View">☰</button>
@@ -815,61 +826,25 @@
                     <button class="btn btn-secondary" onclick="closeModal()">Close</button>
                     <button class="btn btn-primary" onclick="copyContent()">Copy Text</button>
                     <button class="btn btn-primary" onclick="downloadContent()">Download</button>
-                    <button class="btn btn-primary" onclick="openTranslationModal()">🌐 Translate</button>
                     <button class="btn btn-primary" onclick="openInAudio()">Generate Audio</button>
                 </div>
             </div>
         </div>
 
-        <!-- Translation Modal -->
-        <div class="modal" id="translationModal">
-            <div class="modal-content translation-modal">
+        <!-- Import Modal -->
+        <div class="modal" id="importModal">
+            <div class="modal-content">
                 <div class="modal-header">
-                    <h2 class="modal-title">Translate Audioguide</h2>
-                    <button class="close-modal" onclick="closeTranslationModal()">&times;</button>
+                    <h2 class="modal-title">Import Library Backup</h2>
+                    <button class="close-modal" onclick="closeImportModal()">&times;</button>
                 </div>
-                <div class="translation-form">
-                    <div class="form-group">
-                        <label class="form-label">From Language</label>
-                        <select id="fromLanguage" class="form-select">
-                            <option value="English">English</option>
-                            <option value="Spanish">Spanish</option>
-                            <option value="French">French</option>
-                            <option value="German">German</option>
-                            <option value="Italian">Italian</option>
-                            <option value="Portuguese">Portuguese</option>
-                            <option value="Chinese">Chinese</option>
-                            <option value="Japanese">Japanese</option>
-                        </select>
+                <div class="import-form">
+                    <p style="margin-bottom: 15px;">Paste your library backup JSON below:</p>
+                    <textarea id="importData" class="import-textarea" placeholder='{"version":"1.0","guides":[...]}'></textarea>
+                    <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                        <button class="btn btn-secondary" onclick="closeImportModal()">Cancel</button>
+                        <button class="btn btn-primary" onclick="importLibrary()">Import</button>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">To Language</label>
-                        <select id="toLanguage" class="form-select">
-                            <option value="Spanish">Spanish</option>
-                            <option value="English">English</option>
-                            <option value="French">French</option>
-                            <option value="German">German</option>
-                            <option value="Italian">Italian</option>
-                            <option value="Portuguese">Portuguese</option>
-                            <option value="Chinese">Chinese</option>
-                            <option value="Japanese">Japanese</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Translation Service</label>
-                        <select id="translationService" class="form-select">
-                            <option value="openai">OpenAI (Best Quality)</option>
-                            <option value="deepseek">DeepSeek (Budget)</option>
-                            <option value="groq">Groq (Fast)</option>
-                        </select>
-                    </div>
-                    <button class="btn btn-primary" onclick="translateGuide()" style="width: 100%;">
-                        Start Translation
-                    </button>
-                </div>
-                <div class="translation-progress" id="translationProgress">
-                    <div class="spinner"></div>
-                    <div>Translating... Please wait...</div>
                 </div>
             </div>
         </div>
@@ -898,9 +873,61 @@
 
         // Initialize
         window.addEventListener('DOMContentLoaded', function() {
+            console.log('=== LIBRARY PAGE INITIALIZED ===');
+            console.log('URL:', window.location.href);
+            console.log('Protocol:', window.location.protocol);
+            
+            // Run diagnostics
+            runDiagnostics();
+            
+            // Load library
             loadLibrary();
+            
+            // Setup event listeners
             setupEventListeners();
         });
+
+        // Run diagnostics
+        function runDiagnostics() {
+            console.log('=== LIBRARY PAGE DIAGNOSTIC ===');
+            
+            // Check localStorage access
+            try {
+                const testKey = 'lib_test_' + Date.now();
+                localStorage.setItem(testKey, 'test');
+                const value = localStorage.getItem(testKey);
+                localStorage.removeItem(testKey);
+                console.log('localStorage is accessible:', value === 'test' ? '✅' : '❌');
+            } catch (e) {
+                console.error('localStorage is NOT accessible ❌', e);
+                document.getElementById('storageWarning').classList.add('active');
+            }
+
+            // Check for file:// protocol
+            if (window.location.protocol === 'file:') {
+                console.warn('⚠️ Running from file:// protocol');
+                document.getElementById('storageWarning').classList.add('active');
+            }
+
+            // Check for audioguides
+            const rawData = localStorage.getItem('cloudguide_audioguides');
+            console.log('Raw library data:', rawData ? `Found (${rawData.length} chars)` : 'NOT FOUND');
+
+            if (rawData) {
+                try {
+                    const guides = JSON.parse(rawData);
+                    console.log(`Found ${guides.length} guides in library`);
+                    guides.forEach((g, i) => console.log(`Guide ${i+1}:`, g.id, g.title));
+                } catch (e) {
+                    console.error('Failed to parse library data:', e);
+                }
+            } else {
+                console.log('No cloudguide_audioguides key in localStorage');
+                console.log('All localStorage keys:', Object.keys(localStorage));
+            }
+            
+            console.log('=== END DIAGNOSTIC ===');
+        }
 
         // Setup event listeners
         function setupEventListeners() {
@@ -910,19 +937,36 @@
             // Close modal on click outside
             window.addEventListener('click', function(event) {
                 const modal = document.getElementById('viewModal');
-                const translationModal = document.getElementById('translationModal');
+                const importModal = document.getElementById('importModal');
                 if (event.target === modal) {
                     closeModal();
                 }
-                if (event.target === translationModal) {
-                    closeTranslationModal();
+                if (event.target === importModal) {
+                    closeImportModal();
                 }
             });
         }
 
         // Load library
         function loadLibrary() {
-            audioguides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
+            try {
+                const data = localStorage.getItem('cloudguide_audioguides');
+                if (data) {
+                    audioguides = JSON.parse(data);
+                    if (!Array.isArray(audioguides)) {
+                        console.error('Library data is not an array');
+                        audioguides = [];
+                    }
+                } else {
+                    audioguides = [];
+                    console.log('No library data found, initializing empty library');
+                }
+            } catch (error) {
+                console.error('Error loading library:', error);
+                audioguides = [];
+            }
+            
+            console.log(`Loaded ${audioguides.length} audioguides`);
             updateStats();
             applyFilters();
         }
@@ -1028,19 +1072,16 @@
                         </div>
                         ${currentViewMode === 'list' ? '</div>' : ''}
                         <div class="guide-actions">
-                            <button class="action-btn" onclick="viewGuide(${guide.id})">
+                            <button class="action-btn" onclick="viewGuide('${guide.id}')">
                                 <span>👁️</span> View
                             </button>
-                            <button class="action-btn" onclick="translateGuideQuick(${guide.id})">
-                                <span>🌐</span> Translate
-                            </button>
-                            <button class="action-btn" onclick="openAudioGenerator(${guide.id})">
+                            <button class="action-btn" onclick="openAudioGenerator('${guide.id}')">
                                 <span>🎙️</span> Audio
                             </button>
-                            <button class="action-btn" onclick="downloadGuide(${guide.id})">
+                            <button class="action-btn" onclick="downloadGuide('${guide.id}')">
                                 <span>📥</span> Download
                             </button>
-                            <button class="action-btn danger" onclick="deleteGuide(${guide.id})">
+                            <button class="action-btn danger" onclick="deleteGuide('${guide.id}')">
                                 <span>🗑️</span> Delete
                             </button>
                         </div>
@@ -1058,9 +1099,6 @@
             document.getElementById('modalTitle').textContent = guide.title || 'Audioguide Content';
             document.getElementById('modalContent').textContent = guide.content || 'No content available';
             document.getElementById('viewModal').classList.add('active');
-            
-            // Set from language in translation modal
-            document.getElementById('fromLanguage').value = guide.language || 'English';
         }
 
         // Open audio generator
@@ -1102,99 +1140,58 @@
             loadLibrary();
         }
 
-        // Quick translate from card
-        function translateGuideQuick(id) {
-            const guide = audioguides.find(g => g.id === id);
-            if (!guide) return;
+        // Export library
+        function exportLibrary() {
+            const backup = {
+                version: '1.0',
+                exportDate: new Date().toISOString(),
+                guides: audioguides,
+                totalGuides: audioguides.length
+            };
             
-            currentViewingGuide = guide;
-            document.getElementById('fromLanguage').value = guide.language || 'English';
-            document.getElementById('translationModal').classList.add('active');
+            const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `cloudguide_library_${Date.now()}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showToast(`Exported ${audioguides.length} guides`, 'success');
         }
 
-        // Open translation modal from view modal
-        function openTranslationModal() {
-            document.getElementById('viewModal').classList.remove('active');
-            document.getElementById('translationModal').classList.add('active');
+        // Show import modal
+        function showImportModal() {
+            document.getElementById('importModal').classList.add('active');
         }
 
-        // Close translation modal
-        function closeTranslationModal() {
-            document.getElementById('translationModal').classList.remove('active');
-            document.getElementById('translationProgress').classList.remove('active');
+        // Close import modal
+        function closeImportModal() {
+            document.getElementById('importModal').classList.remove('active');
+            document.getElementById('importData').value = '';
         }
 
-        // Translate guide
-        async function translateGuide() {
-            if (!currentViewingGuide) {
-                showToast('No guide selected', 'error');
-                return;
-            }
-
-            const fromLang = document.getElementById('fromLanguage').value;
-            const toLang = document.getElementById('toLanguage').value;
-            const service = document.getElementById('translationService').value;
-
-            if (fromLang === toLang) {
-                showToast('Please select different languages', 'error');
-                return;
-            }
-
-            // Show progress
-            document.getElementById('translationProgress').classList.add('active');
-
+        // Import library
+        function importLibrary() {
+            const jsonString = document.getElementById('importData').value;
+            
             try {
-                // Determine API endpoint based on service
-                let apiEndpoint = '';
-                if (service === 'openai') {
-                    apiEndpoint = '/api/translate-openai';
-                } else if (service === 'deepseek') {
-                    apiEndpoint = '/api/translate-deepseek';
-                } else if (service === 'groq') {
-                    apiEndpoint = '/api/translate-groq';
+                const backup = JSON.parse(jsonString);
+                if (backup.guides && Array.isArray(backup.guides)) {
+                    const confirmImport = confirm(`Import ${backup.guides.length} guides? This will replace your current library.`);
+                    if (confirmImport) {
+                        localStorage.setItem('cloudguide_audioguides', JSON.stringify(backup.guides));
+                        showToast(`Imported ${backup.guides.length} guides`, 'success');
+                        closeImportModal();
+                        loadLibrary();
+                    }
+                } else {
+                    throw new Error('Invalid backup format');
                 }
-
-                const response = await fetch(apiEndpoint, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        text: currentViewingGuide.content,
-                        fromLanguage: fromLang,
-                        toLanguage: toLang
-                    })
-                });
-
-                if (!response.ok) {
-                    throw new Error('Translation failed');
-                }
-
-                const data = await response.json();
-
-                // Save translated guide
-                const translatedGuide = {
-                    ...currentViewingGuide,
-                    id: Date.now(),
-                    title: `${currentViewingGuide.title} (${toLang})`,
-                    language: toLang,
-                    content: data.translatedText,
-                    date: new Date().toISOString(),
-                    translatedFrom: fromLang
-                };
-
-                audioguides.unshift(translatedGuide);
-                localStorage.setItem('cloudguide_audioguides', JSON.stringify(audioguides));
-
-                showToast(`Translated to ${toLang}!`, 'success');
-                closeTranslationModal();
-                loadLibrary();
-
             } catch (error) {
-                console.error('Translation error:', error);
-                showToast('Translation failed: ' + error.message, 'error');
-            } finally {
-                document.getElementById('translationProgress').classList.remove('active');
+                showToast('Invalid backup data: ' + error.message, 'error');
             }
         }
 
@@ -1292,6 +1289,12 @@
                 timeout = setTimeout(later, wait);
             };
         }
+
+        // Debug helpers
+        console.log('=== Library Page Commands ===');
+        console.log('audioguides - View all guides');
+        console.log('localStorage.getItem("cloudguide_audioguides") - Get raw data');
+        console.log('exportLibrary() - Export to file');
     </script>
 </body>
 </html>
