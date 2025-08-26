@@ -3,13 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta property="og:title" content="CloudGuide Audio Generation" />
-    <meta property="og:description" content="Convert your audioguides to professional audio files in multiple languages" />
-    <title>CloudGuide - Audio Generation</title>
+    <title>CloudGuide - Upload to CMS</title>
     
-    <!-- Font -->
+    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css?family=Nunito+Sans:300,400,400i,600,700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- EmailJS SDK -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script type="text/javascript">
+        (function(){
+            emailjs.init("ymvZgpxy0bqrS-p3c");
+        })();
+    </script>
     
     <style>
         * {
@@ -51,10 +57,6 @@
             transition: opacity 0.3s;
         }
 
-        .logo img:hover {
-            opacity: 0.8;
-        }
-
         .nav-links {
             display: flex;
             gap: 25px;
@@ -91,15 +93,12 @@
             font-size: 2.2em;
             font-weight: 600;
             margin-bottom: 12px;
-            letter-spacing: -0.5px;
         }
 
         .hero-subtitle {
             font-size: 0.95em;
             font-weight: 300;
             opacity: 0.9;
-            max-width: 500px;
-            margin: 0 auto;
         }
 
         /* Main Container */
@@ -110,181 +109,16 @@
             padding: 35px;
         }
 
-        /* Tabs */
-        .tabs {
-            display: flex;
-            gap: 2px;
-            margin-bottom: 25px;
-            background: #e2e8f0;
-            border-radius: 6px;
-            padding: 4px;
-        }
-
-        .tab-btn {
-            flex: 1;
-            padding: 12px;
-            background: transparent;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            transition: all 0.3s;
-            color: #718096;
-        }
-
-        .tab-btn.active {
-            background: white;
-            color: #48bb78;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        /* Text Input Section */
-        .text-input-section {
-            margin-bottom: 30px;
-        }
-
-        .text-input {
-            width: 100%;
-            min-height: 300px;
-            padding: 15px;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            font-size: 14px;
-            font-family: 'Courier New', monospace;
-            background: #f7fafc;
-            resize: vertical;
-        }
-
-        .text-input:focus {
-            outline: none;
-            border-color: #48bb78;
-            box-shadow: 0 0 0 3px rgba(72, 187, 120, 0.15);
-            background: white;
-        }
-
-        .input-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        /* Chapters Section */
-        .chapters-section {
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 25px;
-            background: #f7fafc;
-            margin-bottom: 30px;
-        }
-
-        .section-title {
-            font-size: 1.1em;
-            font-weight: 600;
-            color: #2d3748;
-            margin-bottom: 15px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .chapter-list {
-            max-height: 400px;
-            overflow-y: auto;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            background: white;
-        }
-
-        .chapter-item {
-            padding: 15px;
-            border-bottom: 1px solid #e2e8f0;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            transition: all 0.3s;
-            cursor: pointer;
-        }
-
-        .chapter-item:hover {
-            background: #f7fafc;
-        }
-
-        .chapter-item.selected {
-            background: #f0fff4;
-            border-left: 3px solid #48bb78;
-        }
-
-        .chapter-checkbox {
-            width: 20px;
-            height: 20px;
-            cursor: pointer;
-        }
-
-        .chapter-info {
-            flex: 1;
-        }
-
-        .chapter-title {
-            font-weight: 600;
-            color: #2d3748;
-            margin-bottom: 5px;
-        }
-
-        .chapter-meta {
-            font-size: 12px;
-            color: #718096;
-        }
-
-        .chapter-status {
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .status-pending {
-            background: #e2e8f0;
-            color: #718096;
-        }
-
-        .status-completed {
-            background: #d1fae5;
-            color: #065f46;
-        }
-
-        .status-error {
-            background: #fed7d7;
-            color: #742a2a;
-        }
-
-        /* Settings Grid */
-        .settings-grid {
+        /* Form Section */
+        .form-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 30px;
             margin-bottom: 30px;
         }
 
-        .settings-section {
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 25px;
-            background: #f7fafc;
-        }
-
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
 
         label {
@@ -297,59 +131,126 @@
             letter-spacing: 0.8px;
         }
 
+        .required {
+            color: #e53e3e;
+        }
+
         .form-element {
             width: 100%;
             padding: 12px 18px;
             border: 1px solid #e2e8f0;
             border-radius: 6px;
             font-size: 14px;
-            background: white;
-            color: #2d3748;
+            background: #f7fafc;
+            transition: all 0.3s;
         }
 
         .form-element:focus {
             outline: none;
             border-color: #48bb78;
+            background: white;
             box-shadow: 0 0 0 3px rgba(72, 187, 120, 0.15);
         }
 
-        /* Voice Grid */
-        .voice-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
+        select.form-element {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23718096' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            background-size: 18px;
+            padding-right: 45px;
+        }
+
+        textarea.form-element {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        /* Audio Status */
+        .audio-status {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .audio-status.has-audio {
+            background: #f0fff4;
+            border-color: #48bb78;
+        }
+
+        .audio-status.no-audio {
+            background: #fffaf0;
+            border-color: #f6ad55;
+        }
+
+        .audio-list {
+            margin-top: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .audio-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            background: white;
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+
+        /* Guide Preview */
+        .guide-preview {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 20px;
             margin-bottom: 20px;
         }
 
-        .voice-card {
-            border: 2px solid #e2e8f0;
-            border-radius: 6px;
-            padding: 15px;
-            cursor: pointer;
-            transition: all 0.3s;
-            background: white;
-            text-align: center;
+        .guide-preview h4 {
+            color: #2d3748;
+            margin-bottom: 15px;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        .voice-card:hover {
-            border-color: #48bb78;
-            background: #f0fff4;
+        .guide-info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
         }
 
-        .voice-card.selected {
-            border-color: #48bb78;
-            background: #f0fff4;
+        .guide-info-item {
+            display: flex;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .guide-info-label {
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        .guide-info-value {
+            color: #718096;
         }
 
         /* Buttons */
         .btn {
-            padding: 12px 20px;
+            padding: 14px 28px;
             border: none;
             border-radius: 6px;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 1.2px;
             cursor: pointer;
             transition: all 0.3s;
         }
@@ -361,181 +262,84 @@
 
         .btn-primary:hover {
             background: #38a169;
+            transform: translateY(-1px);
         }
 
         .btn-primary:disabled {
             background: #cbd5e0;
             cursor: not-allowed;
-        }
-
-        .btn-secondary {
-            background: #e2e8f0;
-            color: #4a5568;
-        }
-
-        .btn-secondary:hover {
-            background: #cbd5e0;
-        }
-
-        .generate-section {
-            display: flex;
-            gap: 15px;
-            margin-top: 30px;
-        }
-
-        .generate-btn {
-            flex: 1;
-            padding: 16px;
-            background: #48bb78;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1.2px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .generate-btn:hover {
-            background: #38a169;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(72, 187, 120, 0.3);
-        }
-
-        .generate-btn:disabled {
-            background: #cbd5e0;
-            cursor: not-allowed;
             transform: none;
         }
 
-        /* Files Section */
-        .files-section {
-            margin-top: 30px;
-            padding-top: 30px;
-            border-top: 1px solid #e2e8f0;
+        .btn-secondary {
+            background: #718096;
+            color: white;
         }
 
-        .file-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 15px;
-            background: #f7fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            margin-bottom: 15px;
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            margin-top: 20px;
         }
 
-        .file-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .file-actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        /* Alert */
-        .alert {
-            padding: 15px;
-            border-radius: 6px;
-            margin-bottom: 20px;
-        }
-
-        .alert-warning {
-            background: #fef3c7;
-            border: 1px solid #f59e0b;
-            color: #92400e;
-        }
-
-        .alert-info {
-            background: #dbeafe;
-            border: 1px solid #3b82f6;
-            color: #1e40af;
-        }
-
-        .alert-success {
-            background: #d1fae5;
-            border: 1px solid #10b981;
-            color: #065f46;
-        }
-
-        .alert-error {
-            background: #fed7d7;
-            border: 1px solid #fc8181;
-            color: #742a2a;
-        }
-
-        /* Loading */
-        .loading {
+        /* Progress */
+        .progress-container {
             display: none;
-            text-align: center;
-            padding: 40px;
+            background: #f7fafc;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
         }
 
-        .loading.active {
+        .progress-container.active {
             display: block;
         }
 
-        .spinner {
-            display: inline-block;
-            width: 40px;
-            height: 40px;
-            border: 3px solid #e2e8f0;
-            border-top: 3px solid #48bb78;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 15px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* Storage Options */
-        .storage-options {
-            background: #f0f4ff;
-            border: 1px solid #667eea;
-            border-radius: 6px;
-            padding: 15px;
+        .progress-bar {
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
             margin: 15px 0;
         }
 
-        .storage-option {
-            margin: 10px 0;
+        .progress-fill {
+            height: 100%;
+            background: #48bb78;
+            width: 0%;
+            transition: width 0.5s;
         }
 
-        .storage-status {
-            margin-top: 10px;
-            padding: 10px;
-            border-radius: 4px;
-            font-size: 13px;
+        /* Messages */
+        .message {
+            display: none;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 20px 0;
         }
 
-        .storage-status.success {
-            background: #d1fae5;
-            color: #065f46;
+        .message.success {
+            background: #f0fff4;
+            border: 1px solid #48bb78;
+            color: #22543d;
         }
 
-        .storage-status.warning {
-            background: #fef3c7;
-            color: #92400e;
+        .message.error {
+            background: #fff5f5;
+            border: 1px solid #e53e3e;
+            color: #742a2a;
+        }
+
+        .message.active {
+            display: block;
         }
 
         @media (max-width: 768px) {
-            .settings-grid {
+            .form-grid {
                 grid-template-columns: 1fr;
             }
-            .voice-grid {
+            .guide-info-grid {
                 grid-template-columns: 1fr;
-            }
-            .generate-section {
-                flex-direction: column;
             }
             .nav-links {
                 display: none;
@@ -557,8 +361,8 @@
                     <ul class="nav-links">
                         <li><a href="index.html">GENERATOR</a></li>
                         <li><a href="library.html">LIBRARY</a></li>
-                        <li><a href="audio.html" class="active">AUDIO</a></li>
-                        <li><a href="upload.html">UPLOAD</a></li>
+                        <li><a href="audio.html">AUDIO</a></li>
+                        <li><a href="upload.html" class="active">UPLOAD</a></li>
                         <li><a href="premium.html">PREMIUM</a></li>
                         <li><a href="about.html">ABOUT</a></li>
                         <li><a href="https://www.cloudguide.me/contact" target="_blank">CONTACT</a></li>
@@ -569,958 +373,545 @@
 
         <!-- Hero Section -->
         <section class="hero-section">
-            <h1 class="hero-title">Audio Generation</h1>
-            <p class="hero-subtitle">Convert Your Audioguides to Professional Audio Files</p>
+            <h1 class="hero-title">Upload to CloudGuide CMS</h1>
+            <p class="hero-subtitle">Submit your audioguides for professional upload to your CMS account</p>
         </section>
 
         <!-- Main Content -->
         <div class="main-container">
-            <!-- API Status Alert -->
-            <div class="alert" id="apiStatusAlert" style="display: none;">
-                <span id="apiStatusMessage"></span>
+            <!-- Guide Selection -->
+            <div class="form-group">
+                <label>Select Audioguide from Library <span class="required">*</span></label>
+                <select id="guideSelect" class="form-element" onchange="selectGuide()" required>
+                    <option value="">Choose an audioguide...</option>
+                </select>
             </div>
 
-            <!-- Storage Options -->
-            <div class="storage-options">
-                <h4 style="margin-bottom: 10px;">📁 Audio Storage Options</h4>
-                <div class="storage-option">
-                    <label>
-                        <input type="radio" name="storage" value="local" checked> 
-                        <strong>Local Storage</strong> - Quick, no upload needed (limited to ~5MB per guide)
-                    </label>
-                </div>
-                <div class="storage-option">
-                    <label>
-                        <input type="radio" name="storage" value="cloudinary"> 
-                        <strong>Cloudinary</strong> - Unlimited storage, permanent URLs (automatic via server)
-                    </label>
-                </div>
-                <div class="storage-status" id="storageStatus" style="display: none;"></div>
-            </div>
-
-            <!-- Tabs -->
-            <div class="tabs">
-                <button class="tab-btn active" onclick="switchTab('text')">Direct Text Input</button>
-                <button class="tab-btn" onclick="switchTab('library')">Load from Library</button>
-            </div>
-
-            <!-- Direct Text Input Tab -->
-            <div id="textTab" class="tab-content active">
-                <div class="text-input-section">
-                    <label>Paste Your Audioguide Text</label>
-                    <textarea id="textInput" class="text-input" placeholder="Paste your audioguide text here...
-
-Supported formats:
-
-STOP 1: INTRODUCTION
-------------------------------
-Your introduction text here...
-
-STOP 2: HISTORY
-------------------------------
-Your history text here..."></textarea>
-                    
-                    <div class="input-actions">
-                        <button class="btn btn-primary" onclick="parseChapters()">Parse Chapters</button>
-                        <button class="btn btn-secondary" onclick="clearText()">Clear</button>
-                        <button class="btn btn-secondary" onclick="loadSampleStops()">Load Sample</button>
+            <!-- Guide Preview -->
+            <div class="guide-preview" id="guidePreview" style="display: none;">
+                <h4>📋 Selected Audioguide Details</h4>
+                <div class="guide-info-grid">
+                    <div class="guide-info-item">
+                        <span class="guide-info-label">Title:</span>
+                        <span class="guide-info-value" id="previewTitle">-</span>
+                    </div>
+                    <div class="guide-info-item">
+                        <span class="guide-info-label">Location:</span>
+                        <span class="guide-info-value" id="previewLocation">-</span>
+                    </div>
+                    <div class="guide-info-item">
+                        <span class="guide-info-label">Language:</span>
+                        <span class="guide-info-value" id="previewLanguage">-</span>
+                    </div>
+                    <div class="guide-info-item">
+                        <span class="guide-info-label">Stops:</span>
+                        <span class="guide-info-value" id="previewStops">-</span>
+                    </div>
+                    <div class="guide-info-item">
+                        <span class="guide-info-label">Word Count:</span>
+                        <span class="guide-info-value" id="previewWords">-</span>
+                    </div>
+                    <div class="guide-info-item">
+                        <span class="guide-info-label">Created:</span>
+                        <span class="guide-info-value" id="previewDate">-</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Library Tab -->
-            <div id="libraryTab" class="tab-content">
-                <div class="alert alert-info">
-                    Select an audioguide from your library to generate audio.
-                </div>
-                <div id="libraryList"></div>
-            </div>
-
-            <!-- Chapters Section -->
-            <div class="chapters-section" id="chaptersSection" style="display: none;">
-                <h3 class="section-title">📖 Select Chapters to Generate</h3>
-                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                    <button class="btn btn-secondary" onclick="selectAll()">Select All</button>
-                    <button class="btn btn-secondary" onclick="selectNone()">Select None</button>
-                    <span style="margin-left: auto; font-size: 13px; color: #718096;">
-                        <span id="selectedCount">0</span> of <span id="totalCount">0</span> selected
-                    </span>
-                </div>
-                <div class="chapter-list" id="chapterList"></div>
-            </div>
-
-            <!-- Settings Grid -->
-            <div class="settings-grid">
-                <!-- Language Settings -->
-                <div class="settings-section">
-                    <h3 class="section-title">🌍 Language Settings</h3>
-                    
+            <div class="form-grid">
+                <!-- Left Column -->
+                <div>
                     <div class="form-group">
-                        <label for="audioLanguage">Audio Language</label>
-                        <select id="audioLanguage" class="form-element" onchange="updateLanguageInfo()">
-                            <option value="en-US">English (US)</option>
-                            <option value="en-GB">English (UK)</option>
-                            <option value="es-ES">Spanish (Spain)</option>
-                            <option value="fr-FR">French</option>
-                            <option value="de-DE">German</option>
-                            <option value="it-IT">Italian</option>
-                            <option value="pt-BR">Portuguese (Brazil)</option>
-                            <option value="zh-CN">Chinese (Simplified)</option>
-                            <option value="ja-JP">Japanese</option>
+                        <label>CMS Account Email <span class="required">*</span></label>
+                        <input type="email" id="cmsEmail" class="form-element" 
+                               placeholder="your-account@cloudguide.me" required>
+                        <small style="color: #718096; font-size: 12px;">
+                            Enter the email associated with your CloudGuide CMS account
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Institution Name <span class="required">*</span></label>
+                        <input type="text" id="institutionName" class="form-element" 
+                               placeholder="e.g., National Art Museum" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Exhibition Name <span class="required">*</span></label>
+                        <input type="text" id="exhibitionName" class="form-element" 
+                               placeholder="e.g., Permanent Collection" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Guide Name <span class="required">*</span></label>
+                        <input type="text" id="guideName" class="form-element" 
+                               placeholder="e.g., Complete Audio Tour" required>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div>
+                    <div class="form-group">
+                        <label>Language</label>
+                        <select id="guideLanguage" class="form-element">
+                            <option value="English">English</option>
+                            <option value="Spanish">Spanish</option>
+                            <option value="French">French</option>
+                            <option value="German">German</option>
+                            <option value="Italian">Italian</option>
+                            <option value="Portuguese">Portuguese</option>
+                            <option value="Chinese">Chinese</option>
+                            <option value="Japanese">Japanese</option>
                         </select>
                     </div>
 
-                    <div id="languageAlert" class="alert alert-warning" style="display: none;">
-                        ⚠️ Non-English languages will use English accent with OpenAI TTS unless Google Cloud API is configured.
-                    </div>
-                </div>
-
-                <!-- Voice Settings -->
-                <div class="settings-section">
-                    <h3 class="section-title">🎙️ Voice Settings</h3>
-                    
                     <div class="form-group">
-                        <label>Select Voice</label>
-                        <div class="voice-grid">
-                            <div class="voice-card selected" onclick="selectVoice(this, 'alloy')">
-                                <div style="font-size: 2em;">🎭</div>
-                                <div style="font-weight: 600;">Alloy</div>
-                                <div style="font-size: 0.85em; color: #718096;">Neutral</div>
-                            </div>
-                            <div class="voice-card" onclick="selectVoice(this, 'nova')">
-                                <div style="font-size: 2em;">👩</div>
-                                <div style="font-weight: 600;">Nova</div>
-                                <div style="font-size: 0.85em; color: #718096;">Female</div>
-                            </div>
-                            <div class="voice-card" onclick="selectVoice(this, 'echo')">
-                                <div style="font-size: 2em;">🎤</div>
-                                <div style="font-weight: 600;">Echo</div>
-                                <div style="font-size: 0.85em; color: #718096;">Male</div>
-                            </div>
-                            <div class="voice-card" onclick="selectVoice(this, 'fable')">
-                                <div style="font-size: 2em;">📖</div>
-                                <div style="font-weight: 600;">Fable</div>
-                                <div style="font-size: 0.85em; color: #718096;">British</div>
-                            </div>
-                        </div>
+                        <label>Contact Phone (Optional)</label>
+                        <input type="tel" id="contactPhone" class="form-element" 
+                               placeholder="+1 234 567 8900">
                     </div>
 
                     <div class="form-group">
-                        <label for="speed">Speed: <span id="speedValue">1.0x</span></label>
-                        <input type="range" min="0.5" max="1.5" value="1.0" step="0.1" id="speed" class="form-element" oninput="updateSpeed()">
+                        <label>Additional Notes</label>
+                        <textarea id="additionalNotes" class="form-element" 
+                                  placeholder="Any special instructions or requirements..."></textarea>
                     </div>
                 </div>
             </div>
 
-            <!-- Generate Buttons -->
-            <div class="generate-section" id="generateSection" style="display: none;">
-                <button class="generate-btn" id="generateSingle" onclick="generateSingle()">
-                    🎙️ Generate Selected Chapter
-                </button>
-                <button class="generate-btn" id="generateAll" onclick="generateAll()" style="background: #667eea;">
-                    🎬 Generate All Selected Chapters
-                </button>
-            </div>
-
-            <!-- Loading -->
-            <div class="loading" id="loading">
-                <div class="spinner"></div>
-                <div id="loadingText">Generating audio... Please wait...</div>
-            </div>
-
-            <!-- Generated Files -->
-            <div class="files-section" id="filesSection" style="display: none;">
-                <h3 class="section-title">🎵 Generated Audio Files</h3>
-                <div id="fileList"></div>
-                <div class="alert alert-success" style="margin-top: 20px;">
-                    <strong>✅ Audio files are ready!</strong><br>
-                    <small>You can now proceed to the <a href="upload.html" style="color: #065f46; font-weight: 600;">Upload page</a> to submit them to CloudGuide CMS.</small>
+            <!-- Audio Status -->
+            <div class="audio-status no-audio" id="audioStatus">
+                <h3 style="margin-bottom: 10px;">📁 Content Status</h3>
+                <div id="statusContent">
+                    <p>No audioguide selected</p>
                 </div>
+                <div class="audio-list" id="audioList" style="display: none;"></div>
+            </div>
+
+            <!-- Submit Button -->
+            <button class="btn btn-primary submit-btn" id="submitBtn" onclick="submitToCloudGuide()">
+                📤 Submit for Upload to CMS
+            </button>
+
+            <!-- Progress -->
+            <div class="progress-container" id="progressContainer">
+                <div style="text-align: center; font-weight: 600;">Processing your submission...</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressBar"></div>
+                </div>
+                <div style="text-align: center; font-size: 13px; color: #718096;" id="progressStatus">
+                    Preparing...
+                </div>
+            </div>
+
+            <!-- Success Message -->
+            <div class="message success" id="successMessage">
+                <h3 style="margin-bottom: 15px;">✅ Upload Request Submitted Successfully!</h3>
+                <p style="margin-bottom: 15px;">
+                    Your content has been sent to CloudGuide. Please allow up to 24 hours for it to appear in your account.
+                </p>
+                <p style="margin-bottom: 15px;">
+                    <strong>Next Steps:</strong>
+                </p>
+                <ol style="margin-left: 20px;">
+                    <li>Check your email for confirmation</li>
+                    <li>Log in to your CloudGuide CMS account</li>
+                    <li>Navigate to the PUBLISH section</li>
+                    <li>Upload images for the best visitor experience</li>
+                    <li>Review and publish your audioguide</li>
+                </ol>
+                <p style="margin-top: 15px; font-size: 13px; color: #718096;">
+                    A confirmation email has been sent to the address provided.
+                </p>
+            </div>
+
+            <!-- Error Message -->
+            <div class="message error" id="errorMessage">
+                <h3 style="margin-bottom: 15px;">❌ Submission Error</h3>
+                <p id="errorText">There was an error submitting your content. Please try again.</p>
             </div>
         </div>
     </div>
 
     <script>
-        let chapters = [];
-        let selectedVoice = 'alloy';
-        let generatedFiles = [];
-        let currentGuideId = null;
-        let currentAudioPlayer = null;
-        let apiConfigured = false;
-        let currentGuideData = null;
+        let selectedGuide = null;
+        let selectedGuideId = null;
+        let audioFiles = [];
 
-        // Initialize
+        // Initialize on load
         window.addEventListener('DOMContentLoaded', function() {
-            console.log('Audio page initialized');
-            checkAPIConfiguration();
-            updateSpeed();
-            updateLanguageInfo();
-            checkStorageStatus();
+            console.log('Upload page initialized');
+            loadLibrary();
             
-            // Check URL params
-            const urlParams = new URLSearchParams(window.location.search);
-            const id = urlParams.get('id');
-            if (id) {
-                console.log('Loading guide from URL param:', id);
-                currentGuideId = id;
-                loadFromLibrary(id);
+            // Check if returning from audio page
+            const savedFormData = localStorage.getItem('uploadFormData');
+            if (savedFormData) {
+                const data = JSON.parse(savedFormData);
+                document.getElementById('cmsEmail').value = data.cmsEmail || '';
+                document.getElementById('institutionName').value = data.institutionName || '';
+                document.getElementById('exhibitionName').value = data.exhibitionName || '';
+                document.getElementById('guideName').value = data.guideName || '';
+                localStorage.removeItem('uploadFormData');
             }
         });
 
-        // Check storage status
-        function checkStorageStatus() {
-            const storageType = document.querySelector('input[name="storage"]:checked').value;
-            const statusDiv = document.getElementById('storageStatus');
-            
-            if (storageType === 'cloudinary') {
-                // Check if server has Cloudinary configured
-                fetch('/api/upload-to-cloudinary', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        audioData: 'test',
-                        fileName: 'test.mp3'
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.url && !data.url.includes('mock-cloudinary')) {
-                        statusDiv.className = 'storage-status success';
-                        statusDiv.textContent = '✅ Cloudinary is configured and ready';
-                    } else {
-                        statusDiv.className = 'storage-status warning';
-                        statusDiv.textContent = '⚠️ Cloudinary not configured on server - using mock URLs';
-                    }
-                    statusDiv.style.display = 'block';
-                })
-                .catch(error => {
-                    statusDiv.className = 'storage-status warning';
-                    statusDiv.textContent = '⚠️ Could not verify Cloudinary status';
-                    statusDiv.style.display = 'block';
-                });
-            } else {
-                statusDiv.style.display = 'none';
-            }
-        }
-
-        // Update storage status when option changes
-        document.querySelectorAll('input[name="storage"]').forEach(radio => {
-            radio.addEventListener('change', checkStorageStatus);
-        });
-
-        // Check API configuration
-        async function checkAPIConfiguration() {
-            try {
-                const response = await fetch('/api/multilingual-tts', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        text: 'Test',
-                        language: 'en-US',
-                        voice: 'alloy',
-                        speed: 1.0
-                    })
-                });
-                
-                console.log('API Configuration check response:', response.status);
-                
-                if (response.status === 500 || response.status === 501) {
-                    const data = await response.json();
-                    if (data.error && data.error.includes('not configured')) {
-                        showAPIStatus('warning', 'OpenAI API key may not be configured. Audio generation might not work.');
-                        apiConfigured = false;
-                        return;
-                    }
-                }
-                
-                if (response.ok) {
-                    apiConfigured = true;
-                    console.log('API is configured and working');
-                }
-            } catch (error) {
-                console.log('API check failed:', error);
-                showAPIStatus('info', 'Audio generation API status unknown. Proceeding anyway.');
-            }
-        }
-
-        // Show API status
-        function showAPIStatus(type, message) {
-            const alert = document.getElementById('apiStatusAlert');
-            const msg = document.getElementById('apiStatusMessage');
-            
-            const alertClass = {
-                'error': 'alert-error',
-                'warning': 'alert-warning',
-                'info': 'alert-info',
-                'success': 'alert-success'
-            };
-            
-            alert.className = `alert ${alertClass[type] || 'alert-info'}`;
-            msg.innerHTML = message;
-            alert.style.display = 'block';
-        }
-
-        // Upload audio to storage (local or Cloudinary via API)
-        async function uploadAudioToStorage(audioData, fileName) {
-            const storageType = document.querySelector('input[name="storage"]:checked').value;
-            
-            if (storageType === 'local') {
-                // Just return the base64 data URL for local storage
-                console.log('Using local storage for audio');
-                return { url: audioData, isCloudinary: false };
-            }
-            
-            try {
-                console.log('Uploading to Cloudinary via API:', fileName);
-                
-                const response = await fetch('/api/upload-to-cloudinary', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        audioData: audioData,
-                        fileName: fileName
-                    })
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    console.log('Upload response:', data);
-                    
-                    // Check if it's a real URL or mock
-                    const isRealCloudinary = data.url && !data.url.includes('mock-cloudinary');
-                    
-                    if (!isRealCloudinary) {
-                        showMessage('⚠️ Using mock Cloudinary URL (configure server for real uploads)', 'warning');
-                    }
-                    
-                    return { 
-                        url: data.url, 
-                        isCloudinary: isRealCloudinary 
-                    };
-                } else {
-                    console.error('Upload failed, using local storage');
-                    return { url: audioData, isCloudinary: false };
-                }
-            } catch (error) {
-                console.error('Upload error:', error);
-                return { url: audioData, isCloudinary: false };
-            }
-        }
-
-        // Generate audio with storage integration
-        async function generateAudio(chapter) {
-            const language = document.getElementById('audioLanguage').value;
-            const speed = parseFloat(document.getElementById('speed').value);
-            
-            let textToGenerate = chapter.content;
-            
-            // Show loading
-            document.getElementById('loading').classList.add('active');
-            const loadingText = document.getElementById('loadingText');
-            loadingText.textContent = `Generating audio for ${chapter.shortTitle || chapter.title}...`;
-            document.getElementById('generateSingle').disabled = true;
-            document.getElementById('generateAll').disabled = true;
-            
-            try {
-                // Try multilingual endpoint first
-                let response = await fetch('/api/multilingual-tts', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        text: textToGenerate,
-                        language: language,
-                        voice: selectedVoice,
-                        speed: speed
-                    })
-                });
-                
-                // If multilingual fails, try simple OpenAI endpoint as fallback
-                if (!response.ok && response.status === 500) {
-                    console.log('Multilingual TTS failed, trying OpenAI fallback...');
-                    
-                    if (language.startsWith('en-')) {
-                        response = await fetch('/api/openai-tts', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                text: textToGenerate,
-                                voice: selectedVoice,
-                                speed: speed
-                            })
-                        });
-                        
-                        if (response.ok) {
-                            showMessage('⚠️ Using fallback TTS API', 'warning');
-                        }
-                    }
-                }
-
-                if (response.ok) {
-                    const data = await response.json();
-                    
-                    if (data.audioUrl || data.audioData) {
-                        // Upload to storage
-                        loadingText.textContent = `Storing audio for ${chapter.shortTitle || chapter.title}...`;
-                        const fileName = `${chapter.shortTitle || chapter.title}`.replace(/[^a-z0-9]/gi, '_') + `_${language}.mp3`;
-                        
-                        const storageResult = await uploadAudioToStorage(
-                            data.audioUrl || data.audioData, 
-                            fileName
-                        );
-                        
-                        // Update chapter status
-                        chapter.status = 'completed';
-                        renderChapters();
-                        
-                        // Create file object
-                        const file = {
-                            name: fileName,
-                            chapter: chapter.title,
-                            language: language,
-                            url: storageResult.url,
-                            provider: data.provider || 'openai',
-                            stopNumber: chapter.stopNumber || chapter.id,
-                            size: 'Generated',
-                            isCloudinary: storageResult.isCloudinary,
-                            warning: data.warning
-                        };
-                        
-                        // Add to generated files
-                        generatedFiles.push(file);
-                        
-                        // Save metadata to localStorage
-                        if (currentGuideId) {
-                            saveAudioForUpload(currentGuideId, file);
-                        }
-                        
-                        renderFiles();
-                        
-                        if (data.warning) {
-                            showMessage(`✅ Audio generated! ${data.warning}`, 'warning');
-                        } else {
-                            const storageInfo = storageResult.isCloudinary ? '☁️ Stored in cloud' : '💾 Stored locally';
-                            showMessage(`✅ Audio generated successfully! ${storageInfo}`, 'success');
-                        }
-                    }
-                } else {
-                    let errorMessage = 'Failed to generate audio';
-                    try {
-                        const errorData = await response.json();
-                        errorMessage = errorData.error || errorData.message || errorMessage;
-                    } catch (e) {
-                        errorMessage = `Server error (${response.status})`;
-                    }
-                    
-                    throw new Error(errorMessage);
-                }
-                
-            } catch (error) {
-                console.error('Error:', error);
-                showMessage('Error: ' + error.message, 'error');
-                chapter.status = 'error';
-                renderChapters();
-            } finally {
-                document.getElementById('loading').classList.remove('active');
-                document.getElementById('generateSingle').disabled = false;
-                document.getElementById('generateAll').disabled = false;
-            }
-        }
-
-        // Save audio metadata
-        function saveAudioForUpload(guideId, audioFile) {
-            if (!guideId) {
-                console.error('No guide ID provided for saving audio');
-                return false;
-            }
-            
-            try {
-                let savedAudioFiles = JSON.parse(localStorage.getItem(`cloudguide_audio_${guideId}`) || '[]');
-                
-                const audioMetadata = {
-                    name: audioFile.name,
-                    url: audioFile.url,
-                    chapter: audioFile.chapter,
-                    language: audioFile.language || 'en-US',
-                    provider: audioFile.provider || 'openai',
-                    stopNumber: audioFile.stopNumber || savedAudioFiles.length + 1,
-                    size: 'Generated',
-                    isCloudinary: audioFile.isCloudinary || false,
-                    generatedAt: new Date().toISOString()
-                };
-                
-                savedAudioFiles.push(audioMetadata);
-                localStorage.setItem(`cloudguide_audio_${guideId}`, JSON.stringify(savedAudioFiles));
-                console.log(`✅ Saved audio metadata for guide ${guideId}:`, audioMetadata);
-                
-                // Also ensure the guide itself exists in library
-                ensureGuideInLibrary(guideId);
-                
-                return true;
-            } catch (error) {
-                console.error('Error saving audio metadata:', error);
-                if (error.name === 'QuotaExceededError') {
-                    showMessage('Storage full! Consider using Cloudinary storage.', 'error');
-                }
-                return false;
-            }
-        }
-
-        // Ensure guide exists in library
-        function ensureGuideInLibrary(guideId) {
-            let library = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
-            const exists = library.find(g => g.id == guideId);
-            
-            if (!exists && currentGuideData) {
-                const guideToSave = {
-                    id: guideId,
-                    title: currentGuideData.title || 'Untitled Guide',
-                    location: currentGuideData.location || currentGuideData.title || 'Unknown',
-                    content: currentGuideData.content || document.getElementById('textInput').value,
-                    language: currentGuideData.language || 'English',
-                    stops: currentGuideData.stops || chapters.length,
-                    date: new Date().toISOString(),
-                    type: 'generated'
-                };
-                
-                library.unshift(guideToSave);
-                localStorage.setItem('cloudguide_audioguides', JSON.stringify(library));
-                console.log('Added guide to library:', guideToSave);
-            }
-        }
-
-        // Parse chapters
-        function parseChapters() {
-            const text = document.getElementById('textInput').value.trim();
-            if (!text) {
-                alert('Please enter some text first');
-                return;
-            }
-
-            if (!currentGuideId) {
-                currentGuideId = Date.now().toString();
-                console.log('Created new guide ID:', currentGuideId);
-            }
-
-            chapters = [];
-            const lines = text.split('\n');
-            let currentChapter = null;
-            let contentBuffer = [];
-
-            for (let i = 0; i < lines.length; i++) {
-                const line = lines[i];
-                
-                const stopMatch = line.match(/^STOP\s+(\d+):\s*(.+)/i);
-                
-                if (stopMatch) {
-                    if (currentChapter) {
-                        currentChapter.content = contentBuffer.join('\n').trim();
-                        if (currentChapter.content) {
-                            chapters.push(currentChapter);
-                        }
-                    }
-                    
-                    currentChapter = {
-                        id: chapters.length + 1,
-                        stopNumber: stopMatch[1],
-                        title: `STOP ${stopMatch[1]}: ${stopMatch[2].trim()}`,
-                        shortTitle: stopMatch[2].trim(),
-                        content: '',
-                        selected: false,
-                        status: 'pending',
-                        type: 'stop'
-                    };
-                    contentBuffer = [];
-                    
-                } else if (currentChapter && !line.match(/^-+$/)) {
-                    if (line.trim() || contentBuffer.length > 0) {
-                        contentBuffer.push(line);
-                    }
-                }
-            }
-
-            if (currentChapter) {
-                currentChapter.content = contentBuffer.join('\n').trim();
-                if (currentChapter.content) {
-                    chapters.push(currentChapter);
-                }
-            }
-
-            if (chapters.length === 0) {
-                chapters = [{
-                    id: 1,
-                    title: 'Full Text',
-                    shortTitle: 'Full Audio Guide',
-                    content: text,
-                    selected: true,
-                    status: 'pending',
-                    type: 'full'
-                }];
-            }
-
-            // Select first 3 chapters by default
-            chapters.slice(0, 3).forEach(ch => ch.selected = true);
-
-            currentGuideData = {
-                title: 'Manual Entry',
-                content: text,
-                stops: chapters.length,
-                language: document.getElementById('audioLanguage').value
-            };
-
-            renderChapters();
-            document.getElementById('chaptersSection').style.display = 'block';
-            document.getElementById('generateSection').style.display = 'flex';
-            updateSelectedCount();
-        }
-
-        // Render chapters
-        function renderChapters() {
-            const list = document.getElementById('chapterList');
-            list.innerHTML = chapters.map((ch, i) => {
-                const wordCount = ch.content.split(/\s+/).filter(word => word.length > 0).length;
-                const estimatedDuration = Math.ceil(wordCount / 150);
-                
-                return `
-                    <div class="chapter-item ${ch.selected ? 'selected' : ''}" onclick="toggleChapter(${i})">
-                        <input type="checkbox" class="chapter-checkbox" ${ch.selected ? 'checked' : ''}>
-                        <div class="chapter-info">
-                            <div class="chapter-title">${ch.shortTitle || ch.title}</div>
-                            <div class="chapter-meta">
-                                ${wordCount} words • ~${estimatedDuration} min
-                            </div>
-                        </div>
-                        <div class="chapter-status status-${ch.status}">${ch.status}</div>
-                    </div>
-                `;
-            }).join('');
-            
-            document.getElementById('totalCount').textContent = chapters.length;
-        }
-
-        // Toggle chapter
-        function toggleChapter(index) {
-            chapters[index].selected = !chapters[index].selected;
-            renderChapters();
-            updateSelectedCount();
-        }
-
-        // Update selected count
-        function updateSelectedCount() {
-            const selected = chapters.filter(ch => ch.selected).length;
-            document.getElementById('selectedCount').textContent = selected;
-        }
-
-        // Select all
-        function selectAll() {
-            chapters.forEach(ch => ch.selected = true);
-            renderChapters();
-            updateSelectedCount();
-        }
-
-        // Select none
-        function selectNone() {
-            chapters.forEach(ch => ch.selected = false);
-            renderChapters();
-            updateSelectedCount();
-        }
-
-        // Clear text
-        function clearText() {
-            document.getElementById('textInput').value = '';
-            chapters = [];
-            document.getElementById('chaptersSection').style.display = 'none';
-            document.getElementById('generateSection').style.display = 'none';
-            document.getElementById('filesSection').style.display = 'none';
-            generatedFiles = [];
-        }
-
-        // Select voice
-        function selectVoice(element, voice) {
-            document.querySelectorAll('.voice-card').forEach(card => card.classList.remove('selected'));
-            element.classList.add('selected');
-            selectedVoice = voice;
-        }
-
-        // Update speed
-        function updateSpeed() {
-            document.getElementById('speedValue').textContent = document.getElementById('speed').value + 'x';
-        }
-
-        // Update language info
-        function updateLanguageInfo() {
-            const lang = document.getElementById('audioLanguage').value;
-            const alert = document.getElementById('languageAlert');
-            
-            if (!lang.startsWith('en-')) {
-                alert.style.display = 'block';
-            } else {
-                alert.style.display = 'none';
-            }
-        }
-
-        // Generate single
-        async function generateSingle() {
-            const selected = chapters.filter(ch => ch.selected);
-            if (selected.length === 0) {
-                alert('Please select a chapter');
-                return;
-            }
-            if (selected.length > 1) {
-                alert('Please select only one chapter for single generation');
-                return;
-            }
-            
-            await generateAudio(selected[0]);
-        }
-
-        // Generate all
-        async function generateAll() {
-            const selected = chapters.filter(ch => ch.selected);
-            if (selected.length === 0) {
-                alert('Please select at least one chapter');
-                return;
-            }
-            
-            for (let chapter of selected) {
-                await generateAudio(chapter);
-                // Small delay between generations
-                if (selected.indexOf(chapter) < selected.length - 1) {
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                }
-            }
-            
-            showMessage(`✅ All ${selected.length} audio files generated!`, 'success');
-        }
-
-        // Render files
-        function renderFiles() {
-            if (generatedFiles.length === 0) return;
-            
-            document.getElementById('filesSection').style.display = 'block';
-            document.getElementById('fileList').innerHTML = generatedFiles.map((file, index) => {
-                const storageIcon = file.isCloudinary ? '☁️' : '💾';
-                return `
-                    <div class="file-item">
-                        <div class="file-info">
-                            <div style="font-size: 1.5em;">🎵</div>
-                            <div>
-                                <div style="font-weight: 600;">${file.name}</div>
-                                <div style="font-size: 0.85em; color: #718096;">
-                                    ${file.chapter} • ${file.language} • ${file.provider} • ${storageIcon}
-                                    ${file.warning ? ' • ⚠️ ' + file.warning : ''}
-                                </div>
-                            </div>
-                        </div>
-                        <div class="file-actions">
-                            <button class="btn btn-primary" onclick="playAudio('${file.url}')">Play</button>
-                            <button class="btn btn-secondary" onclick="downloadAudio('${file.url}', '${file.name}')">Download</button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // Play audio with toggle
-        function playAudio(url) {
-            if (currentAudioPlayer && currentAudioPlayer.src === url && !currentAudioPlayer.paused) {
-                currentAudioPlayer.pause();
-                showMessage('Audio paused', 'info');
-                return;
-            }
-            
-            if (currentAudioPlayer) {
-                currentAudioPlayer.pause();
-                currentAudioPlayer = null;
-            }
-            
-            currentAudioPlayer = new Audio(url);
-            currentAudioPlayer.play().then(() => {
-                showMessage('Playing audio...', 'info');
-            }).catch(error => {
-                console.error('Play error:', error);
-                showMessage('Failed to play audio', 'error');
-            });
-            
-            currentAudioPlayer.addEventListener('ended', () => {
-                showMessage('Audio finished', 'info');
-                currentAudioPlayer = null;
-            });
-        }
-
-        // Download audio
-        function downloadAudio(url, filename) {
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-        }
-
-        // Load from library
-        function loadFromLibrary(id) {
-            console.log('Loading guide from library, ID:', id);
-            const audioguides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
-            console.log('Total guides in library:', audioguides.length);
-            
-            const guide = audioguides.find(g => g.id == id);
-            
-            if (guide && guide.content) {
-                console.log('Found guide:', guide);
-                currentGuideId = id;
-                currentGuideData = guide;
-                
-                // Load any previously saved audio files
-                const savedAudioFiles = localStorage.getItem(`cloudguide_audio_${id}`);
-                if (savedAudioFiles) {
-                    try {
-                        generatedFiles = JSON.parse(savedAudioFiles);
-                        showMessage(`Loaded ${generatedFiles.length} previously generated audio files`, 'info');
-                        renderFiles();
-                    } catch (e) {
-                        console.error('Error loading saved audio:', e);
-                        generatedFiles = [];
-                    }
-                }
-                
-                switchTab('text');
-                document.getElementById('textInput').value = guide.content;
-                
-                // Set the language if it exists
-                if (guide.language) {
-                    const langSelect = document.getElementById('audioLanguage');
-                    Array.from(langSelect.options).forEach(option => {
-                        if (option.text.toLowerCase().includes(guide.language.toLowerCase())) {
-                            langSelect.value = option.value;
-                        }
-                    });
-                }
-                
-                parseChapters();
-            } else {
-                console.error('Guide not found or has no content, ID:', id);
-                showMessage('Could not load audioguide', 'error');
-            }
-        }
-
-        // Switch tab
-        function switchTab(tab) {
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-            
-            if (tab === 'text') {
-                document.querySelector('.tab-btn:nth-child(1)').classList.add('active');
-                document.getElementById('textTab').classList.add('active');
-            } else {
-                document.querySelector('.tab-btn:nth-child(2)').classList.add('active');
-                document.getElementById('libraryTab').classList.add('active');
-                loadLibrary();
-            }
-        }
-
-        // Load library
+        // Load audioguides from library
         function loadLibrary() {
-            console.log('Loading library for audio generation...');
-            const audioguides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
-            console.log('Found', audioguides.length, 'audioguides in library');
+            console.log('Loading library for upload page...');
             
-            const libraryGrid = document.getElementById('libraryList');
+            const audioguides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
+            const select = document.getElementById('guideSelect');
+            
+            console.log('Found audioguides:', audioguides.length);
             
             if (audioguides.length === 0) {
-                libraryGrid.innerHTML = `
-                    <div style="text-align: center; padding: 60px 20px; color: #a0aec0;">
-                        <div style="font-size: 3em; margin-bottom: 20px;">📚</div>
-                        <p style="font-size: 1.2em; margin-bottom: 15px;">Your library is empty</p>
-                        <p><a href="index.html" style="color: #48bb78; text-decoration: none;">Generate your first audioguide →</a></p>
-                    </div>
-                `;
+                select.innerHTML = '<option value="">No audioguides in library - Generate one first</option>';
                 return;
             }
-
-            libraryGrid.innerHTML = audioguides.map(guide => {
-                const savedAudioFiles = localStorage.getItem(`cloudguide_audio_${guide.id}`);
-                let audioCount = 0;
-                try {
-                    if (savedAudioFiles) {
-                        audioCount = JSON.parse(savedAudioFiles).length;
-                    }
-                } catch (e) {
-                    console.error('Error parsing audio files for guide', guide.id);
-                }
+            
+            select.innerHTML = '<option value="">Choose an audioguide...</option>';
+            audioguides.forEach((guide, index) => {
+                const option = document.createElement('option');
+                option.value = guide.id;
                 
-                const audioIndicator = audioCount > 0 
-                    ? `<span style="color: #48bb78;">🎵 ${audioCount} audio files</span>`
-                    : '<span style="color: #f6ad55;">No audio generated</span>';
-                
-                const title = guide.title || guide.location || 'Untitled Guide';
-                const location = guide.location || guide.title || 'Unknown Location';
-                const language = guide.language || 'English';
+                // Better title handling
+                const title = guide.title || guide.location || `Guide ${index + 1}`;
                 const stops = guide.stops || '?';
+                const lang = guide.language || 'English';
                 
-                return `
-                    <div style="padding: 20px; background: #f7fafc; border-radius: 6px; margin-bottom: 15px; cursor: pointer;"
-                         onclick="loadFromLibrary('${guide.id}')">
-                        <div style="font-weight: 600; margin-bottom: 8px;">${title}</div>
-                        <div style="font-size: 0.85em; color: #718096;">
-                            ${location} • ${language} • ${stops} stops • ${audioIndicator}
-                        </div>
-                    </div>
-                `;
-            }).join('');
+                option.textContent = `${title} (${lang}) - ${stops} stops`;
+                select.appendChild(option);
+                
+                console.log(`Added guide: ${title} with ID ${guide.id}`);
+            });
             
             console.log('Library loaded with', audioguides.length, 'guides');
         }
 
-        // Load sample
-        function loadSampleStops() {
-            document.getElementById('textInput').value = `STOP 1: INTRODUCTION
-------------------------------
-Welcome to this remarkable destination. This audioguide will take you on a journey through history, culture, and human achievement. As you explore today, you will discover the many layers of significance that make this place truly special.
-
-STOP 2: HISTORY
-------------------------------
-The history of this location spans centuries of human civilization. From its earliest foundations to the present day, this site has witnessed the rise and fall of empires, the creation of masterpieces, and the preservation of cultural heritage.
-
-STOP 3: MAIN ATTRACTION
-------------------------------
-Before you stands the main attraction, a testament to human creativity and ingenuity. Notice the intricate details and the careful craftsmanship that went into creating this remarkable feature.`;
-            parseChapters();
+        // Select a guide
+        function selectGuide() {
+            const selectedId = document.getElementById('guideSelect').value;
+            console.log('Selected guide ID:', selectedId);
+            
+            if (!selectedId) {
+                selectedGuide = null;
+                selectedGuideId = null;
+                updateAudioStatus(null);
+                document.getElementById('guidePreview').style.display = 'none';
+                return;
+            }
+            
+            const audioguides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
+            selectedGuide = audioguides.find(g => g.id == selectedId);
+            selectedGuideId = selectedId;
+            
+            console.log('Found guide:', selectedGuide);
+            
+            if (selectedGuide) {
+                // Update preview
+                document.getElementById('guidePreview').style.display = 'block';
+                document.getElementById('previewTitle').textContent = selectedGuide.title || selectedGuide.location || 'Untitled';
+                document.getElementById('previewLocation').textContent = selectedGuide.location || selectedGuide.title || 'Unknown';
+                document.getElementById('previewLanguage').textContent = selectedGuide.language || 'English';
+                document.getElementById('previewStops').textContent = selectedGuide.stops || '?';
+                
+                // Calculate word count
+                const wordCount = selectedGuide.content ? selectedGuide.content.split(/\s+/).length : 0;
+                document.getElementById('previewWords').textContent = wordCount.toLocaleString();
+                
+                // Format date
+                const date = selectedGuide.date ? new Date(selectedGuide.date).toLocaleDateString() : 'Unknown';
+                document.getElementById('previewDate').textContent = date;
+                
+                // Set language in form
+                document.getElementById('guideLanguage').value = selectedGuide.language || 'English';
+                
+                // Auto-fill guide name
+                if (!document.getElementById('guideName').value) {
+                    document.getElementById('guideName').value = selectedGuide.title || selectedGuide.location || 'Audio Tour';
+                }
+                
+                // Check for audio files
+                checkForAudioFiles(selectedId);
+            } else {
+                console.error('Guide not found in library');
+                showMessage('Error: Guide not found in library', 'error');
+            }
         }
 
-        // Show message
-        function showMessage(message, type) {
-            const messageDiv = document.createElement('div');
-            messageDiv.style.cssText = `
+        // Check for audio files
+        function checkForAudioFiles(guideId) {
+            const storedAudio = localStorage.getItem(`cloudguide_audio_${guideId}`);
+            
+            if (storedAudio) {
+                try {
+                    audioFiles = JSON.parse(storedAudio);
+                    console.log(`Found ${audioFiles.length} audio files for guide ${guideId}`);
+                    updateAudioStatus(selectedGuide, audioFiles);
+                } catch (e) {
+                    console.error('Error parsing audio files:', e);
+                    audioFiles = [];
+                    updateAudioStatus(selectedGuide, []);
+                }
+            } else {
+                audioFiles = [];
+                console.log(`No audio files found for guide ${guideId}`);
+                updateAudioStatus(selectedGuide, []);
+            }
+        }
+
+        // Update audio status display
+        function updateAudioStatus(guide, audioArray) {
+            const statusDiv = document.getElementById('audioStatus');
+            const contentDiv = document.getElementById('statusContent');
+            const audioListDiv = document.getElementById('audioList');
+            
+            if (!guide) {
+                statusDiv.className = 'audio-status no-audio';
+                contentDiv.innerHTML = '<p>No audioguide selected</p>';
+                audioListDiv.style.display = 'none';
+                return;
+            }
+            
+            const wordCount = guide.content ? guide.content.split(/\s+/).length : 0;
+            const estimatedDuration = Math.round(wordCount / 150); // Rough estimate
+            
+            if (audioArray && audioArray.length > 0) {
+                statusDiv.className = 'audio-status has-audio';
+                contentDiv.innerHTML = `
+                    <p>✅ <strong>Script:</strong> ${wordCount.toLocaleString()} words (~${estimatedDuration} min reading time)</p>
+                    <p>✅ <strong>Audio Files:</strong> ${audioArray.length} files ready for upload</p>
+                `;
+                
+                // Show audio file list
+                audioListDiv.style.display = 'block';
+                audioListDiv.innerHTML = '<strong>Audio Files:</strong><br>' + 
+                    audioArray.map((audio, i) => `
+                        <div class="audio-item">
+                            <span>🎵 ${audio.name || `Stop ${i + 1}.mp3`}</span>
+                            <span style="font-size: 12px; color: #718096;">${audio.size || 'Ready'}</span>
+                        </div>
+                    `).join('');
+            } else {
+                statusDiv.className = 'audio-status no-audio';
+                contentDiv.innerHTML = `
+                    <p>✅ <strong>Script:</strong> ${wordCount.toLocaleString()} words (~${estimatedDuration} min reading time)</p>
+                    <p>⚠️ <strong>Audio:</strong> Not generated yet</p>
+                    <p style="margin-top: 10px;">
+                        <a href="audio.html?id=${guide.id}" style="color: #f6ad55;">
+                            Generate audio files →
+                        </a>
+                    </p>
+                `;
+                audioListDiv.style.display = 'none';
+            }
+        }
+
+        // Submit to CloudGuide
+        async function submitToCloudGuide() {
+            console.log('Starting submission...');
+            
+            // Hide any previous messages
+            document.getElementById('successMessage').classList.remove('active');
+            document.getElementById('errorMessage').classList.remove('active');
+            
+            // Validate required fields
+            const cmsEmail = document.getElementById('cmsEmail').value.trim();
+            const institutionName = document.getElementById('institutionName').value.trim();
+            const exhibitionName = document.getElementById('exhibitionName').value.trim();
+            const guideName = document.getElementById('guideName').value.trim();
+            const additionalNotes = document.getElementById('additionalNotes').value.trim();
+            const contactPhone = document.getElementById('contactPhone').value.trim();
+            
+            if (!cmsEmail || !institutionName || !exhibitionName || !guideName) {
+                alert('Please fill in all required fields');
+                return;
+            }
+            
+            if (!selectedGuide) {
+                alert('Please select an audioguide from your library');
+                return;
+            }
+            
+            // Disable submit button
+            document.getElementById('submitBtn').disabled = true;
+            
+            // Check for audio
+            if (audioFiles.length === 0) {
+                const proceed = confirm(
+                    'No audio files found for this guide.\n\n' +
+                    'Do you want to:\n' +
+                    '• OK - Submit script only (audio can be added later)\n' +
+                    '• Cancel - Generate audio first'
+                );
+                
+                if (!proceed) {
+                    // Save form data and redirect to audio page
+                    localStorage.setItem('uploadFormData', JSON.stringify({
+                        cmsEmail: cmsEmail,
+                        institutionName: institutionName,
+                        exhibitionName: exhibitionName,
+                        guideName: guideName
+                    }));
+                    window.location.href = `audio.html?id=${selectedGuideId}`;
+                    document.getElementById('submitBtn').disabled = false;
+                    return;
+                }
+            }
+            
+            // Show progress
+            document.getElementById('progressContainer').classList.add('active');
+            updateProgress(10, 'Preparing submission...');
+            
+            try {
+                updateProgress(30, 'Processing content...');
+                
+                // Prepare guide info
+                const guideTitle = selectedGuide.title || selectedGuide.location || 'Untitled Guide';
+                const guideLocation = selectedGuide.location || selectedGuide.title || 'Unknown Location';
+                const wordCount = selectedGuide.content ? selectedGuide.content.split(/\s+/).length : 0;
+                
+                // Prepare audio URLs list
+                let audioLinksText = 'No audio files generated';
+                
+                if (audioFiles.length > 0) {
+                    audioLinksText = audioFiles.map((audio, index) => 
+                        `${index + 1}. ${audio.name}: ${audio.url || 'Data URL - See attached'}`
+                    ).join('\n');
+                }
+                
+                updateProgress(50, 'Formatting content...');
+                
+                // Prepare email parameters
+                const emailParams = {
+                    to_email: 'content@cloudguide.me',
+                    from_email: cmsEmail,
+                    institution_name: institutionName,
+                    exhibition_name: exhibitionName,
+                    guide_name: guideName,
+                    language: document.getElementById('guideLanguage').value,
+                    contact_phone: contactPhone || 'Not provided',
+                    guide_title: guideTitle,
+                    guide_location: guideLocation,
+                    guide_stops: selectedGuide.stops || 'Unknown',
+                    word_count: wordCount,
+                    audio_count: audioFiles.length,
+                    audio_links: audioLinksText,
+                    guide_content: selectedGuide.content.substring(0, 3000), // First 3000 chars
+                    additional_notes: additionalNotes || 'None',
+                    submission_date: new Date().toLocaleDateString()
+                };
+                
+                updateProgress(70, 'Sending to CloudGuide...');
+                console.log('Sending email with params:', emailParams);
+                
+                // Send email using EmailJS
+                await emailjs.send('service_sqyvtda', 'template_90y0ndk', emailParams)
+                    .then(function(response) {
+                        console.log('Email sent successfully!', response.status, response.text);
+                        
+                        updateProgress(100, 'Submission complete!');
+                        
+                        // Show success message
+                        document.getElementById('successMessage').classList.add('active');
+                        
+                        // Scroll to success message
+                        document.getElementById('successMessage').scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'center' 
+                        });
+                        
+                        // Clear audio files from localStorage after successful upload
+                        if (selectedGuideId) {
+                            localStorage.removeItem(`cloudguide_audio_${selectedGuideId}`);
+                            console.log('Cleared saved audio files for guide', selectedGuideId);
+                        }
+                        
+                        // Reset form after delay
+                        setTimeout(() => {
+                            resetForm();
+                        }, 5000);
+                    }, function(error) {
+                        console.error('Email failed...', error);
+                        throw new Error('Failed to send email: ' + JSON.stringify(error));
+                    });
+                
+            } catch (error) {
+                console.error('Submission error:', error);
+                
+                // Show error message
+                document.getElementById('errorMessage').classList.add('active');
+                document.getElementById('errorText').textContent = 
+                    'There was an error submitting your content: ' + error.message + 
+                    '\n\nPlease try again or contact support.';
+                
+                // Hide progress
+                document.getElementById('progressContainer').classList.remove('active');
+                document.getElementById('progressBar').style.width = '0%';
+                
+                // Re-enable submit button
+                document.getElementById('submitBtn').disabled = false;
+                
+                // Scroll to error message
+                document.getElementById('errorMessage').scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'center' 
+                });
+            }
+        }
+
+        // Update progress bar
+        function updateProgress(percentage, status) {
+            document.getElementById('progressBar').style.width = percentage + '%';
+            document.getElementById('progressStatus').textContent = status;
+        }
+
+        // Reset form
+        function resetForm() {
+            document.getElementById('cmsEmail').value = '';
+            document.getElementById('institutionName').value = '';
+            document.getElementById('exhibitionName').value = '';
+            document.getElementById('guideName').value = '';
+            document.getElementById('additionalNotes').value = '';
+            document.getElementById('contactPhone').value = '';
+            document.getElementById('guideSelect').value = '';
+            document.getElementById('guidePreview').style.display = 'none';
+            selectedGuide = null;
+            selectedGuideId = null;
+            audioFiles = [];
+            updateAudioStatus(null);
+            
+            // Hide progress
+            document.getElementById('progressContainer').classList.remove('active');
+            document.getElementById('progressBar').style.width = '0%';
+            
+            // Re-enable submit button
+            document.getElementById('submitBtn').disabled = false;
+        }
+
+        // Show message helper
+        function showMessage(message, type = 'info') {
+            console.log(`[${type.toUpperCase()}] ${message}`);
+            
+            // Create toast notification
+            const toast = document.createElement('div');
+            toast.style.cssText = `
                 position: fixed;
                 top: 20px;
                 right: 20px;
-                padding: 15px 20px;
+                padding: 15px 25px;
                 border-radius: 6px;
+                background: ${type === 'error' ? '#e53e3e' : '#3182ce'};
+                color: white;
                 z-index: 10000;
                 max-width: 400px;
-                animation: slideIn 0.3s ease-out;
                 box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             `;
-            
-            if (type === 'success') {
-                messageDiv.style.background = '#48bb78';
-                messageDiv.style.color = 'white';
-            } else if (type === 'error') {
-                messageDiv.style.background = '#e53e3e';
-                messageDiv.style.color = 'white';
-            } else if (type === 'warning') {
-                messageDiv.style.background = '#f6ad55';
-                messageDiv.style.color = 'white';
-            } else {
-                messageDiv.style.background = '#3182ce';
-                messageDiv.style.color = 'white';
-            }
-            
-            messageDiv.textContent = message;
-            document.body.appendChild(messageDiv);
+            toast.textContent = message;
+            document.body.appendChild(toast);
             
             setTimeout(() => {
-                messageDiv.remove();
+                toast.remove();
             }, 5000);
         }
     </script>
