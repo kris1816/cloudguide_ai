@@ -633,7 +633,6 @@
                         <li><a href="index.html" style="color: #48bb78;">GENERATOR</a></li>
                         <li><a href="library.html">LIBRARY</a></li>
                         <li><a href="audio.html">AUDIO</a></li>
-                        <li><a href="upload.html">UPLOAD</a></li>
                         <li><a href="premium.html">PREMIUM</a></li>
                         <li><a href="about.html">ABOUT</a></li>
                     </ul>
@@ -760,7 +759,7 @@
                     <div class="form-group">
                         <label for="tourType">Tour Type</label>
                         <select id="tourType" class="form-element">
-                            <option value="comprehensive" selected>Comprehensive Overview</option>
+                            <option value="comprehensive">Comprehensive Overview</option>
                             <option value="historical">Historical Focus</option>
                             <option value="cultural">Cultural Heritage</option>
                             <option value="family">Family Friendly</option>
@@ -771,7 +770,7 @@
                     <div class="form-group">
                         <label for="guideType">Guide Type</label>
                         <select id="guideType" class="form-element">
-                            <option value="museum" selected>Museum</option>
+                            <option value="museum">Museum</option>
                             <option value="landmark">Landmark</option>
                             <option value="city">City Tour</option>
                             <option value="heritage">Heritage Site</option>
@@ -782,7 +781,7 @@
                     <div class="form-group">
                         <label for="audience">Target Audience</label>
                         <select id="audience" class="form-element">
-                            <option value="general" selected>General Visitors</option>
+                            <option value="general">General Visitors</option>
                             <option value="experts">History Enthusiasts</option>
                             <option value="students">Students & Educators</option>
                             <option value="families">Families with Children</option>
@@ -792,7 +791,7 @@
                     <div class="form-group">
                         <label for="style">Narrative Style</label>
                         <select id="style" class="form-element">
-                            <option value="storytelling" selected>Storytelling</option>
+                            <option value="storytelling">Storytelling</option>
                             <option value="educational">Educational</option>
                             <option value="conversational">Conversational</option>
                             <option value="dramatic">Dramatic</option>
@@ -992,13 +991,6 @@
             const audience = document.getElementById('audience').value;
             const style = document.getElementById('style').value;
 
-            console.log('Generating guide:', {
-                model: selectedModel,
-                location: location,
-                stops: stops,
-                language: language
-            });
-
             // Show loading
             document.getElementById('generateBtn').disabled = true;
             document.getElementById('loading').classList.add('active');
@@ -1008,12 +1000,6 @@
 
             try {
                 let content = '';
-                
-                // Update loading text
-                document.getElementById('loadingText').textContent = 
-                    selectedModel === 'claude' && stops > 12 
-                        ? 'Generating with Claude in batches...' 
-                        : `Generating with ${selectedModel.toUpperCase()}...`;
                 
                 // If using Claude and stops > 12, use batch processing
                 if (selectedModel === 'claude' && stops > 12) {
@@ -1043,11 +1029,6 @@
                     
                     console.log('✅ Guide saved successfully:', savedGuide.id);
                     console.log('Total guides in library:', JSON.parse(localStorage.getItem('cloudguide_audioguides')).length);
-                    
-                    // Keep success message visible for longer
-                    setTimeout(() => {
-                        document.getElementById('successMessage').classList.remove('active');
-                    }, 15000); // 15 seconds
                 } else {
                     throw new Error('Failed to save guide to library');
                 }
@@ -1112,8 +1093,9 @@ Start generating now:`,
                 case 'deepseek':
                     apiUrl = '/api/deepseek';
                     requestBody = {
+                        prompt: `Create an audioguide for ${location} with ${stops} stops. Each stop must be 900 words. Language: ${language}. Style: ${tourType}.`,
                         location: location,
-                        duration: `${stops} stops`,
+                        duration: stops + ' stops',
                         interests: tourType
                     };
                     break;
@@ -1122,26 +1104,17 @@ Start generating now:`,
                     apiUrl = '/api/claude';
                     requestBody = {
                         destination: location,
-                        guideType: guideType || 'museum',
-                        audience: audience || 'general',
-                        style: style || 'storytelling',
-                        numStops: parseInt(stops),
-                        stopLength: 900,
-                        tourType: tourType || 'comprehensive',
-                        customPrompt: `Create a detailed audioguide with exactly ${stops} stops. Each stop must be approximately 900 words long for professional narration.`
+                        guideType: guideType,
+                        audience: audience,
+                        style: style,
+                        numStops: stops,
+                        stopLength: 900, // 900 words per stop
+                        preferredModel: 'claude-3-5-sonnet-20241022'
                     };
-                    // Don't send preferredModel to use backend default selection
-                    // Add file content if uploaded
-                    if (currentTab === 'file' && uploadedFileContent) {
-                        requestBody.customPrompt += '\n\nReference material:\n' + uploadedFileContent.substring(0, 3000);
-                    }
-                    console.log('Claude request body:', requestBody);
                     break;
             }
 
             console.log(`Calling ${selectedModel} API...`);
-            console.log('Request body:', requestBody); // Debug log
-            
             const response = await fetch(apiUrl, {
                 method: 'POST',
                 headers: {
@@ -1150,32 +1123,12 @@ Start generating now:`,
                 body: JSON.stringify(requestBody)
             });
 
-            console.log('Response status:', response.status); // Debug log
-
             if (!response.ok) {
-                let errorMessage = 'API request failed';
-                try {
-                    const errorData = await response.json();
-                    console.error('API Error Response:', errorData);
-                    
-                    // Extract error message
-                    errorMessage = errorData.error || errorData.message || errorMessage;
-                    
-                    // Add helpful context for Claude errors
-                    if (selectedModel === 'claude' && errorData.suggestion) {
-                        errorMessage += ' - ' + errorData.suggestion;
-                    }
-                } catch (e) {
-                    // If response isn't JSON
-                    errorMessage = `API returned ${response.status}`;
-                }
-                throw new Error(errorMessage);
-            }
-            }
+                const errorData = await response.json();
+                throw new Error(errorData.error || `API returned ${response.status}`);
             }
 
             const data = await response.json();
-            console.log('API Response data:', data); // Debug log
             
             // Extract content based on model response format
             let content = '';
@@ -1183,12 +1136,7 @@ Start generating now:`,
                 content = data.choices?.[0]?.message?.content || '';
             } else if (selectedModel === 'deepseek') {
                 content = data.content || data.generated_text || '';
-            } else if (selectedModel === 'claude') {
-                // Claude API returns content or rawContent
-                content = data.content || data.rawContent || '';
-                console.log('Claude content extracted, length:', content.length);
             } else {
-                // Groq and others
                 content = data.content || data.rawContent || '';
             }
 
@@ -1212,53 +1160,36 @@ Start generating now:`,
                     `Generating stops ${startStop}-${endStop} of ${stops}...`
                 );
                 
-                console.log(`Batch ${i + 1}: Generating stops ${startStop}-${endStop}`);
+                const response = await fetch('/api/claude', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        destination: location,
+                        guideType: guideType,
+                        audience: audience,
+                        style: style,
+                        numStops: currentBatchSize,
+                        stopLength: 900,
+                        customPrompt: `This is part ${i + 1} of ${batches}. Generate stops ${startStop} to ${endStop} for ${location}.`,
+                        preferredModel: 'claude-3-5-sonnet-20241022'
+                    })
+                });
                 
-                try {
-                    const response = await fetch('/api/claude', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            destination: location,
-                            guideType: guideType || 'museum',
-                            audience: audience || 'general', 
-                            style: style || 'storytelling',
-                            tourType: tourType || 'comprehensive',
-                            numStops: currentBatchSize,
-                            stopLength: 900,
-                            customPrompt: `This is part ${i + 1} of ${batches}. Generate stops ${startStop} to ${endStop} for ${location}. Each stop MUST be approximately 900 words.`
-                        })
-                    });
-                    
-                    console.log(`Batch ${i + 1} response status:`, response.status);
-                    
-                    if (!response.ok) {
-                        const errorData = await response.json();
-                        console.error(`Batch ${i + 1} failed:`, errorData);
-                        throw new Error(errorData.error || errorData.message || `Batch ${i + 1} failed`);
-                    }
-                    
-                    const data = await response.json();
-                    const batchContent = data.content || data.rawContent || '';
-                    
-                    if (!batchContent) {
-                        throw new Error(`No content returned for batch ${i + 1}`);
-                    }
-                    
-                    console.log(`Batch ${i + 1} content length:`, batchContent.length);
-                    
-                    // Add batch content to full content
-                    fullContent += batchContent + '\n\n';
-                    
-                    // Small delay between batches to avoid rate limiting
-                    if (i < batches - 1) {
-                        await new Promise(resolve => setTimeout(resolve, 1000));
-                    }
-                } catch (error) {
-                    console.error(`Error in batch ${i + 1}:`, error);
-                    throw error;
+                if (!response.ok) {
+                    throw new Error(`Batch ${i + 1} failed`);
+                }
+                
+                const data = await response.json();
+                const batchContent = data.content || data.rawContent || '';
+                
+                // Add batch content to full content
+                fullContent += batchContent + '\n\n';
+                
+                // Small delay between batches to avoid rate limiting
+                if (i < batches - 1) {
+                    await new Promise(resolve => setTimeout(resolve, 1000));
                 }
             }
             
@@ -1377,24 +1308,11 @@ Start generating now:`,
 
         // Show error message
         function showError(message) {
-            // Add more context for Claude API errors
-            if (message.includes('CLAUDE_API_KEY')) {
-                message = 'Claude API key not configured on server. Please use OpenAI, Groq, or DeepSeek instead.';
-            } else if (message.includes('Check your CLAUDE_API_KEY')) {
-                message = 'Claude API authentication failed. The server needs a valid Claude API key. Try OpenAI or Groq instead.';
-            } else if (message.includes('401')) {
-                message = 'Authentication failed. API key may be invalid.';
-            } else if (message.includes('429')) {
-                message = 'Rate limit exceeded. Please wait a moment and try again.';
-            } else if (message.includes('500') || message.includes('502')) {
-                message = 'Server error. Please try again or use a different AI model.';
-            }
-            
             document.getElementById('errorText').textContent = message;
             document.getElementById('errorMessage').classList.add('active');
             setTimeout(() => {
                 document.getElementById('errorMessage').classList.remove('active');
-            }, 7000);
+            }, 5000);
         }
     </script>
 </body>
