@@ -864,31 +864,65 @@
         window.addEventListener('DOMContentLoaded', function() {
             console.log('CloudGuide Generator Initialized');
             console.log('Checking existing library...');
-            const guides = localStorage.getItem('cloudguide_audioguides');
-            if (guides) {
-                try {
+            
+            try {
+                const guides = localStorage.getItem('cloudguide_audioguides');
+                if (guides) {
                     const parsed = JSON.parse(guides);
-                    console.log(`Found ${parsed.length} existing guides in library`);
-                    if (parsed.length > 0) {
-                        console.log('Latest guide:', parsed[0].title, 'from', new Date(parsed[0].date).toLocaleDateString());
+                    if (Array.isArray(parsed)) {
+                        console.log(`Found ${parsed.length} existing guides in library`);
+                        if (parsed.length > 0) {
+                            console.log('Latest guide:', parsed[0].title);
+                        }
+                    } else {
+                        console.log('Library format invalid, resetting...');
+                        localStorage.setItem('cloudguide_audioguides', '[]');
                     }
-                } catch (e) {
-                    console.error('Error parsing library:', e);
+                } else {
+                    console.log('Library is empty, initializing...');
+                    localStorage.setItem('cloudguide_audioguides', '[]');
                 }
-            } else {
-                console.log('Library is empty');
+            } catch (e) {
+                console.error('Error checking library:', e);
+                localStorage.setItem('cloudguide_audioguides', '[]');
             }
             
-            // Add debug function to window for testing
+            // Test function
             window.testLibrarySave = function() {
-                const testContent = 'This is a test audioguide content.\n'.repeat(100);
-                const saved = saveToLibrary('Test Location', 'English', 'test', 5, testContent, 'test');
-                if (saved) {
-                    console.log('✅ Test save successful! ID:', saved.id);
-                    const library = JSON.parse(localStorage.getItem('cloudguide_audioguides'));
-                    console.log('Library now has', library.length, 'guides');
-                } else {
-                    console.log('❌ Test save failed!');
+                console.log('=== TESTING LIBRARY SAVE ===');
+                const testGuide = {
+                    id: 'test_' + Date.now(),
+                    title: 'Test Location',
+                    location: 'Test Location',
+                    language: 'English',
+                    tourType: 'test',
+                    stops: 5,
+                    date: new Date().toISOString(),
+                    content: 'This is test content',
+                    type: 'test',
+                    model: 'test'
+                };
+                
+                try {
+                    let guides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
+                    guides.unshift(testGuide);
+                    localStorage.setItem('cloudguide_audioguides', JSON.stringify(guides));
+                    
+                    // Verify
+                    const saved = JSON.parse(localStorage.getItem('cloudguide_audioguides'));
+                    const found = saved.find(g => g.id === testGuide.id);
+                    
+                    if (found) {
+                        console.log('✅ Test save successful!');
+                        console.log('Library now has', saved.length, 'guides');
+                        return true;
+                    } else {
+                        console.log('❌ Test save failed - guide not found');
+                        return false;
+                    }
+                } catch (e) {
+                    console.error('❌ Test save error:', e);
+                    return false;
                 }
             };
             
@@ -1060,32 +1094,91 @@
                 const formattedContent = formatAudioguideContent(content, location, language, tourType, stops);
                 
                 // SAVE TO LIBRARY - CRITICAL SECTION
-                console.log('Attempting to save to library...');
-                const savedGuide = saveToLibrary(location, language, tourType, stops, formattedContent, selectedModel);
+                console.log('=== SAVING TO LIBRARY ===');
+                let savedGuide = null;
+                
+                try {
+                    // Get existing library
+                    let audioguides = [];
+                    const existing = localStorage.getItem('cloudguide_audioguides');
+                    if (existing) {
+                        try {
+                            audioguides = JSON.parse(existing);
+                        } catch (e) {
+                            console.error('Failed to parse existing library:', e);
+                            audioguides = [];
+                        }
+                    }
+                    
+                    // Create new guide
+                    savedGuide = {
+                        id: 'guide_' + Date.now(),
+                        title: location,
+                        location: location,
+                        language: language,
+                        tourType: tourType,
+                        stops: stops,
+                        date: new Date().toISOString(),
+                        content: formattedContent,
+                        type: 'generated',
+                        model: selectedModel,
+                        wordCount: formattedContent.split(/\s+/).length
+                    };
+                    
+                    // Add to library
+                    audioguides.unshift(savedGuide);
+                    
+                    // Keep only 50 most recent
+                    if (audioguides.length > 50) {
+                        audioguides = audioguides.slice(0, 50);
+                    }
+                    
+                    // Save to localStorage
+                    localStorage.setItem('cloudguide_audioguides', JSON.stringify(audioguides));
+                    
+                    // Verify save
+                    const saved = localStorage.getItem('cloudguide_audioguides');
+                    const parsed = JSON.parse(saved);
+                    const found = parsed.find(g => g.id === savedGuide.id);
+                    
+                    if (found) {
+                        console.log('✅ LIBRARY SAVE SUCCESSFUL');
+                        console.log('Guide saved:', savedGuide.id);
+                        console.log('Library size:', parsed.length);
+                    } else {
+                        console.error('❌ Save verification failed');
+                        savedGuide = null;
+                    }
+                    
+                } catch (saveError) {
+                    console.error('Library save error:', saveError);
+                    savedGuide = null;
+                }
+                
+                // Download file regardless
+                downloadAudioguide(formattedContent, location);
                 
                 if (savedGuide) {
-                    console.log('✅ SUCCESSFULLY SAVED TO LIBRARY');
-                    console.log('Guide ID:', savedGuide.id);
-                    
-                    // Download file
-                    downloadAudioguide(formattedContent, location);
-                    
-                    // Show success
+                    // Show success with library link
                     document.getElementById('generateAudioLink').href = `audio.html?id=${savedGuide.id}`;
-                    document.getElementById('successMessage').classList.add('active');
-                } else {
-                    console.error('Warning: Guide generated but not saved to library');
-                    // Still download the file even if save failed
-                    downloadAudioguide(formattedContent, location);
-                    // Show partial success
                     document.getElementById('successMessage').innerHTML = `
-                        <div>✓ Audioguide generated (library save failed)</div>
+                        <div>✓ Audioguide generated successfully and saved to your library!</div>
                         <div style="margin-top: 15px;">
-                            <a href="library.html" style="color: white; text-decoration: underline;">Check Library</a>
+                            <a href="library.html" style="color: white; text-decoration: underline;">View in Library</a> | 
+                            <a href="audio.html?id=${savedGuide.id}" style="color: white; text-decoration: underline;">Generate Audio</a>
                         </div>
                     `;
-                    document.getElementById('successMessage').classList.add('active');
+                } else {
+                    // Show success without library link
+                    document.getElementById('successMessage').innerHTML = `
+                        <div>✓ Audioguide generated and downloaded!</div>
+                        <div style="margin-top: 15px; font-size: 12px;">
+                            (Library save failed - check console for details)
+                        </div>
+                    `;
                 }
+                
+                document.getElementById('successMessage').classList.add('active');
 
             } catch (error) {
                 console.error('❌ Generation error:', error);
