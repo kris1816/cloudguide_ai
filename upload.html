@@ -9,11 +9,10 @@
     <link href="https://fonts.googleapis.com/css?family=Nunito+Sans:300,400,400i,600,700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
     
-    <!-- EmailJS SDK - WITH YOUR CREDENTIALS -->
+    <!-- EmailJS SDK -->
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <script type="text/javascript">
         (function(){
-            // YOUR ACTUAL PUBLIC KEY
             emailjs.init("ymvZgpxy0bqrS-p3c");
         })();
     </script>
@@ -203,6 +202,46 @@
             margin-bottom: 8px;
         }
 
+        /* Guide Preview */
+        .guide-preview {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .guide-preview h4 {
+            color: #2d3748;
+            margin-bottom: 15px;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .guide-info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .guide-info-item {
+            display: flex;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .guide-info-label {
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        .guide-info-value {
+            color: #718096;
+        }
+
         /* Buttons */
         .btn {
             padding: 14px 28px;
@@ -299,6 +338,9 @@
             .form-grid {
                 grid-template-columns: 1fr;
             }
+            .guide-info-grid {
+                grid-template-columns: 1fr;
+            }
             .nav-links {
                 display: none;
             }
@@ -337,6 +379,45 @@
 
         <!-- Main Content -->
         <div class="main-container">
+            <!-- Guide Selection -->
+            <div class="form-group">
+                <label>Select Audioguide from Library <span class="required">*</span></label>
+                <select id="guideSelect" class="form-element" onchange="selectGuide()" required>
+                    <option value="">Choose an audioguide...</option>
+                </select>
+            </div>
+
+            <!-- Guide Preview -->
+            <div class="guide-preview" id="guidePreview" style="display: none;">
+                <h4>📋 Selected Audioguide Details</h4>
+                <div class="guide-info-grid">
+                    <div class="guide-info-item">
+                        <span class="guide-info-label">Title:</span>
+                        <span class="guide-info-value" id="previewTitle">-</span>
+                    </div>
+                    <div class="guide-info-item">
+                        <span class="guide-info-label">Location:</span>
+                        <span class="guide-info-value" id="previewLocation">-</span>
+                    </div>
+                    <div class="guide-info-item">
+                        <span class="guide-info-label">Language:</span>
+                        <span class="guide-info-value" id="previewLanguage">-</span>
+                    </div>
+                    <div class="guide-info-item">
+                        <span class="guide-info-label">Stops:</span>
+                        <span class="guide-info-value" id="previewStops">-</span>
+                    </div>
+                    <div class="guide-info-item">
+                        <span class="guide-info-label">Word Count:</span>
+                        <span class="guide-info-value" id="previewWords">-</span>
+                    </div>
+                    <div class="guide-info-item">
+                        <span class="guide-info-label">Created:</span>
+                        <span class="guide-info-value" id="previewDate">-</span>
+                    </div>
+                </div>
+            </div>
+
             <div class="form-grid">
                 <!-- Left Column -->
                 <div>
@@ -366,23 +447,10 @@
                         <input type="text" id="guideName" class="form-element" 
                                placeholder="e.g., Complete Audio Tour" required>
                     </div>
-
-                    <div class="form-group">
-                        <label>Contact Phone (Optional)</label>
-                        <input type="tel" id="contactPhone" class="form-element" 
-                               placeholder="+1 234 567 8900">
-                    </div>
                 </div>
 
                 <!-- Right Column -->
                 <div>
-                    <div class="form-group">
-                        <label>Select Audioguide from Library <span class="required">*</span></label>
-                        <select id="guideSelect" class="form-element" onchange="selectGuide()" required>
-                            <option value="">Choose an audioguide...</option>
-                        </select>
-                    </div>
-
                     <div class="form-group">
                         <label>Language</label>
                         <select id="guideLanguage" class="form-element">
@@ -395,6 +463,12 @@
                             <option value="Chinese">Chinese</option>
                             <option value="Japanese">Japanese</option>
                         </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Contact Phone (Optional)</label>
+                        <input type="tel" id="contactPhone" class="form-element" 
+                               placeholder="+1 234 567 8900">
                     </div>
 
                     <div class="form-group">
@@ -483,8 +557,12 @@
 
         // Load audioguides from library
         function loadLibrary() {
+            console.log('Loading library for upload page...');
+            
             const audioguides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
             const select = document.getElementById('guideSelect');
+            
+            console.log('Found audioguides:', audioguides.length);
             
             if (audioguides.length === 0) {
                 select.innerHTML = '<option value="">No audioguides in library - Generate one first</option>';
@@ -492,21 +570,34 @@
             }
             
             select.innerHTML = '<option value="">Choose an audioguide...</option>';
-            audioguides.forEach(guide => {
+            audioguides.forEach((guide, index) => {
                 const option = document.createElement('option');
                 option.value = guide.id;
-                option.textContent = `${guide.title} (${guide.language || 'English'}) - ${guide.stops || '?'} stops`;
+                
+                // Better title handling
+                const title = guide.title || guide.location || `Guide ${index + 1}`;
+                const stops = guide.stops || '?';
+                const lang = guide.language || 'English';
+                
+                option.textContent = `${title} (${lang}) - ${stops} stops`;
                 select.appendChild(option);
+                
+                console.log(`Added guide: ${title} with ID ${guide.id}`);
             });
+            
+            console.log('Library loaded with', audioguides.length, 'guides');
         }
 
         // Select a guide
         function selectGuide() {
             const selectedId = document.getElementById('guideSelect').value;
+            console.log('Selected guide ID:', selectedId);
+            
             if (!selectedId) {
                 selectedGuide = null;
                 selectedGuideId = null;
                 updateAudioStatus(null);
+                document.getElementById('guidePreview').style.display = 'none';
                 return;
             }
             
@@ -514,24 +605,54 @@
             selectedGuide = audioguides.find(g => g.id == selectedId);
             selectedGuideId = selectedId;
             
+            console.log('Found guide:', selectedGuide);
+            
             if (selectedGuide) {
-                // Set language based on guide
+                // Update preview
+                document.getElementById('guidePreview').style.display = 'block';
+                document.getElementById('previewTitle').textContent = selectedGuide.title || selectedGuide.location || 'Untitled';
+                document.getElementById('previewLocation').textContent = selectedGuide.location || selectedGuide.title || 'Unknown';
+                document.getElementById('previewLanguage').textContent = selectedGuide.language || 'English';
+                document.getElementById('previewStops').textContent = selectedGuide.stops || '?';
+                
+                // Calculate word count
+                const wordCount = selectedGuide.content ? selectedGuide.content.split(/\s+/).length : 0;
+                document.getElementById('previewWords').textContent = wordCount.toLocaleString();
+                
+                // Format date
+                const date = selectedGuide.date ? new Date(selectedGuide.date).toLocaleDateString() : 'Unknown';
+                document.getElementById('previewDate').textContent = date;
+                
+                // Set language in form
                 document.getElementById('guideLanguage').value = selectedGuide.language || 'English';
+                
+                // Auto-fill guide name
+                if (!document.getElementById('guideName').value) {
+                    document.getElementById('guideName').value = selectedGuide.title || selectedGuide.location || 'Audio Tour';
+                }
                 
                 // Check for audio files
                 checkForAudioFiles(selectedId);
+            } else {
+                console.error('Guide not found in library');
+                showMessage('Error: Guide not found in library', 'error');
             }
         }
 
         // Check for audio files
         function checkForAudioFiles(guideId) {
-            // Check localStorage for audio files from audio.html page
             const storedAudio = localStorage.getItem(`cloudguide_audio_${guideId}`);
             
             if (storedAudio) {
-                audioFiles = JSON.parse(storedAudio);
-                console.log(`Found ${audioFiles.length} audio files for guide ${guideId}`);
-                updateAudioStatus(selectedGuide, audioFiles);
+                try {
+                    audioFiles = JSON.parse(storedAudio);
+                    console.log(`Found ${audioFiles.length} audio files for guide ${guideId}`);
+                    updateAudioStatus(selectedGuide, audioFiles);
+                } catch (e) {
+                    console.error('Error parsing audio files:', e);
+                    audioFiles = [];
+                    updateAudioStatus(selectedGuide, []);
+                }
             } else {
                 audioFiles = [];
                 console.log(`No audio files found for guide ${guideId}`);
@@ -553,11 +674,12 @@
             }
             
             const wordCount = guide.content ? guide.content.split(/\s+/).length : 0;
+            const estimatedDuration = Math.round(wordCount / 150); // Rough estimate
             
             if (audioArray && audioArray.length > 0) {
                 statusDiv.className = 'audio-status has-audio';
                 contentDiv.innerHTML = `
-                    <p>✅ <strong>Script:</strong> ${wordCount.toLocaleString()} words (${guide.stops || '?'} stops)</p>
+                    <p>✅ <strong>Script:</strong> ${wordCount.toLocaleString()} words (~${estimatedDuration} min reading time)</p>
                     <p>✅ <strong>Audio Files:</strong> ${audioArray.length} files ready for upload</p>
                 `;
                 
@@ -573,7 +695,7 @@
             } else {
                 statusDiv.className = 'audio-status no-audio';
                 contentDiv.innerHTML = `
-                    <p>✅ <strong>Script:</strong> ${wordCount.toLocaleString()} words (${guide.stops || '?'} stops)</p>
+                    <p>✅ <strong>Script:</strong> ${wordCount.toLocaleString()} words (~${estimatedDuration} min reading time)</p>
                     <p>⚠️ <strong>Audio:</strong> Not generated yet</p>
                     <p style="margin-top: 10px;">
                         <a href="audio.html?id=${guide.id}" style="color: #f6ad55;">
@@ -585,7 +707,7 @@
             }
         }
 
-        // Submit to CloudGuide using EmailJS with YOUR ACTUAL CREDENTIALS
+        // Submit to CloudGuide
         async function submitToCloudGuide() {
             console.log('Starting submission...');
             
@@ -642,20 +764,25 @@
             updateProgress(10, 'Preparing submission...');
             
             try {
-                updateProgress(30, 'Processing audio files...');
+                updateProgress(30, 'Processing content...');
+                
+                // Prepare guide info
+                const guideTitle = selectedGuide.title || selectedGuide.location || 'Untitled Guide';
+                const guideLocation = selectedGuide.location || selectedGuide.title || 'Unknown Location';
+                const wordCount = selectedGuide.content ? selectedGuide.content.split(/\s+/).length : 0;
                 
                 // Prepare audio URLs list
                 let audioLinksText = 'No audio files generated';
                 
                 if (audioFiles.length > 0) {
                     audioLinksText = audioFiles.map((audio, index) => 
-                        `${index + 1}. ${audio.name}: ${audio.url || audio.dataUrl}`
+                        `${index + 1}. ${audio.name}: ${audio.url || 'Data URL - See attached'}`
                     ).join('\n');
                 }
                 
                 updateProgress(50, 'Formatting content...');
                 
-                // Prepare email parameters for EmailJS
+                // Prepare email parameters
                 const emailParams = {
                     to_email: 'content@cloudguide.me',
                     from_email: cmsEmail,
@@ -664,10 +791,10 @@
                     guide_name: guideName,
                     language: document.getElementById('guideLanguage').value,
                     contact_phone: contactPhone || 'Not provided',
-                    guide_title: selectedGuide.title,
-                    guide_location: selectedGuide.location || 'Not specified',
+                    guide_title: guideTitle,
+                    guide_location: guideLocation,
                     guide_stops: selectedGuide.stops || 'Unknown',
-                    word_count: selectedGuide.content ? selectedGuide.content.split(/\s+/).length : 0,
+                    word_count: wordCount,
                     audio_count: audioFiles.length,
                     audio_links: audioLinksText,
                     guide_content: selectedGuide.content.substring(0, 3000), // First 3000 chars
@@ -675,10 +802,10 @@
                     submission_date: new Date().toLocaleDateString()
                 };
                 
-                updateProgress(70, 'Sending email to CloudGuide...');
+                updateProgress(70, 'Sending to CloudGuide...');
                 console.log('Sending email with params:', emailParams);
                 
-                // Send email using EmailJS WITH YOUR ACTUAL CREDENTIALS
+                // Send email using EmailJS
                 await emailjs.send('service_sqyvtda', 'template_90y0ndk', emailParams)
                     .then(function(response) {
                         console.log('Email sent successfully!', response.status, response.text);
@@ -702,21 +829,7 @@
                         
                         // Reset form after delay
                         setTimeout(() => {
-                            document.getElementById('cmsEmail').value = '';
-                            document.getElementById('institutionName').value = '';
-                            document.getElementById('exhibitionName').value = '';
-                            document.getElementById('guideName').value = '';
-                            document.getElementById('additionalNotes').value = '';
-                            document.getElementById('contactPhone').value = '';
-                            document.getElementById('guideSelect').value = '';
-                            selectedGuide = null;
-                            selectedGuideId = null;
-                            audioFiles = [];
-                            updateAudioStatus(null);
-                            
-                            // Hide progress
-                            document.getElementById('progressContainer').classList.remove('active');
-                            document.getElementById('progressBar').style.width = '0%';
+                            resetForm();
                         }, 5000);
                     }, function(error) {
                         console.error('Email failed...', error);
@@ -753,9 +866,53 @@
             document.getElementById('progressStatus').textContent = status;
         }
 
+        // Reset form
+        function resetForm() {
+            document.getElementById('cmsEmail').value = '';
+            document.getElementById('institutionName').value = '';
+            document.getElementById('exhibitionName').value = '';
+            document.getElementById('guideName').value = '';
+            document.getElementById('additionalNotes').value = '';
+            document.getElementById('contactPhone').value = '';
+            document.getElementById('guideSelect').value = '';
+            document.getElementById('guidePreview').style.display = 'none';
+            selectedGuide = null;
+            selectedGuideId = null;
+            audioFiles = [];
+            updateAudioStatus(null);
+            
+            // Hide progress
+            document.getElementById('progressContainer').classList.remove('active');
+            document.getElementById('progressBar').style.width = '0%';
+            
+            // Re-enable submit button
+            document.getElementById('submitBtn').disabled = false;
+        }
+
         // Show message helper
         function showMessage(message, type = 'info') {
             console.log(`[${type.toUpperCase()}] ${message}`);
+            
+            // Create toast notification
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 25px;
+                border-radius: 6px;
+                background: ${type === 'error' ? '#e53e3e' : '#3182ce'};
+                color: white;
+                z-index: 10000;
+                max-width: 400px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 5000);
         }
     </script>
 </body>
