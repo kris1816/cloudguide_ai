@@ -863,6 +863,14 @@
         // Initialize on page load
         window.addEventListener('DOMContentLoaded', function() {
             console.log('CloudGuide Generator Initialized');
+            
+            // Only initialize library if it truly doesn't exist
+            const existingData = localStorage.getItem('cloudguide_audioguides');
+            if (existingData === null) {
+                console.log('Initializing empty library for first-time use');
+                localStorage.setItem('cloudguide_audioguides', '[]');
+            }
+            
             checkLibraryStatus();
         });
 
@@ -872,8 +880,8 @@
             try {
                 const data = localStorage.getItem('cloudguide_audioguides');
                 if (!data) {
-                    console.log('No library data found, initializing...');
-                    localStorage.setItem('cloudguide_audioguides', '[]');
+                    console.log('No library data found');
+                    // DON'T automatically initialize here - only do it when actually needed
                     return;
                 }
                 
@@ -894,12 +902,62 @@
                 
             } catch (error) {
                 console.error('Library check error:', error);
-                localStorage.setItem('cloudguide_audioguides', '[]');
+                // DON'T reset the library here either
             }
         }
 
-        // Make checkLibraryStatus available globally for debugging
+        // Helper to safely get library data
+        function getLibraryData() {
+            try {
+                const data = localStorage.getItem('cloudguide_audioguides');
+                if (!data) {
+                    return [];
+                }
+                return JSON.parse(data);
+            } catch (error) {
+                console.error('Error reading library:', error);
+                return [];
+            }
+        }
+
+        // Test function to verify localStorage is working
+        function testLocalStorage() {
+            console.log('=== LOCALSTORAGE TEST ===');
+            
+            // Test write
+            localStorage.setItem('test_key', 'test_value');
+            
+            // Test read
+            const value = localStorage.getItem('test_key');
+            console.log('Test write/read:', value === 'test_value' ? 'PASSED' : 'FAILED');
+            
+            // Check library
+            const library = localStorage.getItem('cloudguide_audioguides');
+            console.log('Library data exists:', library !== null);
+            if (library) {
+                try {
+                    const parsed = JSON.parse(library);
+                    console.log('Library contains', parsed.length, 'guides');
+                    parsed.forEach((guide, index) => {
+                        console.log(`Guide ${index + 1}:`, {
+                            id: guide.id,
+                            title: guide.title,
+                            date: guide.date
+                        });
+                    });
+                } catch (e) {
+                    console.error('Library data is corrupted:', e);
+                }
+            }
+            
+            // Cleanup
+            localStorage.removeItem('test_key');
+        }
+
+        // Make functions available globally for debugging
         window.checkLibraryStatus = checkLibraryStatus;
+        window.testLocalStorage = testLocalStorage;
+        window.getLibraryData = getLibraryData;
 
         // Model selection
         function selectModel(model) {
@@ -1083,26 +1141,32 @@ Content generation failed. Please try again.
                 content = formatAudioguideContent(content, location, language, tourType, stops);
             }
 
-            // ALWAYS SAVE TO LIBRARY
+            // ALWAYS SAVE TO LIBRARY (IMPROVED VERSION)
             console.log('=== SAVING TO LIBRARY ===');
             let savedGuide = null;
             
             try {
-                // Get existing guides or initialize empty array
+                // Get existing guides with proper error handling
                 let audioguides = [];
                 const existingData = localStorage.getItem('cloudguide_audioguides');
                 
-                if (existingData) {
+                if (existingData !== null && existingData !== undefined) {
                     try {
                         const parsed = JSON.parse(existingData);
                         if (Array.isArray(parsed)) {
                             audioguides = parsed;
                             console.log(`Found ${audioguides.length} existing guides`);
+                        } else {
+                            console.warn('Library data is not an array, initializing new array');
+                            audioguides = [];
                         }
                     } catch (parseError) {
-                        console.error('Parse error, resetting library:', parseError);
+                        console.error('Parse error, creating new library:', parseError);
                         audioguides = [];
                     }
+                } else {
+                    console.log('No existing library, creating new one');
+                    audioguides = [];
                 }
                 
                 // Create new guide object
@@ -1127,10 +1191,11 @@ Content generation failed. Please try again.
                 // Add to beginning of array
                 audioguides.unshift(savedGuide);
                 
-                // Limit to 50 guides
+                // Limit to 50 guides to prevent storage issues
                 if (audioguides.length > 50) {
+                    const removed = audioguides.length - 50;
                     audioguides = audioguides.slice(0, 50);
-                    console.log('Trimmed to 50 guides');
+                    console.log(`Trimmed ${removed} old guides, keeping 50`);
                 }
                 
                 // Save to localStorage
@@ -1138,17 +1203,28 @@ Content generation failed. Please try again.
                 localStorage.setItem('cloudguide_audioguides', jsonString);
                 console.log(`Saved ${audioguides.length} guides to localStorage`);
                 
-                // Verify the save
+                // Verify the save worked
                 const verification = localStorage.getItem('cloudguide_audioguides');
                 if (verification) {
-                    const verifyParsed = JSON.parse(verification);
-                    const found = verifyParsed.find(g => g.id === savedGuide.id);
-                    if (found) {
-                        console.log('SAVE VERIFIED - Guide found:', found.id);
-                    } else {
-                        console.error('SAVE FAILED - Guide not found after save');
+                    try {
+                        const verifyParsed = JSON.parse(verification);
+                        const found = verifyParsed.find(g => g.id === savedGuide.id);
+                        if (found) {
+                            console.log('✅ SAVE VERIFIED - Guide found:', found.id);
+                        } else {
+                            console.error('❌ SAVE FAILED - Guide not found after save');
+                            // Try saving again
+                            console.log('Attempting to save again...');
+                            localStorage.setItem('cloudguide_audioguides', jsonString);
+                            savedGuide = null;
+                        }
+                    } catch (verifyError) {
+                        console.error('Verification parse error:', verifyError);
                         savedGuide = null;
                     }
+                } else {
+                    console.error('Could not verify save - localStorage returned null');
+                    savedGuide = null;
                 }
                 
             } catch (saveError) {
@@ -1191,6 +1267,10 @@ Content generation failed. Please try again.
             document.getElementById('generateBtn').disabled = false;
             document.getElementById('loading').classList.remove('active');
             document.getElementById('progressContainer').classList.remove('active');
+            
+            // Final library check
+            console.log('Final library check:');
+            checkLibraryStatus();
         }
 
         // Generate Claude content in batches
