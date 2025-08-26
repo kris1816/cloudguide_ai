@@ -863,30 +863,43 @@
         // Initialize on page load
         window.addEventListener('DOMContentLoaded', function() {
             console.log('CloudGuide Generator Initialized');
-            console.log('Checking existing library...');
-            
+            checkLibraryStatus();
+        });
+
+        // Debug function to check library status
+        function checkLibraryStatus() {
+            console.log('=== LIBRARY STATUS CHECK ===');
             try {
-                const guides = localStorage.getItem('cloudguide_audioguides');
-                if (guides) {
-                    const parsed = JSON.parse(guides);
-                    if (Array.isArray(parsed)) {
-                        console.log(`Found ${parsed.length} existing guides in library`);
-                        if (parsed.length > 0) {
-                            console.log('Latest guide:', parsed[0].title);
-                        }
-                    } else {
-                        console.log('Library format invalid, resetting...');
-                        localStorage.setItem('cloudguide_audioguides', '[]');
-                    }
-                } else {
-                    console.log('Library is empty, initializing...');
+                const data = localStorage.getItem('cloudguide_audioguides');
+                if (!data) {
+                    console.log('No library data found, initializing...');
                     localStorage.setItem('cloudguide_audioguides', '[]');
+                    return;
                 }
-            } catch (e) {
-                console.error('Error checking library:', e);
+                
+                const guides = JSON.parse(data);
+                console.log(`Library has ${guides.length} guides`);
+                
+                if (guides.length > 0) {
+                    console.log('Latest guide:', {
+                        id: guides[0].id,
+                        title: guides[0].title,
+                        date: guides[0].date,
+                        wordCount: guides[0].wordCount
+                    });
+                }
+                
+                const size = new Blob([data]).size;
+                console.log(`Storage used: ${(size / 1024).toFixed(2)} KB`);
+                
+            } catch (error) {
+                console.error('Library check error:', error);
                 localStorage.setItem('cloudguide_audioguides', '[]');
             }
-        });
+        }
+
+        // Make checkLibraryStatus available globally for debugging
+        window.checkLibraryStatus = checkLibraryStatus;
 
         // Model selection
         function selectModel(model) {
@@ -991,7 +1004,7 @@
             document.getElementById('progressStatus').textContent = status;
         }
 
-        // MAIN GENERATE FUNCTION
+        // MAIN GENERATE FUNCTION WITH IMPROVED LIBRARY SAVING
         async function generateGuide() {
             console.log('=== STARTING GENERATION ===');
             
@@ -1029,119 +1042,149 @@
             document.getElementById('progressContainer').classList.remove('active');
 
             let content = '';
-            let savedGuide = null;
+            let apiSuccess = false;
 
             try {
                 // Generate content based on model
                 if (selectedModel === 'claude' && stops > 5) {
-                    // For Claude with many stops, use batch generation
                     content = await generateClaudeBatches(location, language, stops, tourType, guideType, audience, style);
                 } else if (selectedModel === 'claude') {
-                    // For Claude with 5 or fewer stops
                     content = await callClaudeAPI(location, language, stops, tourType, guideType, audience, style);
                 } else {
-                    // Other models (OpenAI, Groq, DeepSeek)
                     content = await callOtherAPI(location, language, stops, tourType, guideType, audience, style);
                 }
 
-                if (!content) {
-                    throw new Error('No content generated from API');
+                if (content) {
+                    apiSuccess = true;
+                    console.log('API Success, content length:', content.length);
                 }
-
-                console.log('Content generated, word count:', content.split(/\s+/).length);
-
             } catch (error) {
-                console.error('❌ API Generation error:', error);
+                console.error('API Error:', error);
+                showError('API Error: ' + error.message);
                 
-                // Generate fallback content
+                // Create minimal fallback content
                 content = `AUDIOGUIDE: ${location.toUpperCase()}
 ===================================================
 
-Note: Content generation failed - ${error.message}
-Please try again or use a different AI model.
+Error: ${error.message}
+Generated: ${new Date().toLocaleDateString()}
 
-Location: ${location}
-Language: ${language}
-Stops: ${stops}
+===================================================
+
+STOP 1: Introduction
+------------------------------
+Content generation failed. Please try again.
 
 ===================================================`;
-                
-                showError('Generation failed: ' + error.message);
             }
 
-            // Format the content
-            const formattedContent = content.includes('AUDIOGUIDE:') 
-                ? content 
-                : formatAudioguideContent(content, location, language, tourType, stops);
+            // Format content if needed
+            if (!content.includes('AUDIOGUIDE:')) {
+                content = formatAudioguideContent(content, location, language, tourType, stops);
+            }
 
-            // Save to library
+            // ALWAYS SAVE TO LIBRARY
+            console.log('=== SAVING TO LIBRARY ===');
+            let savedGuide = null;
+            
             try {
-                console.log('=== SAVING TO LIBRARY ===');
-                
+                // Get existing guides or initialize empty array
                 let audioguides = [];
-                const existing = localStorage.getItem('cloudguide_audioguides');
-                if (existing) {
+                const existingData = localStorage.getItem('cloudguide_audioguides');
+                
+                if (existingData) {
                     try {
-                        audioguides = JSON.parse(existing);
-                        if (!Array.isArray(audioguides)) {
-                            audioguides = [];
+                        const parsed = JSON.parse(existingData);
+                        if (Array.isArray(parsed)) {
+                            audioguides = parsed;
+                            console.log(`Found ${audioguides.length} existing guides`);
                         }
-                    } catch (e) {
-                        console.error('Failed to parse existing library:', e);
+                    } catch (parseError) {
+                        console.error('Parse error, resetting library:', parseError);
                         audioguides = [];
                     }
                 }
                 
-                // Create new guide
+                // Create new guide object
+                const timestamp = Date.now();
                 savedGuide = {
-                    id: 'guide_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+                    id: 'guide_' + timestamp,
                     title: location,
                     location: location,
                     language: language,
                     tourType: tourType,
                     stops: stops,
                     date: new Date().toISOString(),
-                    content: formattedContent,
+                    content: content,
                     type: 'generated',
                     model: selectedModel,
-                    wordCount: formattedContent.split(/\s+/).length
+                    wordCount: content.split(/\s+/).filter(w => w.length > 0).length,
+                    apiSuccess: apiSuccess
                 };
                 
-                // Add to library
+                console.log('Creating guide:', savedGuide.id);
+                
+                // Add to beginning of array
                 audioguides.unshift(savedGuide);
                 
-                // Keep only 50 most recent
+                // Limit to 50 guides
                 if (audioguides.length > 50) {
                     audioguides = audioguides.slice(0, 50);
+                    console.log('Trimmed to 50 guides');
                 }
                 
                 // Save to localStorage
-                localStorage.setItem('cloudguide_audioguides', JSON.stringify(audioguides));
+                const jsonString = JSON.stringify(audioguides);
+                localStorage.setItem('cloudguide_audioguides', jsonString);
+                console.log(`Saved ${audioguides.length} guides to localStorage`);
                 
-                console.log('✅ LIBRARY SAVE SUCCESSFUL');
-                console.log('Guide saved:', savedGuide.id);
-                console.log('Library size:', audioguides.length);
+                // Verify the save
+                const verification = localStorage.getItem('cloudguide_audioguides');
+                if (verification) {
+                    const verifyParsed = JSON.parse(verification);
+                    const found = verifyParsed.find(g => g.id === savedGuide.id);
+                    if (found) {
+                        console.log('SAVE VERIFIED - Guide found:', found.id);
+                    } else {
+                        console.error('SAVE FAILED - Guide not found after save');
+                        savedGuide = null;
+                    }
+                }
                 
             } catch (saveError) {
-                console.error('Library save error:', saveError);
+                console.error('CRITICAL SAVE ERROR:', saveError);
+                alert('Failed to save to library: ' + saveError.message);
+                savedGuide = null;
             }
 
-            // Download file
-            if (formattedContent) {
-                downloadAudioguide(formattedContent, location);
+            // Download file if we have content
+            if (content) {
+                try {
+                    downloadAudioguide(content, location);
+                    console.log('File downloaded');
+                } catch (downloadError) {
+                    console.error('Download error:', downloadError);
+                }
             }
 
-            // Show success message
+            // Show result message
             if (savedGuide) {
                 document.getElementById('generateAudioLink').href = `audio.html?id=${savedGuide.id}`;
+                
+                const statusText = apiSuccess 
+                    ? '✓ Audioguide generated successfully and saved to your library!'
+                    : '✓ Audioguide saved to library (with errors - please try again)';
+                    
                 document.getElementById('successMessage').innerHTML = `
-                    <div>✓ Audioguide ${content.includes('generation failed') ? 'saved (with errors)' : 'generated successfully'} and saved to your library!</div>
+                    <div>${statusText}</div>
                     <div style="margin-top: 15px;">
                         <a href="library.html" style="color: white; text-decoration: underline;">View in Library</a> | 
                         <a href="audio.html?id=${savedGuide.id}" style="color: white; text-decoration: underline;">Generate Audio</a>
                     </div>
                 `;
                 document.getElementById('successMessage').classList.add('active');
+            } else {
+                showError('Failed to save audioguide to library. Please check the console for errors.');
             }
 
             // Reset UI
