@@ -9,6 +9,15 @@
     <link href="https://fonts.googleapis.com/css?family=Nunito+Sans:300,400,400i,600,700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
     
+    <!-- EmailJS SDK - WITH YOUR CREDENTIALS -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script type="text/javascript">
+        (function(){
+            // YOUR ACTUAL PUBLIC KEY
+            emailjs.init("ymvZgpxy0bqrS-p3c");
+        })();
+    </script>
+    
     <style>
         * {
             margin: 0;
@@ -220,6 +229,7 @@
         .btn-primary:disabled {
             background: #cbd5e0;
             cursor: not-allowed;
+            transform: none;
         }
 
         .btn-secondary {
@@ -273,6 +283,12 @@
             background: #f0fff4;
             border: 1px solid #48bb78;
             color: #22543d;
+        }
+
+        .message.error {
+            background: #fff5f5;
+            border: 1px solid #e53e3e;
+            color: #742a2a;
         }
 
         .message.active {
@@ -418,20 +434,27 @@
             <div class="message success" id="successMessage">
                 <h3 style="margin-bottom: 15px;">✅ Upload Request Submitted Successfully!</h3>
                 <p style="margin-bottom: 15px;">
-                    Thank you for uploading your content. Please allow up to 24 hours for it to appear in your account.
+                    Your content has been sent to CloudGuide. Please allow up to 24 hours for it to appear in your account.
                 </p>
                 <p style="margin-bottom: 15px;">
                     <strong>Next Steps:</strong>
                 </p>
                 <ol style="margin-left: 20px;">
+                    <li>Check your email for confirmation</li>
                     <li>Log in to your CloudGuide CMS account</li>
                     <li>Navigate to the PUBLISH section</li>
                     <li>Upload images for the best visitor experience</li>
                     <li>Review and publish your audioguide</li>
                 </ol>
                 <p style="margin-top: 15px; font-size: 13px; color: #718096;">
-                    You will receive a confirmation email at the address provided.
+                    A confirmation email has been sent to the address provided.
                 </p>
+            </div>
+
+            <!-- Error Message -->
+            <div class="message error" id="errorMessage">
+                <h3 style="margin-bottom: 15px;">❌ Submission Error</h3>
+                <p id="errorText">There was an error submitting your content. Please try again.</p>
             </div>
         </div>
     </div>
@@ -443,6 +466,7 @@
 
         // Initialize on load
         window.addEventListener('DOMContentLoaded', function() {
+            console.log('Upload page initialized');
             loadLibrary();
             
             // Check if returning from audio page
@@ -467,6 +491,7 @@
                 return;
             }
             
+            select.innerHTML = '<option value="">Choose an audioguide...</option>';
             audioguides.forEach(guide => {
                 const option = document.createElement('option');
                 option.value = guide.id;
@@ -505,9 +530,11 @@
             
             if (storedAudio) {
                 audioFiles = JSON.parse(storedAudio);
+                console.log(`Found ${audioFiles.length} audio files for guide ${guideId}`);
                 updateAudioStatus(selectedGuide, audioFiles);
             } else {
                 audioFiles = [];
+                console.log(`No audio files found for guide ${guideId}`);
                 updateAudioStatus(selectedGuide, []);
             }
         }
@@ -558,40 +585,21 @@
             }
         }
 
-        // Upload audio to Cloudinary
-        async function uploadAudioToCloudinary(audioData, fileName) {
-            try {
-                const response = await fetch('/api/upload-to-cloudinary', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        audioData: audioData,
-                        fileName: fileName.replace(/[^a-z0-9]/gi, '_')
-                    })
-                });
-
-                const data = await response.json();
-                if (data.success) {
-                    return data.url;
-                } else {
-                    console.error('Cloudinary upload failed:', data.error);
-                    return null;
-                }
-            } catch (error) {
-                console.error('Upload error:', error);
-                return null;
-            }
-        }
-
-        // Submit to CloudGuide
+        // Submit to CloudGuide using EmailJS with YOUR ACTUAL CREDENTIALS
         async function submitToCloudGuide() {
+            console.log('Starting submission...');
+            
+            // Hide any previous messages
+            document.getElementById('successMessage').classList.remove('active');
+            document.getElementById('errorMessage').classList.remove('active');
+            
             // Validate required fields
             const cmsEmail = document.getElementById('cmsEmail').value.trim();
             const institutionName = document.getElementById('institutionName').value.trim();
             const exhibitionName = document.getElementById('exhibitionName').value.trim();
             const guideName = document.getElementById('guideName').value.trim();
+            const additionalNotes = document.getElementById('additionalNotes').value.trim();
+            const contactPhone = document.getElementById('contactPhone').value.trim();
             
             if (!cmsEmail || !institutionName || !exhibitionName || !guideName) {
                 alert('Please fill in all required fields');
@@ -624,6 +632,7 @@
                         guideName: guideName
                     }));
                     window.location.href = `audio.html?id=${selectedGuideId}`;
+                    document.getElementById('submitBtn').disabled = false;
                     return;
                 }
             }
@@ -633,118 +642,108 @@
             updateProgress(10, 'Preparing submission...');
             
             try {
-                // Upload audio files to Cloudinary if they exist
-                const cloudinaryUrls = [];
+                updateProgress(30, 'Processing audio files...');
+                
+                // Prepare audio URLs list
+                let audioLinksText = 'No audio files generated';
                 
                 if (audioFiles.length > 0) {
-                    updateProgress(20, `Uploading ${audioFiles.length} audio files to cloud...`);
-                    
-                    for (let i = 0; i < audioFiles.length; i++) {
-                        const audio = audioFiles[i];
-                        updateProgress(20 + (i * 40 / audioFiles.length), 
-                            `Uploading audio ${i + 1} of ${audioFiles.length}...`);
-                        
-                        // Upload to Cloudinary
-                        if (audio.dataUrl || audio.url) {
-                            const cloudUrl = await uploadAudioToCloudinary(
-                                audio.dataUrl || audio.url,
-                                audio.name || `${guideName}_Stop_${i + 1}.mp3`
-                            );
-                            
-                            if (cloudUrl) {
-                                cloudinaryUrls.push({
-                                    name: audio.name || `Stop ${i + 1}.mp3`,
-                                    url: cloudUrl,
-                                    stopNumber: i + 1
-                                });
-                            }
-                        }
-                    }
+                    audioLinksText = audioFiles.map((audio, index) => 
+                        `${index + 1}. ${audio.name}: ${audio.url || audio.dataUrl}`
+                    ).join('\n');
                 }
                 
-                updateProgress(70, 'Sending to CloudGuide email system...');
+                updateProgress(50, 'Formatting content...');
                 
-                // Prepare submission data
-                const submissionData = {
-                    cmsEmail: cmsEmail,
-                    institutionName: institutionName,
-                    exhibitionName: exhibitionName,
-                    guideName: guideName,
+                // Prepare email parameters for EmailJS
+                const emailParams = {
+                    to_email: 'content@cloudguide.me',
+                    from_email: cmsEmail,
+                    institution_name: institutionName,
+                    exhibition_name: exhibitionName,
+                    guide_name: guideName,
                     language: document.getElementById('guideLanguage').value,
-                    additionalNotes: document.getElementById('additionalNotes').value,
-                    contactPhone: document.getElementById('contactPhone').value,
-                    guideContent: selectedGuide.content,
-                    guideMetadata: {
-                        originalTitle: selectedGuide.title,
-                        location: selectedGuide.location,
-                        stops: selectedGuide.stops,
-                        tourType: selectedGuide.tourType,
-                        wordCount: selectedGuide.content ? selectedGuide.content.split(/\s+/).length : 0,
-                        generatedDate: selectedGuide.date
-                    },
-                    audioUrls: cloudinaryUrls,
-                    hasAudio: cloudinaryUrls.length > 0,
-                    submittedAt: new Date().toISOString()
+                    contact_phone: contactPhone || 'Not provided',
+                    guide_title: selectedGuide.title,
+                    guide_location: selectedGuide.location || 'Not specified',
+                    guide_stops: selectedGuide.stops || 'Unknown',
+                    word_count: selectedGuide.content ? selectedGuide.content.split(/\s+/).length : 0,
+                    audio_count: audioFiles.length,
+                    audio_links: audioLinksText,
+                    guide_content: selectedGuide.content.substring(0, 3000), // First 3000 chars
+                    additional_notes: additionalNotes || 'None',
+                    submission_date: new Date().toLocaleDateString()
                 };
                 
-                updateProgress(85, 'Finalizing submission...');
+                updateProgress(70, 'Sending email to CloudGuide...');
+                console.log('Sending email with params:', emailParams);
                 
-                // Send to email API
-                const response = await fetch('/api/email-upload', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(submissionData)
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    updateProgress(100, 'Submission complete!');
-                    
-                    // Show success message
-                    document.getElementById('successMessage').classList.add('active');
-                    
-                    // Scroll to success message
-                    document.getElementById('successMessage').scrollIntoView({ 
-                        behavior: 'smooth', 
-                        block: 'center' 
+                // Send email using EmailJS WITH YOUR ACTUAL CREDENTIALS
+                await emailjs.send('service_sqyvtda', 'template_90y0ndk', emailParams)
+                    .then(function(response) {
+                        console.log('Email sent successfully!', response.status, response.text);
+                        
+                        updateProgress(100, 'Submission complete!');
+                        
+                        // Show success message
+                        document.getElementById('successMessage').classList.add('active');
+                        
+                        // Scroll to success message
+                        document.getElementById('successMessage').scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'center' 
+                        });
+                        
+                        // Clear audio files from localStorage after successful upload
+                        if (selectedGuideId) {
+                            localStorage.removeItem(`cloudguide_audio_${selectedGuideId}`);
+                            console.log('Cleared saved audio files for guide', selectedGuideId);
+                        }
+                        
+                        // Reset form after delay
+                        setTimeout(() => {
+                            document.getElementById('cmsEmail').value = '';
+                            document.getElementById('institutionName').value = '';
+                            document.getElementById('exhibitionName').value = '';
+                            document.getElementById('guideName').value = '';
+                            document.getElementById('additionalNotes').value = '';
+                            document.getElementById('contactPhone').value = '';
+                            document.getElementById('guideSelect').value = '';
+                            selectedGuide = null;
+                            selectedGuideId = null;
+                            audioFiles = [];
+                            updateAudioStatus(null);
+                            
+                            // Hide progress
+                            document.getElementById('progressContainer').classList.remove('active');
+                            document.getElementById('progressBar').style.width = '0%';
+                        }, 5000);
+                    }, function(error) {
+                        console.error('Email failed...', error);
+                        throw new Error('Failed to send email: ' + JSON.stringify(error));
                     });
-                    
-                    // Clear audio files from localStorage after successful upload
-                    if (selectedGuideId) {
-                        localStorage.removeItem(`cloudguide_audio_${selectedGuideId}`);
-                    }
-                    
-                    // Reset form after delay
-                    setTimeout(() => {
-                        document.getElementById('cmsEmail').value = '';
-                        document.getElementById('institutionName').value = '';
-                        document.getElementById('exhibitionName').value = '';
-                        document.getElementById('guideName').value = '';
-                        document.getElementById('additionalNotes').value = '';
-                        document.getElementById('contactPhone').value = '';
-                        document.getElementById('guideSelect').value = '';
-                        selectedGuide = null;
-                        audioFiles = [];
-                        updateAudioStatus(null);
-                    }, 3000);
-                } else {
-                    throw new Error(data.message || 'Submission failed');
-                }
                 
             } catch (error) {
                 console.error('Submission error:', error);
-                alert('Submission error: ' + error.message + '\n\nPlease try again or contact support.');
-            } finally {
+                
+                // Show error message
+                document.getElementById('errorMessage').classList.add('active');
+                document.getElementById('errorText').textContent = 
+                    'There was an error submitting your content: ' + error.message + 
+                    '\n\nPlease try again or contact support.';
+                
+                // Hide progress
+                document.getElementById('progressContainer').classList.remove('active');
+                document.getElementById('progressBar').style.width = '0%';
+                
                 // Re-enable submit button
                 document.getElementById('submitBtn').disabled = false;
                 
-                setTimeout(() => {
-                    document.getElementById('progressContainer').classList.remove('active');
-                    document.getElementById('progressBar').style.width = '0%';
-                }, 2000);
+                // Scroll to error message
+                document.getElementById('errorMessage').scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'center' 
+                });
             }
         }
 
@@ -752,6 +751,11 @@
         function updateProgress(percentage, status) {
             document.getElementById('progressBar').style.width = percentage + '%';
             document.getElementById('progressStatus').textContent = status;
+        }
+
+        // Show message helper
+        function showMessage(message, type = 'info') {
+            console.log(`[${type.toUpperCase()}] ${message}`);
         }
     </script>
 </body>
