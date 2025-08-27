@@ -585,74 +585,174 @@
                 document.getElementById('guideName').value = data.guideName || '';
                 localStorage.removeItem('uploadFormData');
             }
+            
+            // Add debug function to window for troubleshooting
+            window.debugLibrary = function() {
+                console.log('=== LIBRARY DEBUG ===');
+                
+                // Check localStorage contents
+                const localGuides = localStorage.getItem('cloudguide_audioguides');
+                const cloudGuides = localStorage.getItem('cloudguide_guides');
+                
+                console.log('Raw localStorage data:');
+                console.log('cloudguide_audioguides:', localGuides ? 'exists' : 'null');
+                console.log('cloudguide_guides:', cloudGuides ? 'exists' : 'null');
+                
+                if (localGuides) {
+                    try {
+                        const parsed = JSON.parse(localGuides);
+                        console.log('Local guides parsed:', parsed.length, 'items');
+                        parsed.slice(0, 3).forEach((g, i) => {
+                            console.log(`Local guide ${i + 1}:`, {
+                                id: g.id,
+                                title: g.title,
+                                location: g.location,
+                                hasContent: !!g.content,
+                                cloudinaryUrl: !!g.cloudinaryUrl
+                            });
+                        });
+                    } catch (e) {
+                        console.error('Error parsing local guides:', e);
+                    }
+                }
+                
+                if (cloudGuides) {
+                    try {
+                        const parsed = JSON.parse(cloudGuides);
+                        console.log('Cloud guides parsed:', parsed.length, 'items');
+                        parsed.slice(0, 3).forEach((g, i) => {
+                            console.log(`Cloud guide ${i + 1}:`, {
+                                id: g.id,
+                                title: g.title,
+                                location: g.location,
+                                hasContent: !!g.content,
+                                cloudinaryUrl: !!g.cloudinaryUrl
+                            });
+                        });
+                    } catch (e) {
+                        console.error('Error parsing cloud guides:', e);
+                    }
+                }
+                
+                // Test the getAllGuides function
+                const allGuides = getAllGuides();
+                console.log('getAllGuides() returned:', allGuides.length, 'items');
+                
+                return {
+                    localCount: localGuides ? JSON.parse(localGuides).length : 0,
+                    cloudCount: cloudGuides ? JSON.parse(cloudGuides).length : 0,
+                    totalCount: allGuides.length
+                };
+            };
+            
+            console.log('Debug function available: call debugLibrary() in console');
         });
 
         // Load audioguides from library (both local and cloud)
         function loadLibrary() {
             console.log('Loading library for upload page...');
             
-            // Load local guides
-            const localGuides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
-            // Load cloud references  
-            const cloudGuides = JSON.parse(localStorage.getItem('cloudguide_guides') || '[]');
+            let allGuides = [];
             
-            // Combine and deduplicate
-            const allGuides = [];
-            const seenIds = new Set();
-            
-            [...localGuides, ...cloudGuides].forEach(guide => {
-                if (!seenIds.has(guide.id)) {
-                    seenIds.add(guide.id);
-                    allGuides.push(guide);
+            try {
+                // Load local guides first (primary source)
+                const localGuides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
+                console.log('Local guides loaded:', localGuides.length);
+                
+                // Start with local guides
+                allGuides = [...localGuides];
+                
+                // Try to load cloud references (secondary source)
+                try {
+                    const cloudGuides = JSON.parse(localStorage.getItem('cloudguide_guides') || '[]');
+                    console.log('Cloud references loaded:', cloudGuides.length);
+                    
+                    // Add cloud guides that aren't already in local guides
+                    cloudGuides.forEach(cloudGuide => {
+                        const existsLocally = localGuides.find(localGuide => localGuide.id === cloudGuide.id);
+                        if (!existsLocally && cloudGuide.id) {
+                            allGuides.push(cloudGuide);
+                            console.log('Added cloud-only guide:', cloudGuide.title || cloudGuide.id);
+                        }
+                    });
+                } catch (cloudError) {
+                    console.warn('Error loading cloud guides (continuing with local only):', cloudError);
                 }
-            });
-            
-            // Sort by date (newest first)
-            allGuides.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+                
+                // Sort by date (newest first)
+                allGuides.sort((a, b) => {
+                    const dateA = new Date(a.date || 0);
+                    const dateB = new Date(b.date || 0);
+                    return dateB - dateA;
+                });
+                
+                console.log('Total guides after combining and sorting:', allGuides.length);
+                
+            } catch (error) {
+                console.error('Error loading library:', error);
+                allGuides = [];
+            }
             
             const select = document.getElementById('guideSelect');
             
-            console.log('Found audioguides:', allGuides.length);
-            
             if (allGuides.length === 0) {
                 select.innerHTML = '<option value="">No audioguides in library - Generate one first</option>';
+                console.log('No guides found in library');
                 return;
             }
             
+            // Clear and populate select
             select.innerHTML = '<option value="">Choose an audioguide...</option>';
+            
             allGuides.forEach((guide, index) => {
-                const option = document.createElement('option');
-                option.value = guide.id;
-                
-                // Better title handling
-                const title = guide.title || guide.location || `Guide ${index + 1}`;
-                const stops = guide.stops || '?';
-                const lang = guide.language || 'English';
-                const storage = guide.cloudinaryUrl ? '☁️' : '💾';
-                
-                option.textContent = `${title} (${lang}) - ${stops} stops ${storage}`;
-                select.appendChild(option);
-                
-                console.log(`Added guide: ${title} with ID ${guide.id} (${guide.cloudinaryUrl ? 'cloud' : 'local'})`);
-            });
-            
-            console.log('Library loaded with', allGuides.length, 'guides');
-        }
-
-        // Get all guides (local + cloud)
-        function getAllGuides() {
-            const localGuides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
-            const cloudGuides = JSON.parse(localStorage.getItem('cloudguide_guides') || '[]');
-            
-            const allGuides = [];
-            const seenIds = new Set();
-            
-            [...localGuides, ...cloudGuides].forEach(guide => {
-                if (!seenIds.has(guide.id)) {
-                    seenIds.add(guide.id);
-                    allGuides.push(guide);
+                try {
+                    const option = document.createElement('option');
+                    option.value = guide.id || `guide_${index}`;
+                    
+                    // Better title handling with fallbacks
+                    const title = guide.title || guide.location || `Guide ${index + 1}`;
+                    const stops = guide.stops || '?';
+                    const lang = guide.language || 'English';
+                    const storage = guide.cloudinaryUrl ? '☁️' : '💾';
+                    
+                    option.textContent = `${title} (${lang}) - ${stops} stops ${storage}`;
+                    select.appendChild(option);
+                    
+                    console.log(`Added guide: ${title} with ID ${guide.id} (${guide.cloudinaryUrl ? 'cloud' : 'local'})`);
+                } catch (guideError) {
+                    console.error('Error adding guide to select:', guideError, guide);
                 }
             });
+            
+            console.log(`Library loaded successfully with ${allGuides.length} guides`);
+        }
+
+        // Get all guides (local + cloud) - simplified version
+        function getAllGuides() {
+            let allGuides = [];
+            
+            try {
+                // Load local guides first (primary source)
+                const localGuides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
+                allGuides = [...localGuides];
+                
+                // Try to add cloud references that don't exist locally
+                try {
+                    const cloudGuides = JSON.parse(localStorage.getItem('cloudguide_guides') || '[]');
+                    cloudGuides.forEach(cloudGuide => {
+                        const existsLocally = localGuides.find(localGuide => localGuide.id === cloudGuide.id);
+                        if (!existsLocally && cloudGuide.id) {
+                            allGuides.push(cloudGuide);
+                        }
+                    });
+                } catch (cloudError) {
+                    console.warn('Could not load cloud guides:', cloudError);
+                }
+                
+            } catch (error) {
+                console.error('Error in getAllGuides:', error);
+                allGuides = [];
+            }
             
             return allGuides;
         }
