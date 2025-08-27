@@ -154,12 +154,6 @@
 
         select.form-element {
             cursor: pointer;
-            appearance: none;
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23718096' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-            background-repeat: no-repeat;
-            background-position: right 15px center;
-            background-size: 18px;
-            padding-right: 45px;
         }
 
         textarea.form-element {
@@ -186,11 +180,6 @@
             border-color: #f6ad55;
         }
 
-        .audio-status.loading {
-            background: #f0f4ff;
-            border-color: #667eea;
-        }
-
         .audio-list {
             margin-top: 15px;
             max-height: 200px;
@@ -214,11 +203,6 @@
             border-radius: 6px;
             padding: 20px;
             margin-bottom: 20px;
-        }
-
-        .guide-preview.loading {
-            background: #f0f4ff;
-            border-color: #667eea;
         }
 
         .guide-preview h4 {
@@ -281,11 +265,6 @@
             transform: none;
         }
 
-        .btn-secondary {
-            background: #718096;
-            color: white;
-        }
-
         .submit-btn {
             width: 100%;
             padding: 16px;
@@ -344,22 +323,6 @@
             display: block;
         }
 
-        .spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 2px solid #e2e8f0;
-            border-top: 2px solid #48bb78;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-right: 10px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
         @media (max-width: 768px) {
             .form-grid {
                 grid-template-columns: 1fr;
@@ -389,9 +352,7 @@
                         <li><a href="library.html">LIBRARY</a></li>
                         <li><a href="audio.html">AUDIO</a></li>
                         <li><a href="upload.html" class="active">UPLOAD</a></li>
-                        <li><a href="premium.html">PREMIUM</a></li>
                         <li><a href="about.html">ABOUT</a></li>
-                        <li><a href="https://www.cloudguide.me/contact" target="_blank">CONTACT</a></li>
                     </ul>
                 </nav>
             </div>
@@ -415,8 +376,8 @@
 
             <!-- Guide Preview -->
             <div class="guide-preview" id="guidePreview" style="display: none;">
-                <h4 id="previewHeader">📋 Selected Audioguide Details</h4>
-                <div class="guide-info-grid" id="guideInfoGrid">
+                <h4>📋 Selected Audioguide Details</h4>
+                <div class="guide-info-grid">
                     <div class="guide-info-item">
                         <span class="guide-info-label">Title:</span>
                         <span class="guide-info-value" id="previewTitle">-</span>
@@ -440,10 +401,6 @@
                     <div class="guide-info-item">
                         <span class="guide-info-label">Created:</span>
                         <span class="guide-info-value" id="previewDate">-</span>
-                    </div>
-                    <div class="guide-info-item">
-                        <span class="guide-info-label">Storage:</span>
-                        <span class="guide-info-value" id="previewStorage">-</span>
                     </div>
                 </div>
             </div>
@@ -568,7 +525,7 @@
         let selectedGuideId = null;
         let audioFiles = [];
         let fullGuideContent = '';
-        let cloudinaryAudioUrls = [];
+        let vercelAudioUrls = [];
 
         // Initialize on load
         window.addEventListener('DOMContentLoaded', function() {
@@ -585,224 +542,222 @@
                 document.getElementById('guideName').value = data.guideName || '';
                 localStorage.removeItem('uploadFormData');
             }
-            
-            // Add debug function to window for troubleshooting
-            window.debugLibrary = function() {
-                console.log('=== LIBRARY DEBUG ===');
-                
-                // Check localStorage contents
-                const localGuides = localStorage.getItem('cloudguide_audioguides');
-                const cloudGuides = localStorage.getItem('cloudguide_guides');
-                
-                console.log('Raw localStorage data:');
-                console.log('cloudguide_audioguides:', localGuides ? 'exists' : 'null');
-                console.log('cloudguide_guides:', cloudGuides ? 'exists' : 'null');
-                
-                if (localGuides) {
-                    try {
-                        const parsed = JSON.parse(localGuides);
-                        console.log('Local guides parsed:', parsed.length, 'items');
-                        parsed.slice(0, 3).forEach((g, i) => {
-                            console.log(`Local guide ${i + 1}:`, {
-                                id: g.id,
-                                title: g.title,
-                                location: g.location,
-                                hasContent: !!g.content,
-                                cloudinaryUrl: !!g.cloudinaryUrl
-                            });
-                        });
-                    } catch (e) {
-                        console.error('Error parsing local guides:', e);
-                    }
-                }
-                
-                if (cloudGuides) {
-                    try {
-                        const parsed = JSON.parse(cloudGuides);
-                        console.log('Cloud guides parsed:', parsed.length, 'items');
-                        parsed.slice(0, 3).forEach((g, i) => {
-                            console.log(`Cloud guide ${i + 1}:`, {
-                                id: g.id,
-                                title: g.title,
-                                location: g.location,
-                                hasContent: !!g.content,
-                                cloudinaryUrl: !!g.cloudinaryUrl
-                            });
-                        });
-                    } catch (e) {
-                        console.error('Error parsing cloud guides:', e);
-                    }
-                }
-                
-                // Test the getAllGuides function
-                const allGuides = getAllGuides();
-                console.log('getAllGuides() returned:', allGuides.length, 'items');
-                
-                return {
-                    localCount: localGuides ? JSON.parse(localGuides).length : 0,
-                    cloudCount: cloudGuides ? JSON.parse(cloudGuides).length : 0,
-                    totalCount: allGuides.length
-                };
-            };
-            
-            console.log('Debug function available: call debugLibrary() in console');
         });
 
-        // Load audioguides from library (both local and cloud)
+        // Load audioguides from library
         function loadLibrary() {
             console.log('Loading library for upload page...');
             
-            let allGuides = [];
-            
-            try {
-                // Load local guides first (primary source)
-                const localGuides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
-                console.log('Local guides loaded:', localGuides.length);
-                
-                // Start with local guides
-                allGuides = [...localGuides];
-                
-                // Try to load cloud references (secondary source)
-                try {
-                    const cloudGuides = JSON.parse(localStorage.getItem('cloudguide_guides') || '[]');
-                    console.log('Cloud references loaded:', cloudGuides.length);
-                    
-                    // Add cloud guides that aren't already in local guides
-                    cloudGuides.forEach(cloudGuide => {
-                        const existsLocally = localGuides.find(localGuide => localGuide.id === cloudGuide.id);
-                        if (!existsLocally && cloudGuide.id) {
-                            allGuides.push(cloudGuide);
-                            console.log('Added cloud-only guide:', cloudGuide.title || cloudGuide.id);
-                        }
-                    });
-                } catch (cloudError) {
-                    console.warn('Error loading cloud guides (continuing with local only):', cloudError);
-                }
-                
-                // Sort by date (newest first)
-                allGuides.sort((a, b) => {
-                    const dateA = new Date(a.date || 0);
-                    const dateB = new Date(b.date || 0);
-                    return dateB - dateA;
-                });
-                
-                console.log('Total guides after combining and sorting:', allGuides.length);
-                
-            } catch (error) {
-                console.error('Error loading library:', error);
-                allGuides = [];
-            }
+            const audioguides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
+            console.log('Found', audioguides.length, 'guides in library');
             
             const select = document.getElementById('guideSelect');
             
-            if (allGuides.length === 0) {
+            if (audioguides.length === 0) {
                 select.innerHTML = '<option value="">No audioguides in library - Generate one first</option>';
-                console.log('No guides found in library');
                 return;
             }
             
-            // Clear and populate select
             select.innerHTML = '<option value="">Choose an audioguide...</option>';
             
-            allGuides.forEach((guide, index) => {
-                try {
-                    const option = document.createElement('option');
-                    option.value = guide.id || `guide_${index}`;
-                    
-                    // Better title handling with fallbacks
-                    const title = guide.title || guide.location || `Guide ${index + 1}`;
-                    const stops = guide.stops || '?';
-                    const lang = guide.language || 'English';
-                    const storage = guide.cloudinaryUrl ? '☁️' : '💾';
-                    
-                    option.textContent = `${title} (${lang}) - ${stops} stops ${storage}`;
-                    select.appendChild(option);
-                    
-                    console.log(`Added guide: ${title} with ID ${guide.id} (${guide.cloudinaryUrl ? 'cloud' : 'local'})`);
-                } catch (guideError) {
-                    console.error('Error adding guide to select:', guideError, guide);
-                }
+            audioguides.forEach(guide => {
+                const option = document.createElement('option');
+                option.value = guide.id;
+                
+                const title = guide.title || guide.location || 'Untitled';
+                const stops = guide.stops || '?';
+                const lang = guide.language || 'English';
+                
+                option.textContent = `${title} (${lang}) - ${stops} stops`;
+                select.appendChild(option);
             });
-            
-            console.log(`Library loaded successfully with ${allGuides.length} guides`);
-        }
-
-        // Get all guides (local + cloud) - simplified version
-        function getAllGuides() {
-            let allGuides = [];
-            
-            try {
-                // Load local guides first (primary source)
-                const localGuides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
-                allGuides = [...localGuides];
-                
-                // Try to add cloud references that don't exist locally
-                try {
-                    const cloudGuides = JSON.parse(localStorage.getItem('cloudguide_guides') || '[]');
-                    cloudGuides.forEach(cloudGuide => {
-                        const existsLocally = localGuides.find(localGuide => localGuide.id === cloudGuide.id);
-                        if (!existsLocally && cloudGuide.id) {
-                            allGuides.push(cloudGuide);
-                        }
-                    });
-                } catch (cloudError) {
-                    console.warn('Could not load cloud guides:', cloudError);
-                }
-                
-            } catch (error) {
-                console.error('Error in getAllGuides:', error);
-                allGuides = [];
-            }
-            
-            return allGuides;
         }
 
         // Select a guide
         async function selectGuide() {
             const selectedId = document.getElementById('guideSelect').value;
-            console.log('Selected guide ID:', selectedId);
             
             if (!selectedId) {
                 selectedGuide = null;
                 selectedGuideId = null;
                 fullGuideContent = '';
                 audioFiles = [];
-                cloudinaryAudioUrls = [];
+                vercelAudioUrls = [];
                 updateAudioStatus(null);
                 document.getElementById('guidePreview').style.display = 'none';
                 return;
             }
             
-            // Show loading state
-            document.getElementById('guidePreview').style.display = 'block';
-            document.getElementById('guidePreview').classList.add('loading');
-            document.getElementById('previewHeader').innerHTML = '<div class="spinner"></div>Loading guide details...';
-            document.getElementById('audioStatus').className = 'audio-status loading';
-            document.getElementById('statusContent').innerHTML = '<div class="spinner"></div>Loading content and audio files...';
+            const audioguides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
+            selectedGuide = audioguides.find(g => g.id == selectedId);
             
-            try {
-                const allGuides = getAllGuides();
-                selectedGuide = allGuides.find(g => g.id == selectedId);
+            if (selectedGuide) {
                 selectedGuideId = selectedId;
+                fullGuideContent = selectedGuide.content || '';
                 
-                console.log('Found guide reference:', selectedGuide);
+                updateGuidePreview(selectedGuide);
+                await loadAudioFiles(selectedId);
                 
-                if (!selectedGuide) {
-                    throw new Error('Guide not found in library');
-                }
-                
-                // Load full content if it's a cloud guide
-                if (selectedGuide.cloudinaryUrl && !selectedGuide.content) {
-                    console.log('Loading content from Cloudinary:', selectedGuide.cloudinaryUrl);
+                document.getElementById('guidePreview').style.display = 'block';
+            }
+        }
+
+        // Update guide preview
+        function updateGuidePreview(guide) {
+            document.getElementById('previewTitle').textContent = guide.title || guide.location || 'Untitled';
+            document.getElementById('previewLocation').textContent = guide.location || guide.title || 'Unknown';
+            document.getElementById('previewLanguage').textContent = guide.language || 'English';
+            document.getElementById('previewStops').textContent = guide.stops || '?';
+            
+            const wordCount = fullGuideContent ? fullGuideContent.split(/\s+/).filter(w => w.length > 0).length : 0;
+            document.getElementById('previewWords').textContent = wordCount.toLocaleString();
+            
+            const date = guide.date ? new Date(guide.date).toLocaleDateString() : 'Unknown';
+            document.getElementById('previewDate').textContent = date;
+            
+            document.getElementById('guideLanguage').value = guide.language || 'English';
+            
+            if (!document.getElementById('guideName').value) {
+                document.getElementById('guideName').value = guide.title || guide.location || 'Audio Tour';
+            }
+        }
+
+        // Load audio files for the guide
+        async function loadAudioFiles(guideId) {
+            console.log('Loading audio files for guide:', guideId);
+            
+            audioFiles = [];
+            vercelAudioUrls = [];
+            
+            // Check localStorage for audio metadata
+            const audioMeta = localStorage.getItem(`audio_meta_${guideId}`);
+            
+            if (audioMeta) {
+                try {
+                    audioFiles = JSON.parse(audioMeta);
+                    console.log('Found', audioFiles.length, 'audio files');
                     
-                    const redirectUrl = selectedGuide.cloudinaryUrl ? 
-                        `audio.html?id=${encodeURIComponent(selectedGuide.cloudinaryUrl)}` : 
-                        `audio.html?id=${selectedGuideId}`;
-                    window.location.href = redirectUrl;
-                    document.getElementById('submitBtn').disabled = false;
+                    // Extract Vercel URLs
+                    vercelAudioUrls = audioFiles.map(file => file.url || '').filter(url => url);
+                } catch (e) {
+                    console.error('Error parsing audio metadata:', e);
+                }
+            } else {
+                // Try to fetch from Vercel Blob
+                try {
+                    const response = await fetch(`/api/upload-audio?guideId=${guideId}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.files && data.files.length > 0) {
+                            audioFiles = data.files;
+                            vercelAudioUrls = data.files.map(f => f.url);
+                            console.log('Found', audioFiles.length, 'files in cloud');
+                        }
+                    }
+                } catch (error) {
+                    console.log('Could not fetch cloud files:', error);
+                }
+            }
+            
+            updateAudioStatus(selectedGuide, audioFiles);
+        }
+
+        // Update audio status display
+        function updateAudioStatus(guide, audioArray) {
+            const statusDiv = document.getElementById('audioStatus');
+            const contentDiv = document.getElementById('statusContent');
+            const audioListDiv = document.getElementById('audioList');
+            
+            if (!guide) {
+                statusDiv.className = 'audio-status no-audio';
+                contentDiv.innerHTML = '<p>No audioguide selected</p>';
+                audioListDiv.style.display = 'none';
+                return;
+            }
+            
+            const wordCount = fullGuideContent ? fullGuideContent.split(/\s+/).filter(w => w.length > 0).length : 0;
+            const estimatedDuration = Math.round(wordCount / 150);
+            
+            if (audioArray && audioArray.length > 0) {
+                statusDiv.className = 'audio-status has-audio';
+                contentDiv.innerHTML = `
+                    <p>✅ <strong>Script:</strong> ${wordCount.toLocaleString()} words (~${estimatedDuration} min)</p>
+                    <p>✅ <strong>Audio Files:</strong> ${audioArray.length} files ready</p>
+                    <p>☁️ <strong>Storage:</strong> Vercel Blob (permanent URLs)</p>
+                `;
+                
+                audioListDiv.style.display = 'block';
+                audioListDiv.innerHTML = '<strong>Audio Files:</strong><br>' + 
+                    audioArray.map((audio, i) => `
+                        <div class="audio-item">
+                            <span>🎵 ${audio.name || audio.pathname || `Stop ${i + 1}.mp3`}</span>
+                            <span style="font-size: 12px; color: #718096;">☁️ Cloud</span>
+                        </div>
+                    `).join('');
+            } else {
+                statusDiv.className = 'audio-status no-audio';
+                contentDiv.innerHTML = `
+                    <p>✅ <strong>Script:</strong> ${wordCount.toLocaleString()} words</p>
+                    <p>⚠️ <strong>Audio:</strong> Not generated yet</p>
+                    <p style="margin-top: 10px;">
+                        <a href="audio.html?id=${guide.id}" style="color: #f6ad55;">
+                            Generate audio files →
+                        </a>
+                    </p>
+                `;
+                audioListDiv.style.display = 'none';
+            }
+        }
+
+        // Submit to CloudGuide
+        async function submitToCloudGuide() {
+            // Hide previous messages
+            document.getElementById('successMessage').classList.remove('active');
+            document.getElementById('errorMessage').classList.remove('active');
+            
+            // Validate required fields
+            const cmsEmail = document.getElementById('cmsEmail').value.trim();
+            const institutionName = document.getElementById('institutionName').value.trim();
+            const exhibitionName = document.getElementById('exhibitionName').value.trim();
+            const guideName = document.getElementById('guideName').value.trim();
+            const additionalNotes = document.getElementById('additionalNotes').value.trim();
+            const contactPhone = document.getElementById('contactPhone').value.trim();
+            
+            if (!cmsEmail || !institutionName || !exhibitionName || !guideName) {
+                alert('Please fill in all required fields');
+                return;
+            }
+            
+            if (!selectedGuide || !fullGuideContent) {
+                alert('Please select an audioguide from your library');
+                return;
+            }
+            
+            // Check for audio
+            if (audioFiles.length === 0) {
+                const proceed = confirm(
+                    'No audio files found for this guide.\n\n' +
+                    'Do you want to:\n' +
+                    '• OK - Submit script only\n' +
+                    '• Cancel - Generate audio first'
+                );
+                
+                if (!proceed) {
+                    // Save form data and redirect to audio page
+                    localStorage.setItem('uploadFormData', JSON.stringify({
+                        cmsEmail: cmsEmail,
+                        institutionName: institutionName,
+                        exhibitionName: exhibitionName,
+                        guideName: guideName
+                    }));
+                    
+                    window.location.href = `audio.html?id=${selectedGuideId}`;
                     return;
                 }
             }
+            
+            // Disable submit button
+            document.getElementById('submitBtn').disabled = true;
             
             // Show progress
             document.getElementById('progressContainer').classList.add('active');
@@ -811,28 +766,22 @@
             try {
                 updateProgress(30, 'Processing content...');
                 
-                // Prepare guide info
                 const guideTitle = selectedGuide.title || selectedGuide.location || 'Untitled Guide';
-                const guideLocation = selectedGuide.location || selectedGuide.title || 'Unknown Location';
-                const wordCount = fullGuideContent ? fullGuideContent.split(/\s+/).filter(w => w.length > 0).length : 0;
+                const wordCount = fullGuideContent.split(/\s+/).filter(w => w.length > 0).length;
                 
                 // Prepare audio URLs list
-                let audioLinksText = 'No audio files generated';
-                
-                if (audioFiles.length > 0 && cloudinaryAudioUrls.length > 0) {
-                    audioLinksText = cloudinaryAudioUrls.map((url, index) => {
-                        const fileName = audioFiles[index]?.name || `Audio_${index + 1}.mp3`;
-                        return `${index + 1}. ${fileName}: ${url}`;
-                    }).join('\n');
-                } else if (audioFiles.length > 0) {
-                    audioLinksText = `${audioFiles.length} audio files available locally (data URLs)`;
+                let audioLinksText = 'No audio files';
+                if (vercelAudioUrls.length > 0) {
+                    audioLinksText = vercelAudioUrls.map((url, index) => 
+                        `${index + 1}. Stop ${index + 1}: ${url}`
+                    ).join('\n');
                 }
                 
                 updateProgress(50, 'Formatting content...');
                 
-                // Prepare content preview (first 3000 chars)
+                // Prepare content preview
                 const contentPreview = fullGuideContent.length > 3000 ? 
-                    fullGuideContent.substring(0, 3000) + '...\n\n[Content truncated - full content available in attached files]' :
+                    fullGuideContent.substring(0, 3000) + '...\n\n[Full content available]' :
                     fullGuideContent;
                 
                 // Prepare email parameters
@@ -845,7 +794,7 @@
                     language: document.getElementById('guideLanguage').value,
                     contact_phone: contactPhone || 'Not provided',
                     guide_title: guideTitle,
-                    guide_location: guideLocation,
+                    guide_location: selectedGuide.location || 'Unknown',
                     guide_stops: selectedGuide.stops || 'Unknown',
                     word_count: wordCount,
                     audio_count: audioFiles.length,
@@ -854,65 +803,37 @@
                     additional_notes: additionalNotes || 'None',
                     submission_date: new Date().toLocaleDateString(),
                     guide_id: selectedGuideId,
-                    cloud_stored: selectedGuide.cloudinaryUrl ? 'Yes' : 'No',
-                    cloudinary_guide_url: selectedGuide.cloudinaryUrl || 'N/A'
+                    storage: 'Vercel Blob Storage'
                 };
                 
                 updateProgress(70, 'Sending to CloudGuide...');
-                console.log('Sending email with params:', emailParams);
                 
                 // Send email using EmailJS
-                await emailjs.send('service_sqyvtda', 'template_90y0ndk', emailParams)
-                    .then(function(response) {
-                        console.log('Email sent successfully!', response.status, response.text);
-                        
-                        updateProgress(100, 'Submission complete!');
-                        
-                        // Show success message
-                        document.getElementById('successMessage').classList.add('active');
-                        
-                        // Scroll to success message
-                        document.getElementById('successMessage').scrollIntoView({ 
-                            behavior: 'smooth', 
-                            block: 'center' 
-                        });
-                        
-                        // Clear audio files from localStorage after successful upload
-                        if (selectedGuideId && audioFiles.length > 0) {
-                            localStorage.removeItem(`cloudguide_audio_${selectedGuideId}`);
-                            console.log('Cleared saved audio files for guide', selectedGuideId);
-                        }
-                        
-                        // Reset form after delay
-                        setTimeout(() => {
-                            resetForm();
-                        }, 5000);
-                    }, function(error) {
-                        console.error('Email failed...', error);
-                        throw new Error('Failed to send email: ' + JSON.stringify(error));
-                    });
+                await emailjs.send('service_sqyvtda', 'template_90y0ndk', emailParams);
+                
+                updateProgress(100, 'Submission complete!');
+                
+                // Show success message
+                document.getElementById('successMessage').classList.add('active');
+                document.getElementById('successMessage').scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'center' 
+                });
+                
+                // Reset form after delay
+                setTimeout(() => {
+                    resetForm();
+                }, 5000);
                 
             } catch (error) {
                 console.error('Submission error:', error);
                 
-                // Show error message
                 document.getElementById('errorMessage').classList.add('active');
                 document.getElementById('errorText').textContent = 
-                    'There was an error submitting your content: ' + error.message + 
-                    '\n\nPlease try again or contact support.';
+                    'There was an error submitting your content: ' + error.message;
                 
-                // Hide progress
                 document.getElementById('progressContainer').classList.remove('active');
-                document.getElementById('progressBar').style.width = '0%';
-                
-                // Re-enable submit button
                 document.getElementById('submitBtn').disabled = false;
-                
-                // Scroll to error message
-                document.getElementById('errorMessage').scrollIntoView({ 
-                    behavior: 'smooth', 
-                    block: 'center' 
-                });
             }
         }
 
@@ -936,314 +857,13 @@
             selectedGuideId = null;
             fullGuideContent = '';
             audioFiles = [];
-            cloudinaryAudioUrls = [];
+            vercelAudioUrls = [];
             updateAudioStatus(null);
             
-            // Hide progress
             document.getElementById('progressContainer').classList.remove('active');
             document.getElementById('progressBar').style.width = '0%';
-            
-            // Re-enable submit button
             document.getElementById('submitBtn').disabled = false;
-        }
-
-        // Show message helper
-        function showMessage(message, type = 'info') {
-            console.log(`[${type.toUpperCase()}] ${message}`);
-            
-            // Create toast notification
-            const toast = document.createElement('div');
-            toast.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                padding: 15px 25px;
-                border-radius: 6px;
-                background: ${type === 'error' ? '#e53e3e' : '#3182ce'};
-                color: white;
-                z-index: 10000;
-                max-width: 400px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            `;
-            toast.textContent = message;
-            document.body.appendChild(toast);
-            
-            setTimeout(() => {
-                toast.remove();
-            }, 5000);
         }
     </script>
 </body>
-</html> response = await fetch(selectedGuide.cloudinaryUrl);
-                    if (!response.ok) {
-                        throw new Error(`Failed to load from cloud: ${response.status}`);
-                    }
-                    
-                    const cloudData = await response.json();
-                    console.log('Loaded cloud data:', { id: cloudData.id, hasContent: !!cloudData.content });
-                    
-                    // Merge cloud data with local reference
-                    selectedGuide = { ...selectedGuide, ...cloudData };
-                    fullGuideContent = cloudData.content || '';
-                } else {
-                    fullGuideContent = selectedGuide.content || '';
-                }
-                
-                if (!fullGuideContent) {
-                    console.warn('No content found for guide');
-                    fullGuideContent = 'No content available';
-                }
-                
-                // Update preview
-                updateGuidePreview(selectedGuide);
-                
-                // Load audio files
-                await loadAudioFiles(selectedId);
-                
-                console.log('Guide loaded successfully:', {
-                    id: selectedGuide.id,
-                    contentLength: fullGuideContent.length,
-                    audioFiles: audioFiles.length,
-                    cloudinaryUrls: cloudinaryAudioUrls.length
-                });
-                
-            } catch (error) {
-                console.error('Error loading guide:', error);
-                showMessage('Error loading guide: ' + error.message, 'error');
-                
-                // Reset state
-                selectedGuide = null;
-                selectedGuideId = null;
-                fullGuideContent = '';
-                document.getElementById('guidePreview').style.display = 'none';
-                updateAudioStatus(null);
-            } finally {
-                // Remove loading states
-                document.getElementById('guidePreview').classList.remove('loading');
-                document.getElementById('previewHeader').innerHTML = '📋 Selected Audioguide Details';
-            }
-        }
-
-        // Update guide preview
-        function updateGuidePreview(guide) {
-            document.getElementById('previewTitle').textContent = guide.title || guide.location || 'Untitled';
-            document.getElementById('previewLocation').textContent = guide.location || guide.title || 'Unknown';
-            document.getElementById('previewLanguage').textContent = guide.language || 'English';
-            document.getElementById('previewStops').textContent = guide.stops || '?';
-            
-            // Calculate word count from full content
-            const wordCount = fullGuideContent ? fullGuideContent.split(/\s+/).filter(w => w.length > 0).length : 0;
-            document.getElementById('previewWords').textContent = wordCount.toLocaleString();
-            
-            // Format date
-            const date = guide.date ? new Date(guide.date).toLocaleDateString() : 'Unknown';
-            document.getElementById('previewDate').textContent = date;
-            
-            // Show storage type
-            const storageType = guide.cloudinaryUrl ? '☁️ Cloud Storage' : '💾 Local Storage';
-            document.getElementById('previewStorage').textContent = storageType;
-            
-            // Set language in form
-            document.getElementById('guideLanguage').value = guide.language || 'English';
-            
-            // Auto-fill guide name
-            if (!document.getElementById('guideName').value) {
-                document.getElementById('guideName').value = guide.title || guide.location || 'Audio Tour';
-            }
-        }
-
-        // Load audio files for the guide
-        async function loadAudioFiles(guideId) {
-            console.log('Loading audio files for guide:', guideId);
-            
-            audioFiles = [];
-            cloudinaryAudioUrls = [];
-            
-            // Check localStorage for audio files
-            const storedAudio = localStorage.getItem(`cloudguide_audio_${guideId}`);
-            
-            if (storedAudio) {
-                try {
-                    const parsedAudio = JSON.parse(storedAudio);
-                    console.log('Found stored audio files:', parsedAudio.length);
-                    
-                    audioFiles = parsedAudio;
-                    
-                    // Upload audio files to Cloudinary for sharing
-                    await uploadAudioToCloudinary(parsedAudio, guideId);
-                    
-                } catch (e) {
-                    console.error('Error parsing audio files:', e);
-                    audioFiles = [];
-                }
-            } else {
-                console.log('No audio files found in localStorage for guide:', guideId);
-            }
-            
-            updateAudioStatus(selectedGuide, audioFiles);
-        }
-
-        // Upload audio files to Cloudinary for email sharing
-        async function uploadAudioToCloudinary(audioFiles, guideId) {
-            console.log('Uploading audio files to Cloudinary...');
-            cloudinaryAudioUrls = [];
-            
-            let uploadedCount = 0;
-            const totalFiles = audioFiles.length;
-            
-            for (let i = 0; i < audioFiles.length; i++) {
-                const audioFile = audioFiles[i];
-                
-                try {
-                    // Skip if already has a Cloudinary URL
-                    if (audioFile.url && audioFile.url.includes('cloudinary.com')) {
-                        cloudinaryAudioUrls.push(audioFile.url);
-                        uploadedCount++;
-                        continue;
-                    }
-                    
-                    // Skip data URLs that are too large (>5MB)
-                    if (audioFile.url && audioFile.url.startsWith('data:')) {
-                        const sizeInBytes = (audioFile.url.length * 3) / 4;
-                        if (sizeInBytes > 5 * 1024 * 1024) {
-                            console.log('Skipping large audio file:', audioFile.name);
-                            cloudinaryAudioUrls.push('Large file - available locally');
-                            continue;
-                        }
-                    }
-                    
-                    const fileName = `${guideId}_${audioFile.name || `audio_${i + 1}.mp3`}`;
-                    
-                    const response = await fetch('/api/upload-to-cloudinary', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            audioData: audioFile.url,
-                            fileName: fileName
-                        })
-                    });
-                    
-                    if (response.ok) {
-                        const data = await response.json();
-                        if (data.url && !data.mock) {
-                            cloudinaryAudioUrls.push(data.url);
-                            uploadedCount++;
-                            console.log(`Uploaded audio file ${i + 1}/${totalFiles}`);
-                        } else {
-                            cloudinaryAudioUrls.push(`Mock URL: ${fileName}`);
-                        }
-                    } else {
-                        console.error('Failed to upload audio file:', audioFile.name);
-                        cloudinaryAudioUrls.push(`Failed to upload: ${audioFile.name}`);
-                    }
-                } catch (error) {
-                    console.error('Error uploading audio file:', error);
-                    cloudinaryAudioUrls.push(`Error: ${audioFile.name}`);
-                }
-            }
-            
-            console.log(`Audio upload complete: ${uploadedCount}/${totalFiles} files uploaded`);
-        }
-
-        // Update audio status display
-        function updateAudioStatus(guide, audioArray) {
-            const statusDiv = document.getElementById('audioStatus');
-            const contentDiv = document.getElementById('statusContent');
-            const audioListDiv = document.getElementById('audioList');
-            
-            if (!guide) {
-                statusDiv.className = 'audio-status no-audio';
-                contentDiv.innerHTML = '<p>No audioguide selected</p>';
-                audioListDiv.style.display = 'none';
-                return;
-            }
-            
-            const wordCount = fullGuideContent ? fullGuideContent.split(/\s+/).filter(w => w.length > 0).length : 0;
-            const estimatedDuration = Math.round(wordCount / 150); // Rough estimate
-            
-            if (audioArray && audioArray.length > 0) {
-                statusDiv.className = 'audio-status has-audio';
-                contentDiv.innerHTML = `
-                    <p>✅ <strong>Script:</strong> ${wordCount.toLocaleString()} words (~${estimatedDuration} min reading time)</p>
-                    <p>✅ <strong>Audio Files:</strong> ${audioArray.length} files ready for upload</p>
-                    ${cloudinaryAudioUrls.length > 0 ? `<p>☁️ <strong>Cloud URLs:</strong> ${cloudinaryAudioUrls.length} files uploaded to Cloudinary</p>` : ''}
-                `;
-                
-                // Show audio file list
-                audioListDiv.style.display = 'block';
-                audioListDiv.innerHTML = '<strong>Audio Files:</strong><br>' + 
-                    audioArray.map((audio, i) => {
-                        const cloudUrl = cloudinaryAudioUrls[i] || 'Uploading...';
-                        const isCloudUrl = cloudUrl.includes('cloudinary.com');
-                        return `
-                            <div class="audio-item">
-                                <span>🎵 ${audio.name || `Stop ${i + 1}.mp3`}</span>
-                                <span style="font-size: 12px; color: #718096;">
-                                    ${isCloudUrl ? '☁️ Cloud' : audio.size || 'Ready'}
-                                </span>
-                            </div>
-                        `;
-                    }).join('');
-            } else {
-                statusDiv.className = 'audio-status no-audio';
-                contentDiv.innerHTML = `
-                    <p>✅ <strong>Script:</strong> ${wordCount.toLocaleString()} words (~${estimatedDuration} min reading time)</p>
-                    <p>⚠️ <strong>Audio:</strong> Not generated yet</p>
-                    <p style="margin-top: 10px;">
-                        <a href="audio.html?id=${guide.cloudinaryUrl ? encodeURIComponent(guide.cloudinaryUrl) : guide.id}" 
-                           style="color: #f6ad55;">
-                            Generate audio files →
-                        </a>
-                    </p>
-                `;
-                audioListDiv.style.display = 'none';
-            }
-        }
-
-        // Submit to CloudGuide
-        async function submitToCloudGuide() {
-            console.log('Starting submission...');
-            
-            // Hide any previous messages
-            document.getElementById('successMessage').classList.remove('active');
-            document.getElementById('errorMessage').classList.remove('active');
-            
-            // Validate required fields
-            const cmsEmail = document.getElementById('cmsEmail').value.trim();
-            const institutionName = document.getElementById('institutionName').value.trim();
-            const exhibitionName = document.getElementById('exhibitionName').value.trim();
-            const guideName = document.getElementById('guideName').value.trim();
-            const additionalNotes = document.getElementById('additionalNotes').value.trim();
-            const contactPhone = document.getElementById('contactPhone').value.trim();
-            
-            if (!cmsEmail || !institutionName || !exhibitionName || !guideName) {
-                alert('Please fill in all required fields');
-                return;
-            }
-            
-            if (!selectedGuide || !fullGuideContent) {
-                alert('Please select an audioguide from your library');
-                return;
-            }
-            
-            // Disable submit button
-            document.getElementById('submitBtn').disabled = true;
-            
-            // Check for audio
-            if (audioFiles.length === 0) {
-                const proceed = confirm(
-                    'No audio files found for this guide.\n\n' +
-                    'Do you want to:\n' +
-                    '• OK - Submit script only (audio can be added later)\n' +
-                    '• Cancel - Generate audio first'
-                );
-                
-                if (!proceed) {
-                    // Save form data and redirect to audio page
-                    localStorage.setItem('uploadFormData', JSON.stringify({
-                        cmsEmail: cmsEmail,
-                        institutionName: institutionName,
-                        exhibitionName: exhibitionName,
-                        guideName: guideName
-                    }));
-                    const
+</html>
