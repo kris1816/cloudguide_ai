@@ -1,5 +1,7 @@
 // api/upload-to-cloudinary.js
-// FIXED VERSION with proper fallback and file accessibility
+// COMPLETE FIX with proper Cloudinary upload and fallback
+
+const crypto = require('crypto');
 
 export default async function handler(req, res) {
   // Enable CORS
@@ -16,158 +18,144 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { audioData, fileName } = req.body;
+    const { audioData, fileName, type = 'audio' } = req.body;
 
-    // Get Cloudinary credentials from environment variables
+    // Get Cloudinary credentials
     const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
     const apiKey = process.env.CLOUDINARY_API_KEY;
     const apiSecret = process.env.CLOUDINARY_API_SECRET;
 
-    console.log('Cloudinary config check:', {
-      cloudName: cloudName ? `Set (${cloudName})` : 'Not set',
-      apiKey: apiKey ? 'Set' : 'Not set',
-      apiSecret: apiSecret ? 'Set' : 'Not set'
+    console.log('=== Cloudinary Upload Debug ===');
+    console.log('File:', fileName);
+    console.log('Type:', type);
+    console.log('Config:', {
+      cloudName: cloudName || 'NOT SET',
+      apiKey: apiKey ? 'SET' : 'NOT SET',
+      apiSecret: apiSecret ? 'SET' : 'NOT SET'
     });
 
-    // If Cloudinary is not configured, return the data URL directly
-    // This ensures files are always accessible
+    // CHECK IF CLOUDINARY IS CONFIGURED
     if (!cloudName || !apiKey || !apiSecret) {
-      console.log('Cloudinary not configured, returning data URL directly');
+      console.error('ERROR: Cloudinary environment variables not configured!');
+      console.log('Please set in Vercel dashboard:');
+      console.log('- CLOUDINARY_CLOUD_NAME');
+      console.log('- CLOUDINARY_API_KEY');
+      console.log('- CLOUDINARY_API_SECRET');
       
-      // For JSON files, return the data as-is
-      if (fileName.endsWith('.json')) {
-        return res.status(200).json({
-          success: true,
-          url: audioData, // Return the actual data
-          isDataUrl: true,
-          mock: false,
-          message: 'Cloudinary not configured - using direct data storage'
-        });
-      }
-      
-      // For audio files, ensure it's a proper data URL
-      if (fileName.endsWith('.mp3') || audioData.startsWith('data:audio')) {
-        return res.status(200).json({
-          success: true,
-          url: audioData, // Keep the base64 data URL
-          isDataUrl: true,
-          mock: false,
-          message: 'Cloudinary not configured - audio stored as data URL'
-        });
-      }
-      
-      // For other files
+      // CRITICAL: Return data URL directly if Cloudinary not configured
+      // This ensures files are still accessible
       return res.status(200).json({
         success: true,
-        url: audioData,
-        isDataUrl: true,
-        mock: false,
-        message: 'Cloudinary not configured - using direct data storage'
+        url: audioData, // Return the data URL directly
+        storage: 'dataUrl',
+        warning: 'Cloudinary not configured - returning data URL'
       });
     }
 
-    // If we have Cloudinary credentials, try to upload
-    try {
-      const timestamp = Date.now();
-      let publicId, folder, resourceType, uploadUrl;
-      
-      // Determine upload parameters based on file type
-      if (fileName.endsWith('.json')) {
-        publicId = `cloudguide/guides/${fileName.replace('.json', '')}_${timestamp}`;
-        folder = 'cloudguide/guides';
-        resourceType = 'raw';
-        uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/raw/upload`;
-      } else if (fileName.endsWith('.mp3') || audioData.startsWith('data:audio')) {
-        publicId = `cloudguide/audio/${fileName.replace('.mp3', '')}_${timestamp}`;
-        folder = 'cloudguide/audio';
-        resourceType = 'video'; // Cloudinary uses 'video' for audio files
-        uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/video/upload`;
-      } else {
-        publicId = `cloudguide/data/${fileName}_${timestamp}`;
-        folder = 'cloudguide/data';
-        resourceType = 'raw';
-        uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/raw/upload`;
-      }
-      
-      // Create form data
-      const formData = new URLSearchParams();
-      formData.append('file', audioData);
-      formData.append('public_id', publicId);
-      formData.append('api_key', apiKey);
-      formData.append('folder', folder);
-      formData.append('resource_type', resourceType);
-      
-      // Generate signature for authenticated upload
-      const crypto = require('crypto');
-      const timestampSeconds = Math.round(timestamp / 1000);
-      const paramsToSign = `folder=${folder}&public_id=${publicId}&resource_type=${resourceType}&timestamp=${timestampSeconds}`;
-      const signature = crypto
-        .createHash('sha256')
-        .update(paramsToSign + apiSecret)
-        .digest('hex');
-      
-      formData.append('timestamp', timestampSeconds);
-      formData.append('signature', signature);
-
-      console.log('Uploading to Cloudinary:', {
-        url: uploadUrl,
-        publicId: publicId,
-        folder: folder,
-        resourceType: resourceType
-      });
-
-      // Make the upload request
-      const response = await fetch(uploadUrl, {
-        method: 'POST',
-        body: formData
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Cloudinary upload failed:', response.status, errorText);
-        
-        // Return data URL as fallback
-        return res.status(200).json({
-          success: true,
-          url: audioData,
-          isDataUrl: true,
-          error: 'Cloudinary upload failed, using data URL fallback',
-          cloudinaryError: errorText
-        });
-      }
-
-      const data = await response.json();
-      console.log('Cloudinary upload success:', data.secure_url);
-      
-      return res.status(200).json({
-        success: true,
-        url: data.secure_url,
-        publicId: data.public_id,
-        isCloudinary: true,
-        mock: false
-      });
-      
-    } catch (uploadError) {
-      console.error('Cloudinary upload error:', uploadError);
-      
-      // Return data URL as fallback
-      return res.status(200).json({
-        success: true,
-        url: audioData,
-        isDataUrl: true,
-        error: uploadError.message,
-        message: 'Upload failed, using data URL fallback'
-      });
-    }
-
-  } catch (error) {
-    console.error('Handler error:', error);
+    // CLOUDINARY IS CONFIGURED - PROCEED WITH UPLOAD
+    const timestamp = Math.round(Date.now() / 1000);
+    let folder, resourceType, uploadUrl;
     
-    // Always return success with data URL to prevent breaking the app
+    // Determine upload parameters based on file type
+    if (type === 'audio' || fileName.includes('audio')) {
+      folder = 'cloudguide/audio';
+      resourceType = 'video'; // Cloudinary uses 'video' for audio files
+      uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/video/upload`;
+    } else if (type === 'json' || fileName.endsWith('.json')) {
+      folder = 'cloudguide/guides';
+      resourceType = 'raw';
+      uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/raw/upload`;
+    } else {
+      folder = 'cloudguide/files';
+      resourceType = 'auto';
+      uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`;
+    }
+
+    // Generate unique public ID
+    const publicId = `${folder}/${fileName.replace(/\.[^/.]+$/, "")}_${timestamp}`;
+    
+    // Create signature for secure upload
+    const paramsToSign = {
+      folder: folder,
+      public_id: publicId,
+      resource_type: resourceType,
+      timestamp: timestamp
+    };
+    
+    // Sort parameters alphabetically for signature
+    const sortedParams = Object.keys(paramsToSign)
+      .sort()
+      .map(key => `${key}=${paramsToSign[key]}`)
+      .join('&');
+    
+    const signatureString = `${sortedParams}${apiSecret}`;
+    const signature = crypto
+      .createHash('sha256')
+      .update(signatureString)
+      .digest('hex');
+
+    console.log('Upload params:', {
+      folder,
+      resourceType,
+      publicId,
+      timestamp
+    });
+
+    // Prepare form data for upload
+    const formData = new URLSearchParams();
+    formData.append('file', audioData);
+    formData.append('api_key', apiKey);
+    formData.append('timestamp', timestamp);
+    formData.append('signature', signature);
+    formData.append('folder', folder);
+    formData.append('public_id', publicId);
+    formData.append('resource_type', resourceType);
+
+    // Upload to Cloudinary
+    console.log('Uploading to Cloudinary...');
+    const response = await fetch(uploadUrl, {
+      method: 'POST',
+      body: formData
+    });
+
+    const responseText = await response.text();
+    console.log('Cloudinary response status:', response.status);
+    
+    if (!response.ok) {
+      console.error('Cloudinary upload failed:', responseText);
+      
+      // FALLBACK: Return data URL on upload failure
+      return res.status(200).json({
+        success: true,
+        url: audioData, // Return original data URL
+        storage: 'dataUrl',
+        error: `Cloudinary upload failed: ${response.status}`,
+        details: responseText
+      });
+    }
+
+    // Parse successful response
+    const data = JSON.parse(responseText);
+    console.log('Upload successful! URL:', data.secure_url);
+    
     return res.status(200).json({
       success: true,
-      url: req.body.audioData || '',
-      isDataUrl: true,
+      url: data.secure_url,
+      publicId: data.public_id,
+      storage: 'cloudinary',
+      format: data.format,
+      size: data.bytes
+    });
+
+  } catch (error) {
+    console.error('Upload error:', error);
+    
+    // FINAL FALLBACK: Return data URL on any error
+    const { audioData } = req.body;
+    return res.status(200).json({
+      success: true,
+      url: audioData || '', // Return original data if available
+      storage: 'dataUrl',
       error: error.message
     });
   }
