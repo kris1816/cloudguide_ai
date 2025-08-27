@@ -629,35 +629,59 @@
             audioFiles = [];
             vercelAudioUrls = [];
             
-            // Check localStorage for audio metadata
+            // First check localStorage for audio metadata
             const audioMeta = localStorage.getItem(`audio_meta_${guideId}`);
             
             if (audioMeta) {
                 try {
-                    audioFiles = JSON.parse(audioMeta);
-                    console.log('Found', audioFiles.length, 'audio files');
+                    const parsedMeta = JSON.parse(audioMeta);
+                    console.log('Found', parsedMeta.length, 'audio files in metadata');
                     
-                    // Extract Vercel URLs
-                    vercelAudioUrls = audioFiles.map(file => file.url || '').filter(url => url);
+                    // Extract URLs from metadata
+                    parsedMeta.forEach(file => {
+                        if (file.url) {
+                            audioFiles.push(file);
+                            
+                            // Check if it's a Vercel Blob URL or data URL
+                            if (file.url.startsWith('http')) {
+                                vercelAudioUrls.push(file.url);
+                                console.log('Found cloud URL:', file.url);
+                            } else if (file.url.startsWith('data:')) {
+                                console.log('Found data URL for:', file.name);
+                            }
+                        }
+                    });
+                    
+                    console.log('Total cloud URLs found:', vercelAudioUrls.length);
                 } catch (e) {
                     console.error('Error parsing audio metadata:', e);
                 }
-            } else {
-                // Try to fetch from Vercel Blob
-                try {
-                    const response = await fetch(`/api/upload-audio?guideId=${guideId}`);
-                    if (response.ok) {
-                        const data = await response.json();
-                        if (data.files && data.files.length > 0) {
-                            audioFiles = data.files;
-                            vercelAudioUrls = data.files.map(f => f.url);
-                            console.log('Found', audioFiles.length, 'files in cloud');
-                        }
-                    }
-                } catch (error) {
-                    console.log('Could not fetch cloud files:', error);
-                }
             }
+            
+            // Also try to fetch from Vercel Blob API
+            try {
+                const response = await fetch(`/api/upload-audio?guideId=${guideId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.files && data.files.length > 0) {
+                        console.log('Found', data.files.length, 'files in Vercel Blob');
+                        
+                        // Add any files from Vercel that aren't already in our list
+                        data.files.forEach(cloudFile => {
+                            if (cloudFile.url && !vercelAudioUrls.includes(cloudFile.url)) {
+                                audioFiles.push(cloudFile);
+                                vercelAudioUrls.push(cloudFile.url);
+                                console.log('Added cloud file:', cloudFile.url);
+                            }
+                        });
+                    }
+                }
+            } catch (error) {
+                console.log('Could not fetch from Vercel Blob:', error);
+            }
+            
+            console.log('Final audio files:', audioFiles.length);
+            console.log('Final cloud URLs:', vercelAudioUrls.length);
             
             updateAudioStatus(selectedGuide, audioFiles);
         }
@@ -711,6 +735,10 @@
 
         // Submit to CloudGuide
         async function submitToCloudGuide() {
+            console.log('Starting submission...');
+            console.log('Audio files:', audioFiles.length);
+            console.log('Vercel URLs:', vercelAudioUrls.length);
+            
             // Hide previous messages
             document.getElementById('successMessage').classList.remove('active');
             document.getElementById('errorMessage').classList.remove('active');
@@ -769,22 +797,46 @@
                 const guideTitle = selectedGuide.title || selectedGuide.location || 'Untitled Guide';
                 const wordCount = fullGuideContent.split(/\s+/).filter(w => w.length > 0).length;
                 
-                // Prepare audio URLs list
-                let audioLinksText = 'No audio files';
+                // Prepare audio URLs list with proper formatting
+                let audioLinksText = 'No audio files generated';
+                
                 if (vercelAudioUrls.length > 0) {
-                    audioLinksText = vercelAudioUrls.map((url, index) => 
-                        `${index + 1}. Stop ${index + 1}: ${url}`
-                    ).join('\n');
+                    console.log('Formatting Vercel URLs for email:', vercelAudioUrls);
+                    
+                    audioLinksText = '=== AUDIO FILES (Vercel Blob Storage) ===\n\n';
+                    vercelAudioUrls.forEach((url, index) => {
+                        const fileName = audioFiles[index]?.name || audioFiles[index]?.pathname || `Audio ${index + 1}`;
+                        audioLinksText += `Stop ${index + 1}: ${fileName}\n`;
+                        audioLinksText += `Direct URL: ${url}\n\n`;
+                    });
+                    
+                    audioLinksText += `\nTotal Audio Files: ${vercelAudioUrls.length}`;
+                    audioLinksText += '\nStorage: Vercel Blob (Permanent URLs)';
+                    
+                } else if (audioFiles.length > 0) {
+                    // We have audio files but no cloud URLs
+                    audioLinksText = `${audioFiles.length} audio files stored locally (data URLs) - Please regenerate with cloud storage enabled`;
                 }
                 
                 updateProgress(50, 'Formatting content...');
                 
-                // Prepare content preview
-                const contentPreview = fullGuideContent.length > 3000 ? 
-                    fullGuideContent.substring(0, 3000) + '...\n\n[Full content available]' :
-                    fullGuideContent;
+                // Prepare full content for email
+                const fullContentText = `
+=== AUDIOGUIDE CONTENT ===
+
+Title: ${guideTitle}
+Location: ${selectedGuide.location || 'Unknown'}
+Language: ${document.getElementById('guideLanguage').value}
+Total Stops: ${selectedGuide.stops || 'Unknown'}
+Word Count: ${wordCount}
+
+=== FULL SCRIPT ===
+
+${fullGuideContent}
+
+=== END OF CONTENT ===`;
                 
-                // Prepare email parameters
+                // Prepare email parameters with all information
                 const emailParams = {
                     to_email: 'content@cloudguide.me',
                     from_email: cmsEmail,
@@ -797,21 +849,26 @@
                     guide_location: selectedGuide.location || 'Unknown',
                     guide_stops: selectedGuide.stops || 'Unknown',
                     word_count: wordCount,
-                    audio_count: audioFiles.length,
+                    audio_count: vercelAudioUrls.length || audioFiles.length,
                     audio_links: audioLinksText,
-                    guide_content: contentPreview,
+                    guide_content: fullContentText,  // Send full content
                     additional_notes: additionalNotes || 'None',
-                    submission_date: new Date().toLocaleDateString(),
+                    submission_date: new Date().toLocaleString(),
                     guide_id: selectedGuideId,
-                    storage: 'Vercel Blob Storage'
+                    storage_type: vercelAudioUrls.length > 0 ? 'Vercel Blob Storage' : 'Local Only'
                 };
                 
                 updateProgress(70, 'Sending to CloudGuide...');
+                console.log('Sending email with parameters:', {
+                    ...emailParams,
+                    guide_content: '[truncated for logging]'
+                });
                 
                 // Send email using EmailJS
                 await emailjs.send('service_sqyvtda', 'template_90y0ndk', emailParams);
                 
                 updateProgress(100, 'Submission complete!');
+                console.log('Email sent successfully!');
                 
                 // Show success message
                 document.getElementById('successMessage').classList.add('active');
@@ -830,7 +887,8 @@
                 
                 document.getElementById('errorMessage').classList.add('active');
                 document.getElementById('errorText').textContent = 
-                    'There was an error submitting your content: ' + error.message;
+                    'There was an error submitting your content: ' + error.message + 
+                    '\n\nPlease check the browser console for details.';
                 
                 document.getElementById('progressContainer').classList.remove('active');
                 document.getElementById('submitBtn').disabled = false;
