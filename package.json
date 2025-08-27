@@ -1,0 +1,17 @@
+{
+  "name": "cloudguide-audioguides",
+  "version": "1.0.0",
+  "description": "CloudGuide AudioGuides Generator",
+  "private": true,
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'No build needed'",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {
+    "@vercel/blob": "latest"
+  },
+  "devDependencies": {
+    "vercel": "latest"
+  }
+}
