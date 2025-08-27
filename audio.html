@@ -497,34 +497,13 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Storage Options */
-        .storage-options {
+        /* Storage Status */
+        .storage-status {
             background: #f0f4ff;
             border: 1px solid #667eea;
             border-radius: 6px;
             padding: 15px;
             margin: 15px 0;
-        }
-
-        .storage-option {
-            margin: 10px 0;
-        }
-
-        .storage-status {
-            margin-top: 10px;
-            padding: 10px;
-            border-radius: 4px;
-            font-size: 13px;
-        }
-
-        .storage-status.success {
-            background: #d1fae5;
-            color: #065f46;
-        }
-
-        .storage-status.warning {
-            background: #fef3c7;
-            color: #92400e;
         }
 
         @media (max-width: 768px) {
@@ -559,9 +538,7 @@
                         <li><a href="library.html">LIBRARY</a></li>
                         <li><a href="audio.html" class="active">AUDIO</a></li>
                         <li><a href="upload.html">UPLOAD</a></li>
-                        <li><a href="premium.html">PREMIUM</a></li>
                         <li><a href="about.html">ABOUT</a></li>
-                        <li><a href="https://www.cloudguide.me/contact" target="_blank">CONTACT</a></li>
                     </ul>
                 </nav>
             </div>
@@ -575,27 +552,11 @@
 
         <!-- Main Content -->
         <div class="main-container">
-            <!-- API Status Alert -->
-            <div class="alert" id="apiStatusAlert" style="display: none;">
-                <span id="apiStatusMessage"></span>
-            </div>
-
-            <!-- Storage Options -->
-            <div class="storage-options">
-                <h4 style="margin-bottom: 10px;">📁 Audio Storage Options</h4>
-                <div class="storage-option">
-                    <label>
-                        <input type="radio" name="storage" value="local" checked> 
-                        <strong>Local Storage</strong> - Quick, no upload needed (temporary, lost on page refresh)
-                    </label>
-                </div>
-                <div class="storage-option">
-                    <label>
-                        <input type="radio" name="storage" value="cloudinary"> 
-                        <strong>Cloudinary Cloud Storage</strong> - Permanent URLs, unlimited storage
-                    </label>
-                </div>
-                <div class="storage-status" id="storageStatus" style="display: none;"></div>
+            <!-- Storage Status -->
+            <div class="storage-status">
+                <h4 style="margin-bottom: 10px;">📁 Audio Storage</h4>
+                <p>Audio files are stored in Vercel Blob Storage with permanent URLs.</p>
+                <div id="storageInfo" style="margin-top: 10px; font-size: 13px; color: #718096;"></div>
             </div>
 
             <!-- Tabs -->
@@ -671,7 +632,7 @@ Your history text here..."></textarea>
                     </div>
 
                     <div id="languageAlert" class="alert alert-warning" style="display: none;">
-                        ⚠️ Non-English languages will use English accent with OpenAI TTS unless Google Cloud API is configured.
+                        ⚠️ Non-English languages will use English accent with OpenAI TTS.
                     </div>
                 </div>
 
@@ -706,8 +667,13 @@ Your history text here..."></textarea>
                     </div>
 
                     <div class="form-group">
-                        <label for="speed">Speed: <span id="speedValue">1.0x</span></label>
+                        <label for="speed">Speech Speed: <span id="speedValue">1.0x</span></label>
                         <input type="range" min="0.5" max="1.5" value="1.0" step="0.1" id="speed" class="form-element" oninput="updateSpeed()">
+                        <div style="display: flex; justify-content: space-between; font-size: 12px; color: #718096;">
+                            <span>Slow (0.5x)</span>
+                            <span id="speedValue">1.0x</span>
+                            <span>Fast (1.5x)</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -734,7 +700,7 @@ Your history text here..."></textarea>
                 <div id="fileList"></div>
                 <div class="alert alert-success" style="margin-top: 20px;">
                     <strong>✅ Audio files are ready!</strong><br>
-                    <small>You can now proceed to the <a href="upload.html" style="color: #065f46; font-weight: 600;">Upload page</a> to submit them to CloudGuide CMS.</small>
+                    <small>Files are permanently stored in Vercel Blob Storage. You can now proceed to the <a href="upload.html" style="color: #065f46; font-weight: 600;">Upload page</a> to submit them.</small>
                 </div>
             </div>
         </div>
@@ -746,20 +712,14 @@ Your history text here..."></textarea>
         let generatedFiles = [];
         let currentGuideId = null;
         let currentAudioPlayer = null;
-        let apiConfigured = false;
         let currentGuideData = null;
 
         // Initialize
         window.addEventListener('DOMContentLoaded', function() {
             console.log('Audio page initialized');
-            
-            // Clear old audio data on startup
-            clearOldAudioData();
-            
-            checkAPIConfiguration();
+            checkStorageStatus();
             updateSpeed();
             updateLanguageInfo();
-            checkStorageStatus();
             
             // Check URL params
             const urlParams = new URLSearchParams(window.location.search);
@@ -767,244 +727,36 @@ Your history text here..."></textarea>
             if (id) {
                 console.log('Loading guide from URL param:', id);
                 currentGuideId = id;
-                // Check if it's a Cloudinary URL
-                if (id.startsWith('http')) {
-                    loadFromCloudinary(id);
-                } else {
-                    loadFromLibrary(id);
-                }
+                loadFromLibrary(id);
             }
         });
 
-        // Clear old audio DATA (not metadata)
-        function clearOldAudioData() {
-            console.log('Clearing old audio data to free up space...');
-            const keysToRemove = [];
-            
-            for (let i = 0; i < localStorage.length; i++) {
-                const key = localStorage.key(i);
-                // Remove old audio DATA keys (not metadata)
-                if (key && key.startsWith('cloudguide_audio_') && !key.includes('_meta_')) {
-                    keysToRemove.push(key);
-                }
-            }
-            
-            keysToRemove.forEach(key => {
-                try {
-                    localStorage.removeItem(key);
-                    console.log(`Removed old audio data: ${key}`);
-                } catch (e) {
-                    console.error(`Failed to remove ${key}:`, e);
-                }
-            });
-            
-            if (keysToRemove.length > 0) {
-                console.log(`Cleared ${keysToRemove.length} old audio data items`);
-            }
-        }
-
-        // Load from Cloudinary
-        async function loadFromCloudinary(url) {
-            console.log('Loading guide from Cloudinary:', url);
+        // Check storage status
+        async function checkStorageStatus() {
             try {
-                document.getElementById('loading').classList.add('active');
-                document.getElementById('loadingText').textContent = 'Loading guide from cloud...';
-                
-                const response = await fetch(url);
-                if (!response.ok) {
-                    throw new Error('Failed to load from Cloudinary');
-                }
-                
-                const guide = await response.json();
-                if (guide && guide.content) {
-                    currentGuideId = guide.id;
-                    currentGuideData = guide;
-                    
-                    switchTab('text');
-                    document.getElementById('textInput').value = guide.content;
-                    
-                    if (guide.language) {
-                        const langSelect = document.getElementById('audioLanguage');
-                        Array.from(langSelect.options).forEach(option => {
-                            if (option.text.toLowerCase().includes(guide.language.toLowerCase())) {
-                                langSelect.value = option.value;
-                            }
-                        });
-                    }
-                    
-                    parseChapters();
-                    showMessage('✅ Loaded guide from cloud storage', 'success');
-                }
-            } catch (error) {
-                console.error('Error loading from Cloudinary:', error);
-                showMessage('❌ Failed to load from cloud storage', 'error');
-            } finally {
-                document.getElementById('loading').classList.remove('active');
-            }
-        }
-
-        // Check storage status - FIXED to not call GET
-        function checkStorageStatus() {
-            const storageType = document.querySelector('input[name="storage"]:checked').value;
-            const statusDiv = document.getElementById('storageStatus');
-            
-            if (storageType === 'cloudinary') {
-                // Check if server has Cloudinary configured - use POST
-                fetch('/api/upload-to-cloudinary', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        test: true  // Send test flag to check configuration
-                    })
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`Server error: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    console.log('Cloudinary check response:', data);
-                    
-                    if (data.storage === 'cloudinary' || data.cloudinaryConfigured) {
-                        statusDiv.className = 'storage-status success';
-                        statusDiv.textContent = '✅ Cloudinary is configured and ready for unlimited storage';
-                    } else {
-                        statusDiv.className = 'storage-status warning';
-                        statusDiv.textContent = '⚠️ Cloudinary not configured on server. Using fallback storage.';
-                    }
-                    statusDiv.style.display = 'block';
-                })
-                .catch(error => {
-                    console.error('Storage check error:', error);
-                    statusDiv.className = 'storage-status warning';
-                    statusDiv.textContent = '⚠️ Could not verify Cloudinary status. Storage may fall back to local.';
-                    statusDiv.style.display = 'block';
+                const response = await fetch('/api/upload-audio', {
+                    method: 'GET'
                 });
-            } else {
-                statusDiv.className = 'storage-status warning';
-                statusDiv.textContent = '⚠️ Local storage selected - audio will be temporary and lost on page refresh';
-                statusDiv.style.display = 'block';
-            }
-        }
-
-        // Update storage status when option changes
-        document.querySelectorAll('input[name="storage"]').forEach(radio => {
-            radio.addEventListener('change', checkStorageStatus);
-        });
-
-        // Check API configuration
-        async function checkAPIConfiguration() {
-            try {
-                const response = await fetch('/api/multilingual-tts', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        test: true  // Send test flag to check configuration
-                    })
-                });
-                
-                console.log('API Configuration check response:', response.status);
-                
-                if (response.status === 500 || response.status === 501) {
-                    const data = await response.json();
-                    if (data.error && data.error.includes('not configured')) {
-                        showAPIStatus('warning', 'OpenAI API key may not be configured. Audio generation might not work. Add OPENAI_API_KEY to your environment variables.');
-                        apiConfigured = false;
-                        return;
-                    }
-                }
                 
                 if (response.ok) {
-                    apiConfigured = true;
-                    console.log('API is configured and working');
-                }
-            } catch (error) {
-                console.log('API check failed:', error);
-                showAPIStatus('info', 'Audio generation API status unknown. Proceeding anyway.');
-            }
-        }
-
-        // Show API status
-        function showAPIStatus(type, message) {
-            const alert = document.getElementById('apiStatusAlert');
-            const msg = document.getElementById('apiStatusMessage');
-            
-            const alertClass = {
-                'error': 'alert-error',
-                'warning': 'alert-warning',
-                'info': 'alert-info',
-                'success': 'alert-success'
-            };
-            
-            alert.className = `alert ${alertClass[type] || 'alert-info'}`;
-            msg.innerHTML = message;
-            alert.style.display = 'block';
-        }
-
-        // Upload audio to storage
-        async function uploadAudioToStorage(audioData, fileName) {
-            const storageType = document.querySelector('input[name="storage"]:checked').value;
-            
-            if (storageType === 'local') {
-                console.log('Using local storage for audio (URL only, not data)');
-                return { 
-                    url: audioData, 
-                    isCloudinary: false,
-                    warning: 'Audio stored temporarily in browser memory only'
-                };
-            }
-            
-            try {
-                console.log('Uploading to Cloudinary via API:', fileName);
-                
-                const response = await fetch('/api/upload-to-cloudinary', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        audioData: audioData,
-                        fileName: fileName,
-                        type: 'audio'
-                    })
-                });
-                
-                const data = await response.json();
-                console.log('Upload response:', data);
-                
-                if (response.ok && data.success) {
-                    if (data.storage === 'cloudinary') {
-                        showMessage('☁️ Audio uploaded to Cloudinary cloud storage', 'success');
-                        return { 
-                            url: data.url, 
-                            isCloudinary: true 
-                        };
-                    } else if (data.storage === 'dataUrl') {
-                        console.warn('Cloudinary not configured, using data URL');
-                        showMessage('⚠️ Cloudinary not configured - using temporary storage', 'warning');
-                        return { 
-                            url: data.url || audioData, 
-                            isCloudinary: false 
-                        };
+                    const data = await response.json();
+                    document.getElementById('storageInfo').innerHTML = 
+                        '✅ Vercel Blob Storage is configured and ready';
+                } else {
+                    const error = await response.json();
+                    if (error.message && error.message.includes('not configured')) {
+                        document.getElementById('storageInfo').innerHTML = 
+                            '⚠️ Please configure Vercel Blob Storage (see instructions)';
                     }
                 }
-                
-                console.error('Upload failed, using data URL');
-                return { 
-                    url: audioData, 
-                    isCloudinary: false 
-                };
-                
             } catch (error) {
-                console.error('Upload error:', error);
-                showMessage('⚠️ Cloud upload failed, using temporary storage', 'warning');
-                return { 
-                    url: audioData, 
-                    isCloudinary: false 
-                };
+                console.log('Storage check error:', error);
+                document.getElementById('storageInfo').innerHTML = 
+                    '⚠️ Could not verify storage status';
             }
         }
 
-        // Generate audio
+        // Generate audio with TTS
         async function generateAudio(chapter) {
             const language = document.getElementById('audioLanguage').value;
             const speed = parseFloat(document.getElementById('speed').value);
@@ -1030,76 +782,79 @@ Your history text here..."></textarea>
                     })
                 });
                 
-                // If multilingual fails, try simple OpenAI endpoint as fallback
-                if (!response.ok && response.status === 500) {
-                    console.log('Multilingual TTS failed, trying OpenAI fallback...');
-                    
-                    if (language.startsWith('en-')) {
-                        response = await fetch('/api/openai-tts', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                text: textToGenerate,
-                                voice: selectedVoice,
-                                speed: speed
-                            })
-                        });
-                        
-                        if (response.ok) {
-                            showMessage('⚠️ Using fallback TTS API', 'warning');
-                        }
-                    }
+                // If multilingual fails, try OpenAI directly
+                if (!response.ok) {
+                    console.log('Multilingual TTS failed, trying OpenAI...');
+                    response = await fetch('/api/openai-tts', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            text: textToGenerate,
+                            voice: selectedVoice,
+                            speed: speed
+                        })
+                    });
                 }
 
                 if (response.ok) {
                     const data = await response.json();
                     
                     if (data.audioUrl || data.audioData) {
-                        loadingText.textContent = `Storing audio for ${chapter.shortTitle || chapter.title}...`;
-                        const fileName = `audio_${currentGuideId}_${chapter.stopNumber || chapter.id}_${Date.now()}.mp3`;
+                        loadingText.textContent = `Uploading audio to cloud storage...`;
                         
-                        const storageResult = await uploadAudioToStorage(
-                            data.audioUrl || data.audioData, 
-                            fileName
-                        );
+                        // Generate filename
+                        const fileName = `${currentGuideId}_stop_${chapter.stopNumber || chapter.id}_${Date.now()}.mp3`;
                         
-                        chapter.status = 'completed';
-                        renderChapters();
+                        // Upload to Vercel Blob
+                        const uploadResponse = await fetch('/api/upload-audio', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                audioData: data.audioUrl || data.audioData,
+                                fileName: fileName,
+                                guideId: currentGuideId,
+                                metadata: {
+                                    chapter: chapter.title,
+                                    language: language,
+                                    voice: selectedVoice,
+                                    provider: data.provider || 'openai'
+                                }
+                            })
+                        });
                         
-                        const file = {
-                            name: fileName,
-                            chapter: chapter.title,
-                            language: language,
-                            url: storageResult.url,
-                            cloudinaryUrl: storageResult.isCloudinary ? storageResult.url : null,
-                            provider: data.provider || 'openai',
-                            stopNumber: chapter.stopNumber || chapter.id,
-                            size: 'Generated',
-                            isCloudinary: storageResult.isCloudinary,
-                            warning: data.warning || storageResult.warning
-                        };
-                        
-                        generatedFiles.push(file);
-                        
-                        if (currentGuideId) {
+                        if (uploadResponse.ok) {
+                            const uploadData = await uploadResponse.json();
+                            
+                            chapter.status = 'completed';
+                            renderChapters();
+                            
+                            const file = {
+                                name: fileName,
+                                chapter: chapter.title,
+                                language: language,
+                                url: uploadData.url,
+                                blobUrl: uploadData.url,
+                                downloadUrl: uploadData.downloadUrl,
+                                provider: data.provider || 'openai',
+                                stopNumber: chapter.stopNumber || chapter.id,
+                                size: uploadData.size || 'Generated'
+                            };
+                            
+                            generatedFiles.push(file);
+                            
+                            // Save to localStorage for reference
                             saveAudioMetadata(currentGuideId, file);
+                            
+                            renderFiles();
+                            showMessage('✅ Audio generated and uploaded to cloud!', 'success');
+                        } else {
+                            const error = await uploadResponse.json();
+                            throw new Error(error.message || 'Upload failed');
                         }
-                        
-                        renderFiles();
-                        
-                        const storageInfo = storageResult.isCloudinary ? '☁️ Stored in Cloudinary cloud' : '⚠️ Temporary storage';
-                        showMessage(`✅ Audio generated! ${storageInfo}`, storageResult.isCloudinary ? 'success' : 'warning');
                     }
                 } else {
-                    let errorMessage = 'Failed to generate audio';
-                    try {
-                        const errorData = await response.json();
-                        errorMessage = errorData.error || errorData.message || errorMessage;
-                    } catch (e) {
-                        errorMessage = `Server error (${response.status})`;
-                    }
-                    
-                    throw new Error(errorMessage);
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'TTS generation failed');
                 }
                 
             } catch (error) {
@@ -1114,61 +869,29 @@ Your history text here..."></textarea>
             }
         }
 
-        // Save audio metadata
+        // Save audio metadata to localStorage
         function saveAudioMetadata(guideId, audioFile) {
-            if (!guideId) {
-                console.error('No guide ID provided for saving audio');
-                return false;
-            }
+            if (!guideId) return false;
             
             try {
-                const audioMetadata = {
-                    name: audioFile.name,
-                    url: audioFile.cloudinaryUrl || audioFile.url,
-                    chapter: audioFile.chapter,
-                    language: audioFile.language || 'en-US',
-                    provider: audioFile.provider || 'openai',
-                    stopNumber: audioFile.stopNumber,
-                    size: audioFile.size || 'Generated',
-                    isCloudinary: audioFile.isCloudinary || false,
-                    generatedAt: new Date().toISOString()
-                };
-                
                 let savedAudioFiles = [];
-                try {
-                    const existing = localStorage.getItem(`cloudguide_audio_meta_${guideId}`);
-                    if (existing) {
-                        savedAudioFiles = JSON.parse(existing);
-                    }
-                } catch (e) {
-                    console.log('Creating new audio metadata');
+                const existing = localStorage.getItem(`audio_meta_${guideId}`);
+                if (existing) {
+                    savedAudioFiles = JSON.parse(existing);
                 }
                 
-                savedAudioFiles.push(audioMetadata);
+                savedAudioFiles.push({
+                    name: audioFile.name,
+                    url: audioFile.blobUrl || audioFile.url,
+                    chapter: audioFile.chapter,
+                    language: audioFile.language,
+                    generatedAt: new Date().toISOString()
+                });
                 
-                localStorage.setItem(`cloudguide_audio_meta_${guideId}`, JSON.stringify(savedAudioFiles));
-                console.log(`✅ Saved audio metadata for guide ${guideId}:`, audioMetadata);
-                
+                localStorage.setItem(`audio_meta_${guideId}`, JSON.stringify(savedAudioFiles));
                 return true;
             } catch (error) {
                 console.error('Error saving audio metadata:', error);
-                if (error.name === 'QuotaExceededError') {
-                    clearOldAudioData();
-                    try {
-                        const audioMetadata = {
-                            name: audioFile.name,
-                            url: audioFile.cloudinaryUrl || audioFile.url,
-                            chapter: audioFile.chapter,
-                            isCloudinary: audioFile.isCloudinary || false,
-                            generatedAt: new Date().toISOString()
-                        };
-                        localStorage.setItem(`cloudguide_audio_meta_${guideId}`, JSON.stringify([audioMetadata]));
-                        return true;
-                    } catch (retryError) {
-                        showMessage('Storage full! Please use Cloudinary storage.', 'error');
-                        return false;
-                    }
-                }
                 return false;
             }
         }
@@ -1183,7 +906,6 @@ Your history text here..."></textarea>
 
             if (!currentGuideId) {
                 currentGuideId = 'guide_' + Date.now();
-                console.log('Created new guide ID:', currentGuideId);
             }
 
             chapters = [];
@@ -1193,7 +915,6 @@ Your history text here..."></textarea>
 
             for (let i = 0; i < lines.length; i++) {
                 const line = lines[i];
-                
                 const stopMatch = line.match(/^STOP\s+(\d+):\s*(.+)/i);
                 
                 if (stopMatch) {
@@ -1215,7 +936,6 @@ Your history text here..."></textarea>
                         type: 'stop'
                     };
                     contentBuffer = [];
-                    
                 } else if (currentChapter && !line.match(/^-+$/)) {
                     if (line.trim() || contentBuffer.length > 0) {
                         contentBuffer.push(line);
@@ -1243,15 +963,6 @@ Your history text here..."></textarea>
             }
 
             chapters.slice(0, 3).forEach(ch => ch.selected = true);
-
-            if (!currentGuideData) {
-                currentGuideData = {
-                    title: 'Manual Entry',
-                    content: text,
-                    stops: chapters.length,
-                    language: document.getElementById('audioLanguage').value
-                };
-            }
 
             renderChapters();
             document.getElementById('chaptersSection').style.display = 'block';
@@ -1283,7 +994,7 @@ Your history text here..."></textarea>
             document.getElementById('totalCount').textContent = chapters.length;
         }
 
-        // Toggle chapter
+        // Toggle chapter selection
         function toggleChapter(index) {
             chapters[index].selected = !chapters[index].selected;
             renderChapters();
@@ -1296,7 +1007,7 @@ Your history text here..."></textarea>
             document.getElementById('selectedCount').textContent = selected;
         }
 
-        // Select all
+        // Select all chapters
         function selectAll() {
             chapters.forEach(ch => ch.selected = true);
             renderChapters();
@@ -1327,7 +1038,7 @@ Your history text here..."></textarea>
             selectedVoice = voice;
         }
 
-        // Update speed
+        // Update speed display
         function updateSpeed() {
             document.getElementById('speedValue').textContent = document.getElementById('speed').value + 'x';
         }
@@ -1344,7 +1055,7 @@ Your history text here..."></textarea>
             }
         }
 
-        // Generate single
+        // Generate single chapter
         async function generateSingle() {
             const selected = chapters.filter(ch => ch.selected);
             if (selected.length === 0) {
@@ -1359,7 +1070,7 @@ Your history text here..."></textarea>
             await generateAudio(selected[0]);
         }
 
-        // Generate all
+        // Generate all selected chapters
         async function generateAll() {
             const selected = chapters.filter(ch => ch.selected);
             if (selected.length === 0) {
@@ -1377,13 +1088,12 @@ Your history text here..."></textarea>
             showMessage(`✅ All ${selected.length} audio files generated!`, 'success');
         }
 
-        // Render files
+        // Render generated files
         function renderFiles() {
             if (generatedFiles.length === 0) return;
             
             document.getElementById('filesSection').style.display = 'block';
             document.getElementById('fileList').innerHTML = generatedFiles.map((file, index) => {
-                const storageIcon = file.isCloudinary ? '☁️' : '💾';
                 return `
                     <div class="file-item">
                         <div class="file-info">
@@ -1391,14 +1101,13 @@ Your history text here..."></textarea>
                             <div>
                                 <div style="font-weight: 600;">${file.name}</div>
                                 <div style="font-size: 0.85em; color: #718096;">
-                                    ${file.chapter} • ${file.language} • ${file.provider} • ${storageIcon}
-                                    ${file.warning ? ' • ⚠️ ' + file.warning : ''}
+                                    ${file.chapter} • ${file.language} • ${file.provider} • ☁️ Cloud
                                 </div>
                             </div>
                         </div>
                         <div class="file-actions">
                             <button class="btn btn-primary" onclick="playAudio('${file.url}')">Play</button>
-                            <button class="btn btn-secondary" onclick="downloadAudio('${file.url}', '${file.name}')">Download</button>
+                            <button class="btn btn-secondary" onclick="downloadAudio('${file.downloadUrl || file.url}', '${file.name}')">Download</button>
                         </div>
                     </div>
                 `;
@@ -1425,11 +1134,6 @@ Your history text here..."></textarea>
                 console.error('Play error:', error);
                 showMessage('Failed to play audio', 'error');
             });
-            
-            currentAudioPlayer.addEventListener('ended', () => {
-                showMessage('Audio finished', 'info');
-                currentAudioPlayer = null;
-            });
         }
 
         // Download audio
@@ -1444,61 +1148,39 @@ Your history text here..."></textarea>
 
         // Load from library
         function loadFromLibrary(id) {
-            console.log('Loading guide from library, ID:', id);
             const audioguides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
-            console.log('Total guides in library:', audioguides.length);
-            
             const guide = audioguides.find(g => g.id == id);
             
-            if (guide) {
-                if (guide.cloudinaryUrl) {
-                    loadFromCloudinary(guide.cloudinaryUrl);
-                    return;
+            if (guide && guide.content) {
+                currentGuideId = id;
+                currentGuideData = guide;
+                
+                // Load any saved audio metadata
+                const savedAudioMeta = localStorage.getItem(`audio_meta_${id}`);
+                if (savedAudioMeta) {
+                    try {
+                        const audioMeta = JSON.parse(savedAudioMeta);
+                        generatedFiles = audioMeta;
+                        showMessage(`Loaded ${generatedFiles.length} audio file references`, 'info');
+                        renderFiles();
+                    } catch (e) {
+                        console.error('Error loading audio metadata:', e);
+                    }
                 }
                 
-                if (guide.content) {
-                    console.log('Found guide:', guide);
-                    currentGuideId = id;
-                    currentGuideData = guide;
-                    
-                    const savedAudioMeta = localStorage.getItem(`cloudguide_audio_meta_${id}`);
-                    if (savedAudioMeta) {
-                        try {
-                            const audioMeta = JSON.parse(savedAudioMeta);
-                            generatedFiles = audioMeta;
-                            showMessage(`Loaded ${generatedFiles.length} audio file references`, 'info');
-                            renderFiles();
-                            
-                            const nonCloudFiles = audioMeta.filter(f => !f.isCloudinary);
-                            if (nonCloudFiles.length > 0) {
-                                showMessage('⚠️ Some audio files may not be available', 'warning');
-                            }
-                        } catch (e) {
-                            console.error('Error loading audio metadata:', e);
-                            generatedFiles = [];
+                switchTab('text');
+                document.getElementById('textInput').value = guide.content;
+                
+                if (guide.language) {
+                    const langSelect = document.getElementById('audioLanguage');
+                    Array.from(langSelect.options).forEach(option => {
+                        if (option.text.toLowerCase().includes(guide.language.toLowerCase())) {
+                            langSelect.value = option.value;
                         }
-                    }
-                    
-                    switchTab('text');
-                    document.getElementById('textInput').value = guide.content;
-                    
-                    if (guide.language) {
-                        const langSelect = document.getElementById('audioLanguage');
-                        Array.from(langSelect.options).forEach(option => {
-                            if (option.text.toLowerCase().includes(guide.language.toLowerCase())) {
-                                langSelect.value = option.value;
-                            }
-                        });
-                    }
-                    
-                    parseChapters();
-                } else {
-                    console.error('Guide has no content, ID:', id);
-                    showMessage('Guide has no content', 'error');
+                    });
                 }
-            } else {
-                console.error('Guide not found, ID:', id);
-                showMessage('Could not load audioguide', 'error');
+                
+                parseChapters();
             }
         }
 
@@ -1519,10 +1201,7 @@ Your history text here..."></textarea>
 
         // Load library
         function loadLibrary() {
-            console.log('Loading library for audio generation...');
             const audioguides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
-            console.log('Found', audioguides.length, 'audioguides in library');
-            
             const libraryGrid = document.getElementById('libraryList');
             
             if (audioguides.length === 0) {
@@ -1530,56 +1209,40 @@ Your history text here..."></textarea>
                     <div style="text-align: center; padding: 60px 20px; color: #a0aec0;">
                         <div style="font-size: 3em; margin-bottom: 20px;">📚</div>
                         <p style="font-size: 1.2em; margin-bottom: 15px;">Your library is empty</p>
-                        <p><a href="index.html" style="color: #48bb78; text-decoration: none;">Generate your first audioguide →</a></p>
+                        <p><a href="index.html" style="color: #48bb78;">Generate your first audioguide →</a></p>
                     </div>
                 `;
                 return;
             }
 
             libraryGrid.innerHTML = audioguides.map(guide => {
-                const savedAudioMeta = localStorage.getItem(`cloudguide_audio_meta_${guide.id}`);
+                const savedAudioMeta = localStorage.getItem(`audio_meta_${guide.id}`);
                 let audioCount = 0;
-                let hasCloudinary = false;
                 
                 try {
                     if (savedAudioMeta) {
                         const meta = JSON.parse(savedAudioMeta);
                         audioCount = meta.length;
-                        hasCloudinary = meta.some(f => f.isCloudinary);
                     }
-                } catch (e) {
-                    console.error('Error parsing audio metadata for guide', guide.id);
-                }
+                } catch (e) {}
                 
                 const audioIndicator = audioCount > 0 
                     ? `<span style="color: #48bb78;">🎵 ${audioCount} audio files</span>`
-                    : '<span style="color: #f6ad55;">No audio generated</span>';
-                
-                const storageIndicator = hasCloudinary ? ' ☁️' : '';
-                const cloudIndicator = guide.cloudinaryUrl 
-                    ? '<span style="color: #667eea;">☁️ Cloud</span>' 
-                    : '';
-                
-                const title = guide.title || guide.location || 'Untitled Guide';
-                const location = guide.location || guide.title || 'Unknown Location';
-                const language = guide.language || 'English';
-                const stops = guide.stops || '?';
+                    : '<span style="color: #f6ad55;">No audio</span>';
                 
                 return `
                     <div style="padding: 20px; background: #f7fafc; border-radius: 6px; margin-bottom: 15px; cursor: pointer;"
                          onclick="loadFromLibrary('${guide.id}')">
-                        <div style="font-weight: 600; margin-bottom: 8px;">${title}</div>
+                        <div style="font-weight: 600; margin-bottom: 8px;">${guide.title || guide.location}</div>
                         <div style="font-size: 0.85em; color: #718096;">
-                            ${location} • ${language} • ${stops} stops • ${audioIndicator}${storageIndicator} ${cloudIndicator}
+                            ${guide.location} • ${guide.language || 'English'} • ${guide.stops || '?'} stops • ${audioIndicator}
                         </div>
                     </div>
                 `;
             }).join('');
-            
-            console.log('Library loaded with', audioguides.length, 'guides');
         }
 
-        // Load sample
+        // Load sample stops
         function loadSampleStops() {
             document.getElementById('textInput').value = `STOP 1: INTRODUCTION
 ------------------------------
@@ -1615,9 +1278,6 @@ Before you stands the main attraction, a testament to human creativity and ingen
                 messageDiv.style.color = 'white';
             } else if (type === 'error') {
                 messageDiv.style.background = '#e53e3e';
-                messageDiv.style.color = 'white';
-            } else if (type === 'warning') {
-                messageDiv.style.background = '#f6ad55';
                 messageDiv.style.color = 'white';
             } else {
                 messageDiv.style.background = '#3182ce';
