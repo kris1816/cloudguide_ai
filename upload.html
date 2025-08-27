@@ -109,6 +109,70 @@
             padding: 35px;
         }
 
+        /* Selection Grid */
+        .selection-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .selection-panel {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            background: #f7fafc;
+        }
+
+        .selection-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .guide-list {
+            max-height: 300px;
+            overflow-y: auto;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+        }
+
+        .guide-item {
+            padding: 15px;
+            border-bottom: 1px solid #e2e8f0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .guide-item:hover {
+            background: #f0fff4;
+        }
+
+        .guide-item.selected {
+            background: #d1fae5;
+            border-left: 3px solid #48bb78;
+        }
+
+        .guide-item-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .guide-item-meta {
+            font-size: 13px;
+            color: #718096;
+        }
+
+        .no-items {
+            padding: 40px;
+            text-align: center;
+            color: #a0aec0;
+        }
+
         /* Form Section */
         .form-grid {
             display: grid;
@@ -161,8 +225,8 @@
             resize: vertical;
         }
 
-        /* Audio Status */
-        .audio-status {
+        /* Content Status */
+        .content-status {
             background: #f7fafc;
             border: 1px solid #e2e8f0;
             border-radius: 6px;
@@ -170,69 +234,45 @@
             margin: 20px 0;
         }
 
-        .audio-status.has-audio {
+        .content-status.ready {
             background: #f0fff4;
             border-color: #48bb78;
         }
 
-        .audio-status.no-audio {
+        .content-status.partial {
             background: #fffaf0;
             border-color: #f6ad55;
         }
 
-        .audio-list {
-            margin-top: 15px;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-
-        .audio-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px;
-            background: white;
-            border-radius: 4px;
-            margin-bottom: 8px;
-        }
-
-        /* Guide Preview */
-        .guide-preview {
-            background: #f7fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .guide-preview h4 {
-            color: #2d3748;
-            margin-bottom: 15px;
-            font-size: 14px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .guide-info-grid {
+        .status-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 15px;
+            gap: 20px;
             margin-top: 15px;
         }
 
-        .guide-info-item {
+        .status-item {
             display: flex;
-            gap: 8px;
-            font-size: 14px;
+            align-items: center;
+            gap: 10px;
         }
 
-        .guide-info-label {
+        .status-icon {
+            font-size: 20px;
+        }
+
+        .status-text {
+            flex: 1;
+        }
+
+        .status-label {
             font-weight: 600;
             color: #4a5568;
+            font-size: 13px;
         }
 
-        .guide-info-value {
+        .status-value {
+            font-size: 12px;
             color: #718096;
         }
 
@@ -263,6 +303,18 @@
             background: #cbd5e0;
             cursor: not-allowed;
             transform: none;
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .btn-link {
+            background: transparent;
+            color: #667eea;
+            text-decoration: underline;
+            padding: 0;
         }
 
         .submit-btn {
@@ -324,10 +376,13 @@
         }
 
         @media (max-width: 768px) {
+            .selection-grid {
+                grid-template-columns: 1fr;
+            }
             .form-grid {
                 grid-template-columns: 1fr;
             }
-            .guide-info-grid {
+            .status-grid {
                 grid-template-columns: 1fr;
             }
             .nav-links {
@@ -366,41 +421,47 @@
 
         <!-- Main Content -->
         <div class="main-container">
-            <!-- Guide Selection -->
-            <div class="form-group">
-                <label>Select Audioguide from Library <span class="required">*</span></label>
-                <select id="guideSelect" class="form-element" onchange="selectGuide()" required>
-                    <option value="">Choose an audioguide...</option>
-                </select>
+            <!-- Selection Grid -->
+            <div class="selection-grid">
+                <!-- Script Selection -->
+                <div class="selection-panel">
+                    <h3 class="selection-title">📝 Select Script</h3>
+                    <div class="guide-list" id="scriptList">
+                        <div class="no-items">Loading scripts...</div>
+                    </div>
+                </div>
+
+                <!-- Audio Selection -->
+                <div class="selection-panel">
+                    <h3 class="selection-title">🎵 Select Audio Files</h3>
+                    <div class="guide-list" id="audioList">
+                        <div class="no-items">Select a script first</div>
+                    </div>
+                    <div style="margin-top: 10px; text-align: center;">
+                        <button class="btn btn-secondary" id="generateAudioBtn" style="display: none;" onclick="goToAudioPage()">
+                            Generate Audio Files
+                        </button>
+                    </div>
+                </div>
             </div>
 
-            <!-- Guide Preview -->
-            <div class="guide-preview" id="guidePreview" style="display: none;">
-                <h4>📋 Selected Audioguide Details</h4>
-                <div class="guide-info-grid">
-                    <div class="guide-info-item">
-                        <span class="guide-info-label">Title:</span>
-                        <span class="guide-info-value" id="previewTitle">-</span>
+            <!-- Content Status -->
+            <div class="content-status" id="contentStatus">
+                <h3 style="margin-bottom: 15px;">📁 Content Status</h3>
+                <div class="status-grid">
+                    <div class="status-item">
+                        <span class="status-icon" id="scriptIcon">⚪</span>
+                        <div class="status-text">
+                            <div class="status-label">Script</div>
+                            <div class="status-value" id="scriptStatus">No script selected</div>
+                        </div>
                     </div>
-                    <div class="guide-info-item">
-                        <span class="guide-info-label">Location:</span>
-                        <span class="guide-info-value" id="previewLocation">-</span>
-                    </div>
-                    <div class="guide-info-item">
-                        <span class="guide-info-label">Language:</span>
-                        <span class="guide-info-value" id="previewLanguage">-</span>
-                    </div>
-                    <div class="guide-info-item">
-                        <span class="guide-info-label">Stops:</span>
-                        <span class="guide-info-value" id="previewStops">-</span>
-                    </div>
-                    <div class="guide-info-item">
-                        <span class="guide-info-label">Word Count:</span>
-                        <span class="guide-info-value" id="previewWords">-</span>
-                    </div>
-                    <div class="guide-info-item">
-                        <span class="guide-info-label">Created:</span>
-                        <span class="guide-info-value" id="previewDate">-</span>
+                    <div class="status-item">
+                        <span class="status-icon" id="audioIcon">⚪</span>
+                        <div class="status-text">
+                            <div class="status-label">Audio</div>
+                            <div class="status-value" id="audioStatus">No audio selected</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -466,15 +527,6 @@
                 </div>
             </div>
 
-            <!-- Audio Status -->
-            <div class="audio-status no-audio" id="audioStatus">
-                <h3 style="margin-bottom: 10px;">📁 Content Status</h3>
-                <div id="statusContent">
-                    <p>No audioguide selected</p>
-                </div>
-                <div class="audio-list" id="audioList" style="display: none;"></div>
-            </div>
-
             <!-- Submit Button -->
             <button class="btn btn-primary submit-btn" id="submitBtn" onclick="submitToCloudGuide()">
                 📤 Submit for Upload to CMS
@@ -521,9 +573,10 @@
     </div>
 
     <script>
-        let selectedGuide = null;
-        let selectedGuideId = null;
-        let audioFiles = [];
+        let selectedScript = null;
+        let selectedAudio = [];
+        let allGuides = [];
+        let currentGuideId = null;
         let fullGuideContent = '';
         let vercelAudioUrls = [];
 
@@ -546,90 +599,91 @@
 
         // Load audioguides from library
         function loadLibrary() {
-            console.log('Loading library for upload page...');
+            console.log('Loading library...');
             
-            const audioguides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
-            console.log('Found', audioguides.length, 'guides in library');
+            allGuides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
+            console.log('Found', allGuides.length, 'guides in library');
             
-            const select = document.getElementById('guideSelect');
+            const scriptList = document.getElementById('scriptList');
             
-            if (audioguides.length === 0) {
-                select.innerHTML = '<option value="">No audioguides in library - Generate one first</option>';
+            if (allGuides.length === 0) {
+                scriptList.innerHTML = `
+                    <div class="no-items">
+                        <div style="font-size: 2em; margin-bottom: 10px;">📚</div>
+                        <p>No audioguides in library</p>
+                        <a href="index.html" style="color: #48bb78;">Generate your first audioguide →</a>
+                    </div>
+                `;
                 return;
             }
             
-            select.innerHTML = '<option value="">Choose an audioguide...</option>';
-            
-            audioguides.forEach(guide => {
-                const option = document.createElement('option');
-                option.value = guide.id;
-                
+            // Display all guides as scripts
+            scriptList.innerHTML = allGuides.map(guide => {
                 const title = guide.title || guide.location || 'Untitled';
                 const stops = guide.stops || '?';
                 const lang = guide.language || 'English';
+                const wordCount = guide.content ? guide.content.split(/\s+/).length : 0;
                 
-                option.textContent = `${title} (${lang}) - ${stops} stops`;
-                select.appendChild(option);
+                return `
+                    <div class="guide-item" onclick="selectScript('${guide.id}')">
+                        <div class="guide-item-title">${title}</div>
+                        <div class="guide-item-meta">
+                            ${lang} • ${stops} stops • ${wordCount.toLocaleString()} words
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Select a script
+        async function selectScript(guideId) {
+            console.log('Selecting script:', guideId);
+            
+            // Clear previous selections
+            document.querySelectorAll('#scriptList .guide-item').forEach(item => {
+                item.classList.remove('selected');
             });
-        }
-
-        // Select a guide
-        async function selectGuide() {
-            const selectedId = document.getElementById('guideSelect').value;
             
-            if (!selectedId) {
-                selectedGuide = null;
-                selectedGuideId = null;
-                fullGuideContent = '';
-                audioFiles = [];
-                vercelAudioUrls = [];
-                updateAudioStatus(null);
-                document.getElementById('guidePreview').style.display = 'none';
-                return;
+            // Find and select the clicked item
+            const items = document.querySelectorAll('#scriptList .guide-item');
+            items.forEach((item, index) => {
+                if (allGuides[index].id === guideId) {
+                    item.classList.add('selected');
+                }
+            });
+            
+            // Set selected script
+            selectedScript = allGuides.find(g => g.id === guideId);
+            currentGuideId = guideId;
+            fullGuideContent = selectedScript.content || '';
+            
+            // Update status
+            updateContentStatus();
+            
+            // Pre-fill guide name if empty
+            if (!document.getElementById('guideName').value && selectedScript) {
+                document.getElementById('guideName').value = selectedScript.title || selectedScript.location || 'Audio Tour';
             }
             
-            const audioguides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
-            selectedGuide = audioguides.find(g => g.id == selectedId);
-            
-            if (selectedGuide) {
-                selectedGuideId = selectedId;
-                fullGuideContent = selectedGuide.content || '';
-                
-                updateGuidePreview(selectedGuide);
-                await loadAudioFiles(selectedId);
-                
-                document.getElementById('guidePreview').style.display = 'block';
+            // Set language
+            if (selectedScript.language) {
+                document.getElementById('guideLanguage').value = selectedScript.language;
             }
+            
+            // Load audio files for this guide
+            await loadAudioFiles(guideId);
         }
 
-        // Update guide preview
-        function updateGuidePreview(guide) {
-            document.getElementById('previewTitle').textContent = guide.title || guide.location || 'Untitled';
-            document.getElementById('previewLocation').textContent = guide.location || guide.title || 'Unknown';
-            document.getElementById('previewLanguage').textContent = guide.language || 'English';
-            document.getElementById('previewStops').textContent = guide.stops || '?';
-            
-            const wordCount = fullGuideContent ? fullGuideContent.split(/\s+/).filter(w => w.length > 0).length : 0;
-            document.getElementById('previewWords').textContent = wordCount.toLocaleString();
-            
-            const date = guide.date ? new Date(guide.date).toLocaleDateString() : 'Unknown';
-            document.getElementById('previewDate').textContent = date;
-            
-            document.getElementById('guideLanguage').value = guide.language || 'English';
-            
-            if (!document.getElementById('guideName').value) {
-                document.getElementById('guideName').value = guide.title || guide.location || 'Audio Tour';
-            }
-        }
-
-        // Load audio files for the guide
+        // Load audio files for selected guide
         async function loadAudioFiles(guideId) {
             console.log('Loading audio files for guide:', guideId);
             
-            audioFiles = [];
+            selectedAudio = [];
             vercelAudioUrls = [];
             
-            // First check localStorage for audio metadata
+            const audioListDiv = document.getElementById('audioList');
+            
+            // Check localStorage for audio metadata
             const audioMeta = localStorage.getItem(`audio_meta_${guideId}`);
             
             if (audioMeta) {
@@ -637,107 +691,155 @@
                     const parsedMeta = JSON.parse(audioMeta);
                     console.log('Found', parsedMeta.length, 'audio files in metadata');
                     
-                    // Extract URLs from metadata
-                    parsedMeta.forEach(file => {
-                        if (file.url) {
-                            audioFiles.push(file);
-                            
-                            // Check if it's a Vercel Blob URL or data URL
-                            if (file.url.startsWith('http')) {
+                    // Display audio files
+                    if (parsedMeta.length > 0) {
+                        audioListDiv.innerHTML = parsedMeta.map((file, index) => {
+                            // Check if it's a cloud URL
+                            const isCloudUrl = file.url && file.url.startsWith('http');
+                            if (isCloudUrl) {
+                                selectedAudio.push(file);
                                 vercelAudioUrls.push(file.url);
-                                console.log('Found cloud URL:', file.url);
-                            } else if (file.url.startsWith('data:')) {
-                                console.log('Found data URL for:', file.name);
                             }
-                        }
-                    });
+                            
+                            return `
+                                <div class="guide-item ${isCloudUrl ? 'selected' : ''}" 
+                                     onclick="toggleAudioFile(${index})"
+                                     data-index="${index}">
+                                    <div class="guide-item-title">
+                                        ${file.name || file.chapter || `Stop ${index + 1}`}
+                                    </div>
+                                    <div class="guide-item-meta">
+                                        ${file.language || 'Audio'} • 
+                                        ${isCloudUrl ? '☁️ Cloud Storage' : '💾 Local Only'}
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+                        
+                        // Update button visibility
+                        document.getElementById('generateAudioBtn').style.display = 'none';
+                    } else {
+                        showNoAudioMessage();
+                    }
                     
-                    console.log('Total cloud URLs found:', vercelAudioUrls.length);
                 } catch (e) {
                     console.error('Error parsing audio metadata:', e);
+                    showNoAudioMessage();
                 }
-            }
-            
-            // Also try to fetch from Vercel Blob API
-            try {
-                const response = await fetch(`/api/upload-audio?guideId=${guideId}`);
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.files && data.files.length > 0) {
-                        console.log('Found', data.files.length, 'files in Vercel Blob');
-                        
-                        // Add any files from Vercel that aren't already in our list
-                        data.files.forEach(cloudFile => {
-                            if (cloudFile.url && !vercelAudioUrls.includes(cloudFile.url)) {
-                                audioFiles.push(cloudFile);
-                                vercelAudioUrls.push(cloudFile.url);
-                                console.log('Added cloud file:', cloudFile.url);
-                            }
-                        });
+            } else {
+                // Try to fetch from Vercel Blob
+                try {
+                    const response = await fetch(`/api/upload-audio?guideId=${guideId}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.files && data.files.length > 0) {
+                            console.log('Found', data.files.length, 'files in Vercel Blob');
+                            
+                            audioListDiv.innerHTML = data.files.map((file, index) => {
+                                selectedAudio.push(file);
+                                vercelAudioUrls.push(file.url);
+                                
+                                return `
+                                    <div class="guide-item selected" 
+                                         onclick="toggleAudioFile(${index})"
+                                         data-index="${index}">
+                                        <div class="guide-item-title">
+                                            ${file.pathname || `Audio ${index + 1}`}
+                                        </div>
+                                        <div class="guide-item-meta">
+                                            ☁️ Vercel Blob Storage
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('');
+                            
+                            document.getElementById('generateAudioBtn').style.display = 'none';
+                        } else {
+                            showNoAudioMessage();
+                        }
+                    } else {
+                        showNoAudioMessage();
                     }
+                } catch (error) {
+                    console.log('Could not fetch from Vercel:', error);
+                    showNoAudioMessage();
                 }
-            } catch (error) {
-                console.log('Could not fetch from Vercel Blob:', error);
             }
             
-            console.log('Final audio files:', audioFiles.length);
-            console.log('Final cloud URLs:', vercelAudioUrls.length);
-            
-            updateAudioStatus(selectedGuide, audioFiles);
+            updateContentStatus();
         }
 
-        // Update audio status display
-        function updateAudioStatus(guide, audioArray) {
-            const statusDiv = document.getElementById('audioStatus');
-            const contentDiv = document.getElementById('statusContent');
-            const audioListDiv = document.getElementById('audioList');
+        // Show no audio message
+        function showNoAudioMessage() {
+            document.getElementById('audioList').innerHTML = `
+                <div class="no-items">
+                    <div style="font-size: 2em; margin-bottom: 10px;">🎵</div>
+                    <p>No audio files generated yet</p>
+                </div>
+            `;
+            document.getElementById('generateAudioBtn').style.display = 'inline-block';
+        }
+
+        // Toggle audio file selection
+        function toggleAudioFile(index) {
+            // This is just for UI feedback - all cloud files are auto-selected
+            console.log('Audio file clicked:', index);
+        }
+
+        // Update content status display
+        function updateContentStatus() {
+            const statusDiv = document.getElementById('contentStatus');
             
-            if (!guide) {
-                statusDiv.className = 'audio-status no-audio';
-                contentDiv.innerHTML = '<p>No audioguide selected</p>';
-                audioListDiv.style.display = 'none';
-                return;
+            // Update script status
+            const scriptIcon = document.getElementById('scriptIcon');
+            const scriptStatus = document.getElementById('scriptStatus');
+            
+            if (selectedScript) {
+                scriptIcon.textContent = '✅';
+                const wordCount = fullGuideContent.split(/\s+/).filter(w => w.length > 0).length;
+                scriptStatus.textContent = `${selectedScript.title || 'Selected'} (${wordCount.toLocaleString()} words)`;
+            } else {
+                scriptIcon.textContent = '⚪';
+                scriptStatus.textContent = 'No script selected';
             }
             
-            const wordCount = fullGuideContent ? fullGuideContent.split(/\s+/).filter(w => w.length > 0).length : 0;
-            const estimatedDuration = Math.round(wordCount / 150);
+            // Update audio status
+            const audioIcon = document.getElementById('audioIcon');
+            const audioStatus = document.getElementById('audioStatus');
             
-            if (audioArray && audioArray.length > 0) {
-                statusDiv.className = 'audio-status has-audio';
-                contentDiv.innerHTML = `
-                    <p>✅ <strong>Script:</strong> ${wordCount.toLocaleString()} words (~${estimatedDuration} min)</p>
-                    <p>✅ <strong>Audio Files:</strong> ${audioArray.length} files ready</p>
-                    <p>☁️ <strong>Storage:</strong> Vercel Blob (permanent URLs)</p>
-                `;
-                
-                audioListDiv.style.display = 'block';
-                audioListDiv.innerHTML = '<strong>Audio Files:</strong><br>' + 
-                    audioArray.map((audio, i) => `
-                        <div class="audio-item">
-                            <span>🎵 ${audio.name || audio.pathname || `Stop ${i + 1}.mp3`}</span>
-                            <span style="font-size: 12px; color: #718096;">☁️ Cloud</span>
-                        </div>
-                    `).join('');
+            if (vercelAudioUrls.length > 0) {
+                audioIcon.textContent = '✅';
+                audioStatus.textContent = `${vercelAudioUrls.length} files in cloud storage`;
+                statusDiv.className = 'content-status ready';
+            } else if (selectedAudio.length > 0) {
+                audioIcon.textContent = '⚠️';
+                audioStatus.textContent = `${selectedAudio.length} local files (need cloud upload)`;
+                statusDiv.className = 'content-status partial';
             } else {
-                statusDiv.className = 'audio-status no-audio';
-                contentDiv.innerHTML = `
-                    <p>✅ <strong>Script:</strong> ${wordCount.toLocaleString()} words</p>
-                    <p>⚠️ <strong>Audio:</strong> Not generated yet</p>
-                    <p style="margin-top: 10px;">
-                        <a href="audio.html?id=${guide.id}" style="color: #f6ad55;">
-                            Generate audio files →
-                        </a>
-                    </p>
-                `;
-                audioListDiv.style.display = 'none';
+                audioIcon.textContent = '⚪';
+                audioStatus.textContent = 'No audio files';
+                statusDiv.className = 'content-status partial';
+            }
+        }
+
+        // Go to audio page
+        function goToAudioPage() {
+            if (currentGuideId) {
+                // Save form data
+                localStorage.setItem('uploadFormData', JSON.stringify({
+                    cmsEmail: document.getElementById('cmsEmail').value,
+                    institutionName: document.getElementById('institutionName').value,
+                    exhibitionName: document.getElementById('exhibitionName').value,
+                    guideName: document.getElementById('guideName').value
+                }));
+                
+                window.location.href = `audio.html?id=${currentGuideId}`;
             }
         }
 
         // Submit to CloudGuide
         async function submitToCloudGuide() {
             console.log('Starting submission...');
-            console.log('Audio files:', audioFiles.length);
-            console.log('Vercel URLs:', vercelAudioUrls.length);
             
             // Hide previous messages
             document.getElementById('successMessage').classList.remove('active');
@@ -756,30 +858,22 @@
                 return;
             }
             
-            if (!selectedGuide || !fullGuideContent) {
-                alert('Please select an audioguide from your library');
+            if (!selectedScript || !fullGuideContent) {
+                alert('Please select a script from your library');
                 return;
             }
             
             // Check for audio
-            if (audioFiles.length === 0) {
+            if (vercelAudioUrls.length === 0) {
                 const proceed = confirm(
-                    'No audio files found for this guide.\n\n' +
+                    'No audio files in cloud storage.\n\n' +
                     'Do you want to:\n' +
                     '• OK - Submit script only\n' +
                     '• Cancel - Generate audio first'
                 );
                 
                 if (!proceed) {
-                    // Save form data and redirect to audio page
-                    localStorage.setItem('uploadFormData', JSON.stringify({
-                        cmsEmail: cmsEmail,
-                        institutionName: institutionName,
-                        exhibitionName: exhibitionName,
-                        guideName: guideName
-                    }));
-                    
-                    window.location.href = `audio.html?id=${selectedGuideId}`;
+                    goToAudioPage();
                     return;
                 }
             }
@@ -794,49 +888,41 @@
             try {
                 updateProgress(30, 'Processing content...');
                 
-                const guideTitle = selectedGuide.title || selectedGuide.location || 'Untitled Guide';
+                const guideTitle = selectedScript.title || selectedScript.location || 'Untitled Guide';
                 const wordCount = fullGuideContent.split(/\s+/).filter(w => w.length > 0).length;
                 
-                // Prepare audio URLs list with proper formatting
-                let audioLinksText = 'No audio files generated';
+                // Format audio links as HTML for EmailJS template
+                let audioLinksHtml = '';
+                let audioLinksText = '';
                 
                 if (vercelAudioUrls.length > 0) {
-                    console.log('Formatting Vercel URLs for email:', vercelAudioUrls);
+                    console.log('Formatting audio URLs for email:', vercelAudioUrls);
                     
-                    audioLinksText = '=== AUDIO FILES (Vercel Blob Storage) ===\n\n';
+                    // HTML format for the template
+                    audioLinksHtml = '<h3>Audio Files (Vercel Cloud Storage)</h3><ol>';
                     vercelAudioUrls.forEach((url, index) => {
-                        const fileName = audioFiles[index]?.name || audioFiles[index]?.pathname || `Audio ${index + 1}`;
-                        audioLinksText += `Stop ${index + 1}: ${fileName}\n`;
-                        audioLinksText += `Direct URL: ${url}\n\n`;
+                        const fileName = selectedAudio[index]?.name || 
+                                       selectedAudio[index]?.pathname || 
+                                       `Stop ${index + 1}`;
+                        audioLinksHtml += `<li><strong>${fileName}</strong><br>`;
+                        audioLinksHtml += `<a href="${url}" target="_blank">${url}</a></li><br>`;
                     });
+                    audioLinksHtml += '</ol>';
+                    audioLinksHtml += `<p><strong>Total Audio Files:</strong> ${vercelAudioUrls.length}</p>`;
+                    audioLinksHtml += '<p><strong>Storage:</strong> Vercel Blob (Permanent URLs)</p>';
                     
-                    audioLinksText += `\nTotal Audio Files: ${vercelAudioUrls.length}`;
-                    audioLinksText += '\nStorage: Vercel Blob (Permanent URLs)';
-                    
-                } else if (audioFiles.length > 0) {
-                    // We have audio files but no cloud URLs
-                    audioLinksText = `${audioFiles.length} audio files stored locally (data URLs) - Please regenerate with cloud storage enabled`;
+                    // Plain text version as backup
+                    audioLinksText = vercelAudioUrls.map((url, index) => 
+                        `Stop ${index + 1}: ${url}`
+                    ).join('\n');
+                } else {
+                    audioLinksHtml = '<p>No audio files generated yet</p>';
+                    audioLinksText = 'No audio files';
                 }
                 
                 updateProgress(50, 'Formatting content...');
                 
-                // Prepare full content for email
-                const fullContentText = `
-=== AUDIOGUIDE CONTENT ===
-
-Title: ${guideTitle}
-Location: ${selectedGuide.location || 'Unknown'}
-Language: ${document.getElementById('guideLanguage').value}
-Total Stops: ${selectedGuide.stops || 'Unknown'}
-Word Count: ${wordCount}
-
-=== FULL SCRIPT ===
-
-${fullGuideContent}
-
-=== END OF CONTENT ===`;
-                
-                // Prepare email parameters with all information
+                // Prepare email parameters
                 const emailParams = {
                     to_email: 'content@cloudguide.me',
                     from_email: cmsEmail,
@@ -846,23 +932,21 @@ ${fullGuideContent}
                     language: document.getElementById('guideLanguage').value,
                     contact_phone: contactPhone || 'Not provided',
                     guide_title: guideTitle,
-                    guide_location: selectedGuide.location || 'Unknown',
-                    guide_stops: selectedGuide.stops || 'Unknown',
+                    guide_location: selectedScript.location || 'Unknown',
+                    guide_stops: selectedScript.stops || 'Unknown',
                     word_count: wordCount,
-                    audio_count: vercelAudioUrls.length || audioFiles.length,
-                    audio_links: audioLinksText,
-                    guide_content: fullContentText,  // Send full content
+                    audio_count: vercelAudioUrls.length,
+                    audio_links: audioLinksText,  // Plain text version
+                    audio_links_html: audioLinksHtml,  // HTML version for template
+                    guide_content: fullGuideContent,
                     additional_notes: additionalNotes || 'None',
                     submission_date: new Date().toLocaleString(),
-                    guide_id: selectedGuideId,
-                    storage_type: vercelAudioUrls.length > 0 ? 'Vercel Blob Storage' : 'Local Only'
+                    guide_id: currentGuideId,
+                    storage_type: vercelAudioUrls.length > 0 ? 'Vercel Blob Storage' : 'Script Only'
                 };
                 
                 updateProgress(70, 'Sending to CloudGuide...');
-                console.log('Sending email with parameters:', {
-                    ...emailParams,
-                    guide_content: '[truncated for logging]'
-                });
+                console.log('Sending email with audio links HTML:', audioLinksHtml);
                 
                 // Send email using EmailJS
                 await emailjs.send('service_sqyvtda', 'template_90y0ndk', emailParams);
@@ -887,8 +971,7 @@ ${fullGuideContent}
                 
                 document.getElementById('errorMessage').classList.add('active');
                 document.getElementById('errorText').textContent = 
-                    'There was an error submitting your content: ' + error.message + 
-                    '\n\nPlease check the browser console for details.';
+                    'There was an error submitting your content: ' + error.message;
                 
                 document.getElementById('progressContainer').classList.remove('active');
                 document.getElementById('submitBtn').disabled = false;
@@ -909,14 +992,15 @@ ${fullGuideContent}
             document.getElementById('guideName').value = '';
             document.getElementById('additionalNotes').value = '';
             document.getElementById('contactPhone').value = '';
-            document.getElementById('guideSelect').value = '';
-            document.getElementById('guidePreview').style.display = 'none';
-            selectedGuide = null;
-            selectedGuideId = null;
+            
+            selectedScript = null;
+            selectedAudio = [];
+            currentGuideId = null;
             fullGuideContent = '';
-            audioFiles = [];
             vercelAudioUrls = [];
-            updateAudioStatus(null);
+            
+            loadLibrary();
+            updateContentStatus();
             
             document.getElementById('progressContainer').classList.remove('active');
             document.getElementById('progressBar').style.width = '0%';
