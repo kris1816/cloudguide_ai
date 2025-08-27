@@ -586,13 +586,13 @@
                 <div class="storage-option">
                     <label>
                         <input type="radio" name="storage" value="local" checked> 
-                        <strong>Local Storage</strong> - Quick, no upload needed (limited to ~5MB per guide)
+                        <strong>Local Storage</strong> - Quick, no upload needed (temporary, lost on page refresh)
                     </label>
                 </div>
                 <div class="storage-option">
                     <label>
                         <input type="radio" name="storage" value="cloudinary"> 
-                        <strong>Cloudinary Cloud Storage</strong> - Unlimited storage, permanent URLs (automatic via server)
+                        <strong>Cloudinary Cloud Storage</strong> - Permanent URLs, unlimited storage
                     </label>
                 </div>
                 <div class="storage-status" id="storageStatus" style="display: none;"></div>
@@ -752,6 +752,10 @@ Your history text here..."></textarea>
         // Initialize
         window.addEventListener('DOMContentLoaded', function() {
             console.log('Audio page initialized');
+            
+            // Clear old audio data on startup
+            clearOldAudioData();
+            
             checkAPIConfiguration();
             updateSpeed();
             updateLanguageInfo();
@@ -771,6 +775,33 @@ Your history text here..."></textarea>
                 }
             }
         });
+
+        // Clear old audio DATA (not metadata)
+        function clearOldAudioData() {
+            console.log('Clearing old audio data to free up space...');
+            const keysToRemove = [];
+            
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                // Remove old audio DATA keys (not metadata)
+                if (key && key.startsWith('cloudguide_audio_') && !key.includes('_meta_')) {
+                    keysToRemove.push(key);
+                }
+            }
+            
+            keysToRemove.forEach(key => {
+                try {
+                    localStorage.removeItem(key);
+                    console.log(`Removed old audio data: ${key}`);
+                } catch (e) {
+                    console.error(`Failed to remove ${key}:`, e);
+                }
+            });
+            
+            if (keysToRemove.length > 0) {
+                console.log(`Cleared ${keysToRemove.length} old audio data items`);
+            }
+        }
 
         // Load from Cloudinary
         async function loadFromCloudinary(url) {
@@ -823,18 +854,21 @@ Your history text here..."></textarea>
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        audioData: 'test',
-                        fileName: 'test.mp3'
+                        audioData: 'data:text/plain;base64,dGVzdA==', // Small test data
+                        fileName: 'test.txt',
+                        type: 'test'
                     })
                 })
                 .then(response => response.json())
                 .then(data => {
-                    if (data.url && !data.url.includes('mock-cloudinary')) {
+                    console.log('Cloudinary check:', data);
+                    
+                    if (data.storage === 'cloudinary') {
                         statusDiv.className = 'storage-status success';
                         statusDiv.textContent = '✅ Cloudinary is configured and ready for unlimited storage';
                     } else {
                         statusDiv.className = 'storage-status warning';
-                        statusDiv.textContent = '⚠️ Cloudinary not configured on server - using mock URLs (configure CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET in environment variables)';
+                        statusDiv.textContent = '⚠️ Cloudinary not configured on server. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET in Vercel environment variables';
                     }
                     statusDiv.style.display = 'block';
                 })
@@ -844,7 +878,9 @@ Your history text here..."></textarea>
                     statusDiv.style.display = 'block';
                 });
             } else {
-                statusDiv.style.display = 'none';
+                statusDiv.className = 'storage-status warning';
+                statusDiv.textContent = '⚠️ Local storage selected - audio will be temporary and lost on page refresh';
+                statusDiv.style.display = 'block';
             }
         }
 
@@ -905,14 +941,18 @@ Your history text here..."></textarea>
             alert.style.display = 'block';
         }
 
-        // Upload audio to storage (local or Cloudinary via API)
+        // FIXED: Upload audio to storage with proper Cloudinary handling
         async function uploadAudioToStorage(audioData, fileName) {
             const storageType = document.querySelector('input[name="storage"]:checked').value;
             
             if (storageType === 'local') {
-                // Just return the base64 data URL for local storage
-                console.log('Using local storage for audio');
-                return { url: audioData, isCloudinary: false };
+                console.log('Using local storage for audio (URL only, not data)');
+                // For local storage, we'll return the data URL but NOT save it to localStorage
+                return { 
+                    url: audioData, 
+                    isCloudinary: false,
+                    warning: 'Audio stored temporarily in browser memory only'
+                };
             }
             
             try {
@@ -923,39 +963,50 @@ Your history text here..."></textarea>
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         audioData: audioData,
-                        fileName: fileName
+                        fileName: fileName,
+                        type: 'audio' // Specify it's audio
                     })
                 });
                 
-                if (response.ok) {
-                    const data = await response.json();
-                    console.log('Upload response:', data);
-                    
-                    // Check if it's a real URL or mock
-                    const isRealCloudinary = data.url && !data.url.includes('mock-cloudinary');
-                    
-                    if (!isRealCloudinary) {
-                        showMessage('⚠️ Using mock Cloudinary URL (configure CLOUDINARY environment variables on server for real cloud uploads)', 'warning');
-                    } else {
+                const data = await response.json();
+                console.log('Upload response:', data);
+                
+                if (response.ok && data.success) {
+                    // Check if it's a real Cloudinary URL or fallback
+                    if (data.storage === 'cloudinary') {
                         showMessage('☁️ Audio uploaded to Cloudinary cloud storage', 'success');
+                        return { 
+                            url: data.url, 
+                            isCloudinary: true 
+                        };
+                    } else if (data.storage === 'dataUrl') {
+                        console.warn('Cloudinary not configured, using data URL');
+                        showMessage('⚠️ Cloudinary not configured on server - using temporary storage', 'warning');
+                        return { 
+                            url: data.url || audioData, 
+                            isCloudinary: false 
+                        };
                     }
-                    
-                    return { 
-                        url: data.url, 
-                        isCloudinary: isRealCloudinary 
-                    };
-                } else {
-                    console.error('Upload failed, using local storage');
-                    return { url: audioData, isCloudinary: false };
                 }
+                
+                // Fallback to data URL
+                console.error('Upload failed, using data URL');
+                return { 
+                    url: audioData, 
+                    isCloudinary: false 
+                };
+                
             } catch (error) {
                 console.error('Upload error:', error);
-                showMessage('⚠️ Cloud upload failed, using local storage', 'warning');
-                return { url: audioData, isCloudinary: false };
+                showMessage('⚠️ Cloud upload failed, using temporary storage', 'warning');
+                return { 
+                    url: audioData, 
+                    isCloudinary: false 
+                };
             }
         }
 
-        // Generate audio with storage integration
+        // FIXED: Generate audio with proper storage
         async function generateAudio(chapter) {
             const language = document.getElementById('audioLanguage').value;
             const speed = parseFloat(document.getElementById('speed').value);
@@ -1009,7 +1060,7 @@ Your history text here..."></textarea>
                     if (data.audioUrl || data.audioData) {
                         // Upload to storage
                         loadingText.textContent = `Storing audio for ${chapter.shortTitle || chapter.title}...`;
-                        const fileName = `${chapter.shortTitle || chapter.title}`.replace(/[^a-z0-9]/gi, '_') + `_${language}.mp3`;
+                        const fileName = `audio_${currentGuideId}_${chapter.stopNumber || chapter.id}_${Date.now()}.mp3`;
                         
                         const storageResult = await uploadAudioToStorage(
                             data.audioUrl || data.audioData, 
@@ -1020,35 +1071,32 @@ Your history text here..."></textarea>
                         chapter.status = 'completed';
                         renderChapters();
                         
-                        // Create file object
+                        // Create file object with ONLY metadata
                         const file = {
                             name: fileName,
                             chapter: chapter.title,
                             language: language,
-                            url: storageResult.url,
+                            url: storageResult.url, // This is either Cloudinary URL or data URL
+                            cloudinaryUrl: storageResult.isCloudinary ? storageResult.url : null,
                             provider: data.provider || 'openai',
                             stopNumber: chapter.stopNumber || chapter.id,
                             size: 'Generated',
                             isCloudinary: storageResult.isCloudinary,
-                            warning: data.warning
+                            warning: data.warning || storageResult.warning
                         };
                         
-                        // Add to generated files
+                        // Add to generated files (in memory for this session)
                         generatedFiles.push(file);
                         
-                        // Save metadata
+                        // Save only metadata (not the audio data)
                         if (currentGuideId) {
                             saveAudioMetadata(currentGuideId, file);
                         }
                         
                         renderFiles();
                         
-                        if (data.warning) {
-                            showMessage(`✅ Audio generated! ${data.warning}`, 'warning');
-                        } else {
-                            const storageInfo = storageResult.isCloudinary ? '☁️ Stored in Cloudinary cloud' : '💾 Stored locally';
-                            showMessage(`✅ Audio generated successfully! ${storageInfo}`, 'success');
-                        }
+                        const storageInfo = storageResult.isCloudinary ? '☁️ Stored in Cloudinary cloud' : '⚠️ Temporary storage (will be lost on page refresh)';
+                        showMessage(`✅ Audio generated! ${storageInfo}`, storageResult.isCloudinary ? 'success' : 'warning');
                     }
                 } else {
                     let errorMessage = 'Failed to generate audio';
@@ -1074,7 +1122,7 @@ Your history text here..."></textarea>
             }
         }
 
-        // Save audio metadata
+        // FIXED: Save audio metadata function - DO NOT save large audio data
         function saveAudioMetadata(guideId, audioFile) {
             if (!guideId) {
                 console.error('No guide ID provided for saving audio');
@@ -1082,55 +1130,64 @@ Your history text here..."></textarea>
             }
             
             try {
-                // Try to save to Cloudinary first if it's a cloud URL
-                if (audioFile.isCloudinary) {
-                    // Save audio reference to cloud
-                    fetch('/api/upload-to-cloudinary', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            audioData: JSON.stringify({
-                                guideId: guideId,
-                                audioFiles: [audioFile],
-                                type: 'audio-metadata'
-                            }),
-                            fileName: `audio_metadata_${guideId}_${Date.now()}.json`
-                        })
-                    }).then(response => response.json())
-                      .then(data => {
-                          console.log('Audio metadata saved to cloud:', data.url);
-                      }).catch(err => {
-                          console.error('Failed to save audio metadata to cloud:', err);
-                      });
-                }
-                
-                // Also save to localStorage as backup
-                let savedAudioFiles = JSON.parse(localStorage.getItem(`cloudguide_audio_${guideId}`) || '[]');
-                
+                // Create metadata object WITHOUT the actual audio data
                 const audioMetadata = {
                     name: audioFile.name,
-                    url: audioFile.url,
+                    url: audioFile.cloudinaryUrl || audioFile.url, // Prefer cloud URL
                     chapter: audioFile.chapter,
                     language: audioFile.language || 'en-US',
                     provider: audioFile.provider || 'openai',
-                    stopNumber: audioFile.stopNumber || savedAudioFiles.length + 1,
-                    size: 'Generated',
+                    stopNumber: audioFile.stopNumber,
+                    size: audioFile.size || 'Generated',
                     isCloudinary: audioFile.isCloudinary || false,
                     generatedAt: new Date().toISOString()
                 };
                 
+                // Get existing metadata (not audio data)
+                let savedAudioFiles = [];
+                try {
+                    const existing = localStorage.getItem(`cloudguide_audio_meta_${guideId}`);
+                    if (existing) {
+                        savedAudioFiles = JSON.parse(existing);
+                    }
+                } catch (e) {
+                    console.log('Creating new audio metadata');
+                }
+                
+                // Add new metadata
                 savedAudioFiles.push(audioMetadata);
-                localStorage.setItem(`cloudguide_audio_${guideId}`, JSON.stringify(savedAudioFiles));
+                
+                // Save ONLY metadata, not the actual audio
+                localStorage.setItem(`cloudguide_audio_meta_${guideId}`, JSON.stringify(savedAudioFiles));
                 console.log(`✅ Saved audio metadata for guide ${guideId}:`, audioMetadata);
                 
-                // Ensure guide exists in library
-                ensureGuideInLibrary(guideId);
+                // Clean up any old large audio data
+                try {
+                    localStorage.removeItem(`cloudguide_audio_${guideId}`);
+                } catch (e) {
+                    // Ignore if doesn't exist
+                }
                 
                 return true;
             } catch (error) {
                 console.error('Error saving audio metadata:', error);
                 if (error.name === 'QuotaExceededError') {
-                    showMessage('Storage full! Use Cloudinary storage instead.', 'error');
+                    // Clear old audio data and retry
+                    clearOldAudioData();
+                    try {
+                        const audioMetadata = {
+                            name: audioFile.name,
+                            url: audioFile.cloudinaryUrl || audioFile.url,
+                            chapter: audioFile.chapter,
+                            isCloudinary: audioFile.isCloudinary || false,
+                            generatedAt: new Date().toISOString()
+                        };
+                        localStorage.setItem(`cloudguide_audio_meta_${guideId}`, JSON.stringify([audioMetadata]));
+                        return true;
+                    } catch (retryError) {
+                        showMessage('Storage full! Please use Cloudinary storage.', 'error');
+                        return false;
+                    }
                 }
                 return false;
             }
@@ -1431,7 +1488,7 @@ Your history text here..."></textarea>
             document.body.removeChild(a);
         }
 
-        // Load from library
+        // FIXED: Load from library with metadata support
         function loadFromLibrary(id) {
             console.log('Loading guide from library, ID:', id);
             const audioguides = JSON.parse(localStorage.getItem('cloudguide_audioguides') || '[]');
@@ -1451,15 +1508,22 @@ Your history text here..."></textarea>
                     currentGuideId = id;
                     currentGuideData = guide;
                     
-                    // Load any previously saved audio files
-                    const savedAudioFiles = localStorage.getItem(`cloudguide_audio_${id}`);
-                    if (savedAudioFiles) {
+                    // Load any previously saved audio METADATA (not the actual audio)
+                    const savedAudioMeta = localStorage.getItem(`cloudguide_audio_meta_${id}`);
+                    if (savedAudioMeta) {
                         try {
-                            generatedFiles = JSON.parse(savedAudioFiles);
-                            showMessage(`Loaded ${generatedFiles.length} previously generated audio files`, 'info');
+                            const audioMeta = JSON.parse(savedAudioMeta);
+                            generatedFiles = audioMeta;
+                            showMessage(`Loaded ${generatedFiles.length} audio file references`, 'info');
                             renderFiles();
+                            
+                            // Show warning if files are not in Cloudinary
+                            const nonCloudFiles = audioMeta.filter(f => !f.isCloudinary);
+                            if (nonCloudFiles.length > 0) {
+                                showMessage('⚠️ Some audio files may not be available (use Cloudinary for permanent storage)', 'warning');
+                            }
                         } catch (e) {
-                            console.error('Error loading saved audio:', e);
+                            console.error('Error loading audio metadata:', e);
                             generatedFiles = [];
                         }
                     }
@@ -1523,20 +1587,26 @@ Your history text here..."></textarea>
             }
 
             libraryGrid.innerHTML = audioguides.map(guide => {
-                const savedAudioFiles = localStorage.getItem(`cloudguide_audio_${guide.id}`);
+                // Load audio metadata (not data)
+                const savedAudioMeta = localStorage.getItem(`cloudguide_audio_meta_${guide.id}`);
                 let audioCount = 0;
+                let hasCloudinary = false;
+                
                 try {
-                    if (savedAudioFiles) {
-                        audioCount = JSON.parse(savedAudioFiles).length;
+                    if (savedAudioMeta) {
+                        const meta = JSON.parse(savedAudioMeta);
+                        audioCount = meta.length;
+                        hasCloudinary = meta.some(f => f.isCloudinary);
                     }
                 } catch (e) {
-                    console.error('Error parsing audio files for guide', guide.id);
+                    console.error('Error parsing audio metadata for guide', guide.id);
                 }
                 
                 const audioIndicator = audioCount > 0 
                     ? `<span style="color: #48bb78;">🎵 ${audioCount} audio files</span>`
                     : '<span style="color: #f6ad55;">No audio generated</span>';
                 
+                const storageIndicator = hasCloudinary ? ' ☁️' : '';
                 const cloudIndicator = guide.cloudinaryUrl 
                     ? '<span style="color: #667eea;">☁️ Cloud</span>' 
                     : '';
@@ -1551,7 +1621,7 @@ Your history text here..."></textarea>
                          onclick="loadFromLibrary('${guide.id}')">
                         <div style="font-weight: 600; margin-bottom: 8px;">${title}</div>
                         <div style="font-size: 0.85em; color: #718096;">
-                            ${location} • ${language} • ${stops} stops • ${audioIndicator} ${cloudIndicator}
+                            ${location} • ${language} • ${stops} stops • ${audioIndicator}${storageIndicator} ${cloudIndicator}
                         </div>
                     </div>
                 `;
